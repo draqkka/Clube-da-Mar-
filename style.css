@@ -43,7 +43,7 @@ body {
 }
 
 /* ==========================================================================
-   SEÇÃO DE INGRESSOS (Menu 4) - Textos sobrepostos na área vazia
+   SEÇÃO DE INGRESSOS (Menu 4) - Desktop
    ========================================================================== */
 .pagina-ingressos {
     position: relative;
@@ -55,7 +55,6 @@ body {
     display: block;
 }
 
-/* Painel posicionado na área escura da foto dos ingressos */
 .painel-ingressos {
     position: absolute;
     top: 12%;
@@ -131,8 +130,9 @@ body {
     transform: translateY(-2px);
 }
 
+
 /* ==========================================================================
-   SEÇÃO DE CONTATO (Menu 5) - Formulário flutuando por cima da praia
+   SEÇÃO DE CONTATO (Menu 5) - Desktop
    ========================================================================== */
 .pagina-contato {
     position: relative;
@@ -169,7 +169,6 @@ body {
     resize: none; 
 }
 
-/* Posições exatas mapeadas sobre a imagem menu5.png */
 .input-nome {
     top: 42%; 
     left: 15%;
@@ -217,4 +216,83 @@ body {
 
 .btn-enviar:hover {
     background: #ffdd01;
+}
+
+
+/* ==========================================================================
+   ⚙️ RESPONSIVIDADE PARA CELULARES (Telas de até 768px de largura)
+   ========================================================================== */
+@media (max-width: 768px) {
+    
+    /* Ajusta os botões do menu superior para não sumirem no celular */
+    .topnav {
+        gap: 12px;
+        padding: 12px 5px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .topnav a {
+        font-size: 14px;
+    }
+
+    /* REVOLUÇÃO DO LAYOUT DE INGRESSOS NO CELULAR */
+    .pagina-ingressos {
+        display: flex;
+        flex-direction: column;
+        background: #09111e; /* Dá continuidade ao azul escuro da imagem */
+    }
+    .painel-ingressos {
+        position: relative; /* Desativa a sobreposição absoluta perigosa */
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: auto;
+        padding: 25px 15px;
+    }
+    .grid-detalhes {
+        grid-template-columns: 1fr; /* Muda para 1 coluna empilhada, super legível */
+        gap: 12px;
+    }
+    .bloco-info h3 {
+        font-size: 20px;
+    }
+    .btn-planilha-atalho {
+        width: 100%; /* Botão largo perfeito para clicar com o polegar */
+        padding: 15px;
+    }
+
+    /* REVOLUÇÃO DO LAYOUT DE CONTATO NO CELULAR */
+    .pagina-contato {
+        display: flex;
+        flex-direction: column;
+        background: #09131d; /* Dá continuidade ao fundo da praia à noite */
+        padding-bottom: 40px;
+    }
+    .contato-form {
+        position: relative; /* Remove o absoluto para o formulário não flutuar solto */
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Espaço igualitário automático entre os campos */
+    }
+    /* Transforma os campos em caixas com tamanhos fixos excelentes para celular */
+    .contato-form input,
+    .contato-form textarea,
+    .btn-enviar {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        height: 50px !important; /* Altura confortável para o toque */
+    }
+    .contato-form textarea {
+        height: 140px !important; /* Mais espaço para escrever a mensagem */
+    }
+    .btn-enviar {
+        margin-top: 5px;
+    }
 }

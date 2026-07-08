@@ -1,0 +1,298 @@
+/* Resete de Margens Geral */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #fff;
+    scroll-behavior: smooth;
+}
+
+/* Menu de Navegação Fixo no Topo */
+.topnav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, .7);
+    z-index: 1000;
+}
+
+.topnav a {
+    color: yellow;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.topnav a:hover {
+    color: #fff;
+}
+
+/* Imagens das Seções Padrão (Menu 1, 2 e 3) */
+.hero img {
+    width: 100%;
+    display: block;
+}
+
+/* ==========================================================================
+   SEÇÃO DE INGRESSOS (Menu 4) - Desktop
+   ========================================================================== */
+.pagina-ingressos {
+    position: relative;
+    width: 100%;
+}
+
+.background-ingressos {
+    width: 100%;
+    display: block;
+}
+
+.painel-ingressos {
+    position: absolute;
+    top: 12%;
+    left: 28%;
+    width: 44%; 
+    height: 75%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+    z-index: 10;
+}
+
+.bloco-info h3 {
+    font-size: 24px;
+    color: #ffd700; 
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+}
+
+.bloco-info p {
+    font-size: 15px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    color: #e0e0e0;
+}
+
+.grid-detalhes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.item-detalhe {
+    background: rgba(0, 0, 0, 0.6); 
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #e67e22; 
+}
+
+.item-detalhe h4 {
+    font-size: 15px;
+    color: #2ecc71; 
+    margin-bottom: 4px;
+}
+
+.item-detalhe p {
+    font-size: 12px;
+    line-height: 1.3;
+    color: #ccc;
+}
+
+.area-botao-planilha {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.btn-planilha-atalho {
+    display: inline-block;
+    padding: 12px 25px;
+    background: #e67e22;
+    color: white !important;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-planilha-atalho:hover {
+    background: #d35400;
+    transform: translateY(-2px);
+}
+
+
+/* ==========================================================================
+   SEÇÃO DE CONTATO (Menu 5) - Desktop
+   ========================================================================== */
+.pagina-contato {
+    position: relative;
+    width: 100%;
+}
+
+.background-contato {
+    width: 100%;
+    display: block;
+}
+
+.contato-form {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.contato-form input,
+.contato-form textarea {
+    position: absolute;
+    border: 1px solid rgba(255, 210, 8, 0.401);
+    outline: none;
+    font-size: 16px;
+    padding: 12px;
+    color: #ffe81d;
+    background: rgba(0, 0, 0, 0.4); 
+    border-radius: 4px;
+}
+
+.contato-form textarea {
+    resize: none; 
+}
+
+.input-nome {
+    top: 42%; 
+    left: 15%;
+    width: 36%;
+    height: 8%;
+}
+
+.input-email {
+    top: 52%; 
+    left: 15%;
+    width: 36%;
+    height: 8%;
+}
+
+.input-assunto {
+    top: 62%; 
+    left: 15%;
+    width: 36%;
+    height: 8%;
+}
+
+.textarea-mensagem {
+    top: 72%; 
+    left: 15%;
+    width: 36%;
+    height: 18%; 
+}
+
+.btn-enviar {
+    position: absolute; 
+    top: 92%;           
+    left: 15%;          
+    width: 36%;          
+    height: 6%;         
+    background: #e6c522;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-enviar:hover {
+    background: #ffdd01;
+}
+
+
+/* ==========================================================================
+   ⚙️ RESPONSIVIDADE PARA CELULARES (Telas de até 768px de largura)
+   ========================================================================== */
+@media (max-width: 768px) {
+    
+    /* Ajusta os botões do menu superior para não sumirem no celular */
+    .topnav {
+        gap: 12px;
+        padding: 12px 5px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .topnav a {
+        font-size: 14px;
+    }
+
+    /* REVOLUÇÃO DO LAYOUT DE INGRESSOS NO CELULAR */
+    .pagina-ingressos {
+        display: flex;
+        flex-direction: column;
+        background: #09111e; /* Dá continuidade ao azul escuro da imagem */
+    }
+    .painel-ingressos {
+        position: relative; /* Desativa a sobreposição absoluta perigosa */
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: auto;
+        padding: 25px 15px;
+    }
+    .grid-detalhes {
+        grid-template-columns: 1fr; /* Muda para 1 coluna empilhada, super legível */
+        gap: 12px;
+    }
+    .bloco-info h3 {
+        font-size: 20px;
+    }
+    .btn-planilha-atalho {
+        width: 100%; /* Botão largo perfeito para clicar com o polegar */
+        padding: 15px;
+    }
+
+    /* REVOLUÇÃO DO LAYOUT DE CONTATO NO CELULAR */
+    .pagina-contato {
+        display: flex;
+        flex-direction: column;
+        background: #09131d; /* Dá continuidade ao fundo da praia à noite */
+        padding-bottom: 40px;
+    }
+    .contato-form {
+        position: relative; /* Remove o absoluto para o formulário não flutuar solto */
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Espaço igualitário automático entre os campos */
+    }
+    /* Transforma os campos em caixas com tamanhos fixos excelentes para celular */
+    .contato-form input,
+    .contato-form textarea,
+    .btn-enviar {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        height: 50px !important; /* Altura confortável para o toque */
+    }
+    .contato-form textarea {
+        height: 140px !important; /* Mais espaço para escrever a mensagem */
+    }
+    .btn-enviar {
+        margin-top: 5px;
+    }
+}

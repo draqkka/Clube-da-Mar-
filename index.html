@@ -31,9 +31,9 @@
     <section id="ingressos" class="pagina-ingressos">
         <img src="menu4.png" class="background-ingressos" alt="Ingressos">
         
-        <div class="painel-ingressos">
+    <div class="painel-ingressos">
             <div class="bloco-info">
-                <h3>🎟️ Como Funciona o Seu Ingressos?</h3>
+                <h3>🎟️ Como Funciona o Seu Ingresso?</h3>
                 <p>O Clube da Maré adota o sistema de <strong>Portaria Inteligente 100% Digital</strong>. Você não precisa imprimir nada!</p>
             </div>
             
@@ -63,23 +63,29 @@
             </div>
         </div>
     </section>
-    
+
     <section id="contato" class="pagina-contato">
-    <img src="menu5.png" class="background-contato" alt="Fundo Contato">
+        <img src="menu5.png" class="background-contato" alt="Fundo Contato">
 
-    <form action="https://formsubmit.co/el/sotalu" method="POST" class="contato-form">
-        
-        <input type="hidden" name="_captcha" value="false">
+        <form action="https://api.web3forms.com/submit" method="POST" class="contato-form">
+            
+            <input type="hidden" name="access_key" value="621b4e4a-b2b5-41a2-bb25-39019db6dbf5">
 
-        <input type="text" name="name" class="input-nome" placeholder="Digite seu nome" required>
-        <input type="email" name="email" class="input-email" placeholder="Digite seu e-mail" required>
-        <input type="text" name="subject" class="input-assunto" placeholder="Assunto">
-        <textarea name="message" class="textarea-mensagem" placeholder="Sua mensagem..." required></textarea>
-        
-        <button type="submit" class="btn-enviar">Enviar Mensagem</button>
-    </form>
+            <input type="hidden" name="botcheck" style="display: none;">
 
-</section>
+            <input type="text" name="name" class="input-nome" placeholder="Digite seu nome" required>
+            <input type="email" name="email" class="input-email" placeholder="Digite seu e-mail" required>
+            <input type="text" name="subject" class="input-assunto" placeholder="Assunto">
+            <textarea name="message" class="textarea-mensagem" placeholder="Sua mensagem..." required></textarea>
+            
+            <button type="submit" class="btn-enviar">Enviar Mensagem</button>
+        </form>
+    </section>
 
 </body>
 </html>
+
+
+
+
+

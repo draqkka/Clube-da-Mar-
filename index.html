@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clube da Maré - Aloha Escape</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="topnav">
+        <a href="#home">Home</a>
+        <a href="#sobre">Sobre Nós</a>
+        <a href="#atividades">Atividades</a>
+        <a href="#ingressos">Ingressos</a>
+        <a href="#contato">Contato</a>
+    </header>
+
+    <section id="home" class="hero">
+        <img src="menu1.png" alt="Home">
+    </section>
+
+    <section id="sobre" class="hero"> 
+        <img src="menu2.png" alt="Nossa história">
+    </section>
+
+    <section id="atividades" class="hero">
+        <img src="menu3.png" alt="Atividades">
+    </section>
+    
+    <section id="ingressos" class="pagina-ingressos">
+        <img src="menu4.png" class="background-ingressos" alt="Ingressos">
+        
+        <div class="painel-ingressos">
+            <div class="bloco-info">
+                <h3>🎟️ Como Funciona o Seu Ingresso?</h3>
+                <p>O Clube da Maré adota o sistema de <strong>Portaria Inteligente 100% Digital</strong>. Você não precisa imprimir nada!</p>
+            </div>
+            
+            <div class="grid-detalhes">
+                <div class="item-detalhe">
+                    <h4>1. Validação Automática</h4>
+                    <p>Assim que atingir os critérios de nota e presença na planilha, seu nome entra no lote oficial.</p>
+                </div>
+                <div class="item-detalhe">
+                    <h4>2. Recebimento do QR Code</h4>
+                    <p>A escola receberá os códigos digitais criptografados para repassar diretamente no seu smartphone.</p>
+                </div>
+                <div class="item-detalhe">
+                    <h4>3. Acesso Prático</h4>
+                    <p>No dia da excursão, basta aproximar o QR Code do celular no leitor da nossa catraca na entrada do beach club.</p>
+                </div>
+                <div class="item-detalhe">
+                    <h4>🔒 Segurança Total</h4>
+                    <p>Cada ingresso é único, nominal e intransferível, garantindo o controle total de estudantes no Beach Club.</p>
+                </div>
+            </div>
+
+            <div class="area-botao-planilha">
+                <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94" target="_blank" class="btn-planilha-atalho">
+                    Verificar Status na Planilha
+                </a>
+            </div>
+        </div>
+    </section>
+    
+   <section id="contato" class="pagina-contato">
+        <img src="menu5.png" class="background-contato" alt="Fundo Contato">
+
+        <form action="https://formsubmit.co/vuxucuba@mailgolem.com" method="POST" class="contato-form">
+            <input type="hidden" name="_captcha" value="false">
+
+            <input type="text" name="name" class="input-nome" placeholder="Digite seu nome" required>
+            <input type="email" name="email" class="input-email" placeholder="Digite seu e-mail" required>
+            <input type="text" name="subject" class="input-assunto" placeholder="Assunto">
+            <textarea name="message" class="textarea-mensagem" placeholder="Sua mensagem..." required></textarea>
+            
+            <button type="submit" class="btn-enviar">Enviar Mensagem</button>
+        </form>
+    </section>
+
+
+</body>
+</html>

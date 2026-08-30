@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Mapa</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="index.html">Início</a>
+    <a href="quemsomos.html">Quem Somos</a>
+    <a href="eventos.html">Eventos</a>
+    <a href="mapa.html">Mapa</a>
+    <a href="ingressos.html">Ingressos</a>
+    <a href="contato.html">Contato</a>
+</nav>
+</header>
+
+<!-- MAPA -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Mapa</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="index.html">Início</a>
+    <a href="quemsomos.html">Quem Somos</a>
+    <a href="eventos.html">Eventos</a>
+    <a href="mapa.html">Mapa</a>
+    <a href="ingressos.html">Ingressos</a>
+    <a href="contato.html">Contato</a>
+</nav>
+</header>
+
+<main class="conteudo-pagina">
+
+
+    <!-- HERO MAPA -->
+    <section class="hero-mapa">
+        <img src="Hero-mapa.png" alt="Vista panorâmica do Aloha Escape" class="fundo-hero-mapa">
+        
+    </section>
+
+      
+    <!-- MAPA INTERATIVO + PAINEL DO LOCAL -->
+
+   
+    <section class="mapa-interativo-container">
+        
+        <div class="mapa-container" id="mapa-clube">
+        <h3 class="titulo-mapa-interativo">Mapa interativo</h3>
+            <div class="mapa-container" id="mapa-clube">
+            </div>
+            
+            <img src="mapa-base.png" alt="Mapa ilustrado do Aloha Escape" class="mapa-base">
+
+
+            <button class="ponto c-lazer" style="top:23.8%; left:18.7%;" data-local="1"><span class="tooltip">Piscinas e Praia Artificial</span></button>
+            <button class="ponto c-lazer" style="top:16.9%; left:48.6%;" data-local="2"><span class="tooltip">Tirolesa</span></button>
+            <button class="ponto c-lazer" style="top:26.8%; left:71.4%;" data-local="3"><span class="tooltip">Parede de Escalada</span></button>
+            <button class="ponto c-lazer" style="top:40.1%; left:84.7%;" data-local="4"><span class="tooltip">Touro Mecânico</span></button>
+            <button class="ponto c-lazer" style="top:37.7%; left:43.3%;" data-local="5"><span class="tooltip">Circuito de Desafios</span></button>
+            <button class="ponto c-lazer" style="top:50.3%; left:64.6%;" data-local="6"><span class="tooltip">Espaço Karaokê e Palco</span></button>
+            <button class="ponto c-lazer" style="top:36.6%; left:7.2%;" data-local="7"><span class="tooltip">Bar e Gastronomia</span></button>
+
+            <button class="ponto c-esporte" style="top:56.8%; left:5.5%;" data-local="8"><span class="tooltip">Beach Soccer</span></button>
+            <button class="ponto c-esporte" style="top:52.8%; left:28.2%;" data-local="9"><span class="tooltip">Quadras de Areia</span></button>
+            <button class="ponto c-esporte" style="top:57.7%; left:39.6%;" data-local="10"><span class="tooltip">Quadra Poliesportiva</span></button>
+
+            <button class="ponto c-bem-estar" style="top:60.7%; left:88.5%;" data-local="11"><span class="tooltip">Spa e Relaxamento</span></button>
+
+            <button class="ponto c-servico" style="top:78.1%; left:47.4%;" data-local="12"><span class="tooltip">Recepção e Check-in</span></button>
+            <button class="ponto c-servico" style="top:76.2%; left:56.3%;" data-local="13"><span class="tooltip">Loja Souvenir</span></button>
+            <button class="ponto c-servico" style="top:75.7%; left:31.1%;" data-local="14"><span class="tooltip">Vestiários e Banheiros</span></button>
+            <button class="ponto c-servico" style="top:77.0%; left:70.1%;" data-local="15"><span class="tooltip">Posto Médico</span></button>
+            <button class="ponto c-servico" style="top:89.1%; left:44.6%;" data-local="16"><span class="tooltip">Estacionamento</span></button>
+        </div>
+
+        <div class="painel-local" id="painel-local">
+            <img src="local1.png" alt="" id="foto-local">
+            <h3 id="nome-local">Piscinas e Praia Artificial</h3>
+            <p id="descricao-local">Clique em um ponto do mapa pra ver os detalhes do local.</p>
+        </div>
+
+    </section>
+
+    <!-- CARROSSEL DOS 16 LOCAIS -->
+    <section class="carrossel-locais">
+        <h2>Explore Todos os Locais</h2>
+        <div class="slides">
+            <div class="slide" data-ponto="1"><img src="local1.png" alt="Piscinas e Praia Artificial"><p>1. Piscinas e Praia Artificial</p></div>
+            <div class="slide" data-ponto="2"><img src="local2.png" alt="Tirolesa"><p>2. Tirolesa</p></div>
+            <div class="slide" data-ponto="3"><img src="local3.png" alt="Parede de Escalada"><p>3. Parede de Escalada</p></div>
+            <div class="slide" data-ponto="4"><img src="local4.png" alt="Touro Mecânico"><p>4. Touro Mecânico</p></div>
+            <div class="slide" data-ponto="5"><img src="local5.png" alt="Circuito de Desafios"><p>5. Circuito de Desafios</p></div>
+            <div class="slide" data-ponto="6"><img src="local6.png" alt="Espaço Karaokê e Palco"><p>6. Espaço Karaokê e Palco</p></div>
+            <div class="slide" data-ponto="7"><img src="local7.png" alt="Bar e Gastronomia"><p>7. Bar e Gastronomia</p></div>
+            <div class="slide" data-ponto="8"><img src="local8.png" alt="Beach Soccer"><p>8. Beach Soccer</p></div>
+            <div class="slide" data-ponto="9"><img src="local9.png" alt="Quadras de Areia"><p>9. Quadras de Areia</p></div>
+            <div class="slide" data-ponto="10"><img src="local10.png" alt="Quadra Poliesportiva"><p>10. Quadra Poliesportiva</p></div>
+            <div class="slide" data-ponto="11"><img src="local11.png" alt="Spa e Relaxamento"><p>11. Spa e Relaxamento</p></div>
+            <div class="slide" data-ponto="12"><img src="local12.png" alt="Recepção e Check-in"><p>12. Recepção e Check-in</p></div>
+            <div class="slide" data-ponto="13"><img src="local13.png" alt="Loja Souvenir"><p>13. Loja Souvenir</p></div>
+            <div class="slide" data-ponto="14"><img src="local14.png" alt="Vestiários e Banheiros"><p>14. Vestiários e Banheiros</p></div>
+            <div class="slide" data-ponto="15"><img src="local15.png" alt="Posto Médico"><p>15. Posto Médico</p></div>
+            <div class="slide" data-ponto="16"><img src="local16.png" alt="Estacionamento"><p>16. Estacionamento</p></div>
+        </div>
+    </section>
+
+    
+
+    <!-- LEGENDA COMPLETA -->
+    <section class="legenda-mapa">
+        <h2>Legenda Completa</h2>
+
+        <div class="legenda-categorias">
+            <div class="categoria-legenda">
+                <h3 class="titulo-categoria c-lazer">Lazer e Diversão</h3>
+                <ul class="lista-legenda">
+                    <li><span class="numero-legenda c-lazer">1</span> Piscinas e Praia Artificial</li>
+                    <li><span class="numero-legenda c-lazer">2</span> Tirolesa</li>
+                    <li><span class="numero-legenda c-lazer">3</span> Parede de Escalada</li>
+                    <li><span class="numero-legenda c-lazer">4</span> Touro Mecânico</li>
+                    <li><span class="numero-legenda c-lazer">5</span> Circuito de Desafios</li>
+                    <li><span class="numero-legenda c-lazer">6</span> Espaço Karaokê e Palco</li>
+                    <li><span class="numero-legenda c-lazer">7</span> Bar e Gastronomia</li>
+                </ul>
+            </div>
+
+            <div class="categoria-legenda">
+                <h3 class="titulo-categoria c-esporte">Esportes</h3>
+                <ul class="lista-legenda">
+                    <li><span class="numero-legenda c-esporte">8</span> Beach Soccer</li>
+                    <li><span class="numero-legenda c-esporte">9</span> Quadras de Areia</li>
+                    <li><span class="numero-legenda c-esporte">10</span> Quadra Poliesportiva</li>
+                </ul>
+
+                <h3 class="titulo-categoria c-bem-estar">Bem-Estar</h3>
+                <ul class="lista-legenda">
+                    <li><span class="numero-legenda c-bem-estar">11</span> Spa e Relaxamento</li>
+                </ul>
+            </div>
+
+            <div class="categoria-legenda">
+                <h3 class="titulo-categoria c-servico">Serviços e Apoio</h3>
+                <ul class="lista-legenda">
+                    <li><span class="numero-legenda c-servico">12</span> Recepção e Check-in</li>
+                    <li><span class="numero-legenda c-servico">13</span> Loja Souvenir</li>
+                    <li><span class="numero-legenda c-servico">14</span> Vestiários e Banheiros</li>
+                    <li><span class="numero-legenda c-servico">15</span> Posto Médico</li>
+                    <li><span class="numero-legenda c-servico">16</span> Estacionamento</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="icones-apoio">
+            <h4>Ícones de Apoio no Mapa</h4>
+            <div class="icones-apoio-lista">
+                <span><i class="fa-solid fa-restroom"></i> Banheiros</span>
+                <span><i class="fa-solid fa-utensils"></i> Alimentação</span>
+                <span><i class="fa-solid fa-lock"></i> Armários</span>
+                <span><i class="fa-solid fa-suitcase-medical"></i> Posto Médico</span>
+                <span><i class="fa-solid fa-droplet"></i> Bebedouros</span>
+                <span><i class="fa-solid fa-umbrella-beach"></i> Pontos de Descanso</span>
+                <span><i class="fa-solid fa-person-running"></i> Saídas de Emergência</span>
+            </div>
+        </div>
+    </section>
+
+    </section>
+
+<!-- NOVO: modal que abre a imagem do local ao clicar em um ponto do mapa -->
+<div class="modal-local" id="modal-local">
+    <div class="modal-local-conteudo">
+        <button class="modal-fechar" id="modal-fechar">&times;</button>
+        <img src="" alt="" id="modal-imagem">
+        <h3 id="modal-titulo"></h3>
+    </div>
+</div>
+
+</main>
+
+
+<script>
+
+document.querySelectorAll('.slide').forEach(function (slide) {
+    slide.addEventListener('click', function () {
+        var id = slide.getAttribute('data-ponto');
+        var ponto = document.querySelector('.ponto[data-local="' + id + '"]');
+        if (!ponto) return;
+
+        ponto.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+
+        document.querySelectorAll('.ponto').forEach(function (p) { p.classList.remove('ponto-destaque'); });
+        ponto.classList.add('ponto-destaque');
+        setTimeout(function () { ponto.classList.remove('ponto-destaque'); }, 1800);
+    });
+});
+
+// NOVO: clique em um ponto do mapa abre a imagem do local no modal
+document.querySelectorAll('.ponto').forEach(function (ponto) {
+    ponto.addEventListener('click', function () {
+        var id = ponto.getAttribute('data-local');
+        var nome = ponto.querySelector('.tooltip').textContent;
+
+        document.getElementById('modal-imagem').src = 'local' + id + '.png';
+        document.getElementById('modal-imagem').alt = nome;
+        document.getElementById('modal-titulo').textContent = nome;
+        document.getElementById('modal-local').classList.add('ativo');
+    });
+});
+
+document.getElementById('modal-fechar').addEventListener('click', function () {
+    document.getElementById('modal-local').classList.remove('ativo');
+});
+
+document.getElementById('modal-local').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('ativo');
+});
+
+</script>
+
+
+
+
+</body>
+</html>

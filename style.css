@@ -6,17 +6,14 @@
 }
 
 
-/* Adicionado o seletor HTML para controlar a rolagem */
+/* Esconde a barra de rolagem, mantendo o scroll funcionando */
 html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 70px; /* Alinha o conteúdo perfeitamente abaixo do menu fixo */
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* Internet Explorer/Edge antigo */
 }
 
-body {
-    background: #000;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #fff;
-        /* Removido o scroll-behavior daqui e movido para o 'html' */
+html::-webkit-scrollbar {
+    display: none;               /* Chrome, Safari, Edge novo */
 }
 
 
@@ -143,42 +140,79 @@ body {
 /* ==========================================================================
    QUEM SOMOS 
    ========================================================================== */
-#quem-somos {
-    margin-top: 5px;
-    display:flex;
-    align-items:center;
-    gap:50px;
-    padding:50px;
-    background:#f5efe6;
+/* ===== Fundo full-width ===== */
+.quemsomos-container {
+    position: relative;
+    width: 100%;
+    padding: 80px 5%;
+    overflow: hidden;
+    color: #fff;
 }
 
-.quemsomos-texto h2{
-    font-size: 40px;
-    margin-bottom: 4px;
-    gap:50px;
-    color:  #00a8a8;
-
-    }
-
-    .quemsomos-texto p{
-    font-size: 25px;
-    margin-bottom: 4px;
-    color:  #0b3c49;
-        }
-
-.foto-alunos {
-    width: 50%;
-    height: auto;
-    border-radius: 20px;
+.fundo-quemsomos {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    flex-shrink: 0;
+    z-index: 0;
 }
 
-.quemsomos-texto {
-    max-width: 700px;
+.quemsomos-conteudo {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 50px;
+    align-items: center;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.quemsomos-texto h2 {
+    font-size: 44px;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+.quemsomos-texto h2::after {
+    
+    display: block;
+    width: 210px;
+    height: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.quemsomos-texto p {
+    font-size: 15px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: #f0f0f0;
+}
+
+.quemsomos-fotos {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.quemsomos-fotos img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+}
+
+@media (max-width: 800px) {
+    .quemsomos-conteudo {
+        grid-template-columns: 1fr;
+    }
+}
+
     
 
-}
+
 
 
 .secao-home-eventos {
@@ -223,7 +257,7 @@ body {
 .painel-eventos {
     position: relative;
     z-index: 10;
-    margin-top: -323px;
+    margin-top: -460px;
     padding: 40px 5%;
     color: #333;
     background: none;
@@ -1061,53 +1095,8 @@ body {
     cursor: pointer;
 }
 
-/* ===== Carrossel dos 11 locais ===== */
-.carrossel-locais {
-    padding: 50px 5%;
-    background: #f2c900;
-}
 
-.carrossel-locais h2 {
-    color: #0b3c79;
-    font-size: 26px;
-    margin-bottom: 20px;
-}
-
-.slides {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    padding-bottom: 15px;
-    scroll-snap-type: x mandatory;
-}
-
-.slide {
-    flex: 0 0 160px;
-    scroll-snap-align: start;
-    cursor: pointer;
-    text-align: center;
-}
-
-.slide img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    transition: border 0.2s, transform 0.2s;
-}
-
-.slide:hover img {
-    border-color: #ffd700;
-    transform: scale(1.05);
-}
-
-.slide p {
-    margin-top: 8px;
-    font-size: 13px;
-    color: #c24a00;
-}
-
+ 
 /* ===== Legenda completa ===== */
 .legenda-mapa {
     padding: 50px 5% 70px;

@@ -45,9 +45,9 @@
 
 <main class="conteudo-pagina">
 
-
-    <!-- HERO MAPA -->
+<!-- HERO MAPA -->
     <section class="hero-mapa">
+        <!-- IMAGEM DE CONTEÚDO — banner do Mapa, já tem alt -->
         <img src="Hero-mapa.png" alt="Vista panorâmica do Aloha Escape" class="fundo-hero-mapa">
         
     </section>
@@ -63,6 +63,7 @@
             <div class="mapa-container" id="mapa-clube">
             </div>
             
+            <!-- IMAGEM DE CONTEÚDO — mapa ilustrado, já tem alt -->
             <img src="mapa-base.png" alt="Mapa ilustrado do Aloha Escape" class="mapa-base">
 
 
@@ -88,14 +89,15 @@
         </div>
 
         <div class="painel-local" id="painel-local">
-            <img src="faixada-beachclub.png" alt="" id="foto-local">
+            <!-- IMAGEM DE CONTEÚDO — foto padrão do painel do mapa, mostrada antes do visitante clicar em um ponto -->
+            <img src="faixada-beachclub.png" alt="Fachada do Clube da Maré Beach Club" id="foto-local">
             <h3 id="nome-local">¡Importante!</h3>
             <p id="descricao-local">Clique em um ponto do mapa pra ver os detalhes do local.</p>
         </div>
 
     </section>
 
-    
+
 
     <!-- LEGENDA COMPLETA -->
     <section class="legenda-mapa">
@@ -157,10 +159,11 @@
 
     </section>
 
-<!-- NOVO: modal que abre a imagem do local ao clicar em um ponto do mapa -->
+<!-- Modal que abre a imagem do local ao clicar em um ponto do mapa -->
 <div class="modal-local" id="modal-local">
     <div class="modal-local-conteudo">
         <button class="modal-fechar" id="modal-fechar">&times;</button>
+        <!-- IMAGEM DINÂMICA — src e alt ficam vazios aqui de propósito; são preenchidos pelo JavaScript lá embaixo quando o visitante clica em um ponto do mapa -->
         <img src="" alt="" id="modal-imagem">
         <h3 id="modal-titulo"></h3>
     </div>
@@ -185,7 +188,7 @@ document.querySelectorAll('.slide').forEach(function (slide) {
     });
 });
 
-// NOVO: clique em um ponto do mapa abre a imagem do local no modal
+// Clique em um ponto do mapa abre a imagem do local no modal
 document.querySelectorAll('.ponto').forEach(function (ponto) {
     ponto.addEventListener('click', function () {
         var id = ponto.getAttribute('data-local');
@@ -209,7 +212,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 </script>
 
 
-
+   
 
 </body>
 </html>

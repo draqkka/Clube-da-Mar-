@@ -1,4 +1,69 @@
+/* ==========================================================================
+   PAINEL DE CONTROLE — CORES E FONTES DO SITE
+   Mude os valores aqui embaixo pra mudar a cor/fonte em TODO o site de uma vez.
+   Cada linha tem um comentário dizendo onde aquela cor é usada.
+   ========================================================================== */
+:root {
+
+    /* ---------- FONTES (ver os links do Google Fonts no <head> de cada página) ---------- */
+    --fonte-titulos: 'Poppins', sans-serif;   /* usada em h1, h2, h3, h4 (títulos) */
+    --fonte-texto: 'Inter', sans-serif;       /* usada no texto corrido (parágrafos, botões, menu) */
+
+    --cor-azul-marinho: #0b3c79;  /* Azul marinho principal — títulos, ícones da linha do tempo, pinos de serviço no mapa */
+    --cor-branco: #fff;  /* Branco — textos sobre fundo escuro, fundos de caixinhas */
+    --cor-laranja: #e67e22;  /* Laranja — botões de ação, borda dos cards de ingressos, pino/legenda 'Esportes' no mapa */
+    --cor-amarelo-mostarda: #dfd001;  /* Amarelo mostarda — ícones da seção Wellness, fundo dos cards de Eventos */
+    --cor-roxo: #6d34bb;  /* Roxo — pino/legenda 'Bem-Estar' no mapa, card 'Próximos Eventos' roxo */
+    --cor-bege-fundo: #f5f0e6;  /* Bege claro — fundo do card de Programação do Dia, fundo do mapa e da legenda */
+    --cor-cinza-texto: #555;  /* Cinza médio — parágrafos de apoio (Wellness, timeline, painel do local) */
+    --cor-cinza-escuro: #333;  /* Cinza escuro — texto padrão sobre fundo claro (Quem Somos / Legenda) */
+    --cor-verde-servico: #27500a;  /* Verde escuro — pino/legenda 'Serviços e Apoio' no mapa */
+    --cor-verde-lazer: #0f6e56;  /* Verde-água — pino/legenda 'Lazer e Diversão' no mapa */
+    --cor-teal: #00a8a8;  /* Azul-esverdeado (teal) — título 'Eventos da Excursão', nome dos eventos, linha do tempo */
+    --cor-cinza-claro: #e0e0e0;  /* Cinza claro — fundo neutro de imagem (placeholder de card de evento) */
+    --cor-verde-lima-hover: #b8c200;  /* Verde-lima — efeito hover dos ícones da seção Wellness */
+    --cor-azul-hover: #007bc2;  /* Azul — efeito hover dos ícones de apoio do mapa */
+    --cor-amarelo-hover: #fff59d;  /* Amarelo claro — fundo ao passar o mouse nos itens da legenda do mapa */
+    --cor-amarelo-contato: #ffe81d;  /* Amarelo — cor do texto digitado nos campos do formulário de Contato */
+    --cor-amarelo-btn-hover: #ffdd01;  /* Amarelo vivo — hover do botão 'Enviar Mensagem' do Contato */
+    --cor-dourado: #ffd700;  /* Dourado — título '🎟️ Como Funciona o Seu Ingresso?' */
+    --cor-laranja-timeline: #ff9d00;  /* Laranja — parte do degradê da linha do tempo (Programação do Dia) */
+    --cor-laranja-hora: #ff9900;  /* Laranja — horário (ex: 08:00) na linha do tempo */
+    --cor-cinza-muito-claro: #f0f0f0;  /* Cinza quase branco — texto do parágrafo 'Quem Somos' */
+    --cor-laranja-evento: #ef7c00;  /* Laranja — card 'Próximos Eventos' laranja (Torneio Beach Soccer) */
+    --cor-amarelo-btn: #e6c522;  /* Amarelo — fundo do botão 'Enviar Mensagem' do Contato */
+    --cor-cinza-borda: #ddd;  /* Cinza — linha divisória acima dos 'Ícones de Apoio' do mapa */
+    --cor-laranja-hover: #d35400;  /* Laranja escuro — hover do botão 'Verificar Status na Planilha' */
+    --cor-rosa: #d1006c;  /* Rosa/pink — card 'Próximos Eventos' rosa (Desafio Meninas VS Meninos) */
+    --cor-cinza-detalhe: #ccc;  /* Cinza — texto pequeno dos detalhes de ingressos */
+    --cor-cinza-borda-img: #b0b0b0;  /* Cinza — borda tracejada do placeholder de imagem dos cards de evento */
+    --cor-verde-sucesso: #2ecc71;  /* Verde — títulos dos itens de detalhe em Ingressos */
+    --cor-preto-suave: #1f1f1f;  /* Quase preto — texto ao passar o mouse na legenda do mapa */
+    --cor-azul-evento: #1976d2;  /* Azul — card 'Próximos Eventos' azul (Pool Party) */
+    --cor-azul-fundo-mobile1: #09131d;  /* Azul bem escuro — fundo da seção Contato no celular */
+    --cor-azul-fundo-mobile2: #09111e;  /* Azul bem escuro — fundo da seção Ingressos no celular */
+
+    /* ---------- Cores exclusivas da tela de Login (login.html) ---------- */
+    --cor-login-fundo-inicio: #eef1fb;  /* Início do degradê de fundo da tela de login */
+    --cor-login-fundo-fim: #dfe6f7;     /* Fim do degradê de fundo da tela de login */
+    --cor-login-azul: #3f66b3;          /* Azul dos botões "Acessar" e dos links */
+    --cor-login-azul-escuro: #223b6b;   /* Azul dos títulos da tela de login */
+    --cor-login-borda: #d7ddef;         /* Borda das caixinhas de perfil e dos campos */
+    --cor-login-texto-apoio: #6b7280;   /* Cinza-azulado dos textos de apoio */
+    --cor-login-restrito: #b5651d;      /* Cor do aviso "acesso restrito" (Diretoria/Professor) */
+}
+
 /* Resete de Margens Geral */
+
+/* ---------- Aplicação das fontes do Google Fonts ---------- */
+body {
+    font-family: var(--fonte-texto);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--fonte-titulos);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -39,7 +104,7 @@ html::-webkit-scrollbar {
 }
 
 .topnav a:hover {
-    color: #fff;
+    color: var(--cor-branco);
 }
 
 /* Imagens das Seções Padrão (Menu 1, 2 e 3) */
@@ -70,13 +135,13 @@ html::-webkit-scrollbar {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    color: #fff;
+    color: var(--cor-branco);
     z-index: 10;
 }
 
 .bloco-info h3 {
     font-size: 24px;
-    color: #ffd700; 
+    color: var(--cor-dourado); 
     margin-bottom: 8px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
 }
@@ -85,7 +150,7 @@ html::-webkit-scrollbar {
     font-size: 15px;
     line-height: 1.4;
     margin-bottom: 20px;
-    color: #e0e0e0;
+    color: var(--cor-cinza-claro);
 }
 
 .grid-detalhes {
@@ -98,19 +163,19 @@ html::-webkit-scrollbar {
     background: rgba(0, 0, 0, 0.6); 
     padding: 12px;
     border-radius: 6px;
-    border-left: 3px solid #e67e22; 
+    border-left: 3px solid var(--cor-laranja); 
 }
 
 .item-detalhe h4 {
     font-size: 15px;
-    color: #2ecc71; 
+    color: var(--cor-verde-sucesso); 
     margin-bottom: 4px;
 }
 
 .item-detalhe p {
     font-size: 12px;
     line-height: 1.3;
-    color: #ccc;
+    color: var(--cor-cinza-detalhe);
 }
 
 .area-botao-planilha {
@@ -121,7 +186,7 @@ html::-webkit-scrollbar {
 .btn-planilha-atalho {
     display: inline-block;
     padding: 12px 25px;
-    background: #e67e22;
+    background: var(--cor-laranja);
     color: white !important;
     text-decoration: none;
     font-size: 15px;
@@ -132,7 +197,7 @@ html::-webkit-scrollbar {
 }
 
 .btn-planilha-atalho:hover {
-    background: #d35400;
+    background: var(--cor-laranja-hover);
     transform: translateY(-2px);
 }
 
@@ -146,7 +211,7 @@ html::-webkit-scrollbar {
     width: 100%;
     padding: 80px 5%;
     overflow: hidden;
-    color: #fff;
+    color: var(--cor-branco);
 }
 
 .fundo-quemsomos {
@@ -171,8 +236,8 @@ html::-webkit-scrollbar {
 }
 
 .quemsomos-texto h2 {
-    font-size: 44px;
-    color: #fff;
+    font-size: 50px;
+    color: var(--cor-branco);
     margin-bottom: 6px;
 }
 
@@ -189,7 +254,7 @@ html::-webkit-scrollbar {
     font-size: 15px;
     line-height: 1.1;
     margin-bottom: 16px;
-    color: #f0f0f0;
+    color: var(--cor-cinza-muito-claro);
 }
 
 .quemsomos-fotos {
@@ -259,14 +324,14 @@ html::-webkit-scrollbar {
     z-index: 10;
     margin-top: -460px;
     padding: 40px 5%;
-    color: #333;
+    color: var(--cor-cinza-escuro);
     background: none;
 }
 
 .painel-eventos h2 {
     font-size: 25px;
     margin-bottom: 4px;
-    color: #00a8a8;
+    color: var(--cor-teal);
     text-align: center;
     margin-top: -60px;
 }
@@ -291,7 +356,7 @@ html::-webkit-scrollbar {
 
 .card-evento{
 
-    background: #dfd001;
+    background: var(--cor-amarelo-mostarda);
 
     border-radius:18px;
 
@@ -320,8 +385,8 @@ html::-webkit-scrollbar {
     aspect-ratio: 1 /1;
     object-fit: cover;
     display: block;
-    background: #e0e0e0;
-    border: 2px dashed #b0b0b0;
+    background: var(--cor-cinza-claro);
+    border: 2px dashed var(--cor-cinza-borda-img);
     border-radius: 8px 8px 0 0;
 }
 
@@ -334,7 +399,7 @@ html::-webkit-scrollbar {
 .info-evento h3 {
     font-size: 15px;
     margin-bottom: 4px;
-    color: #00a8a8;
+    color: var(--cor-teal);
 
 }
 
@@ -402,7 +467,7 @@ html::-webkit-scrollbar {
 
 .titulo-wellness h2{
 
-    color:#dfd001;
+    color:var(--cor-amarelo-mostarda);
 
     font-size:38px;
 
@@ -414,7 +479,7 @@ html::-webkit-scrollbar {
 
 .titulo-wellness p{
 
-    color:#555;
+    color:var(--cor-cinza-texto);
 
     font-size:15px;
 
@@ -458,7 +523,7 @@ html::-webkit-scrollbar {
 
     font-size:42px;
 
-    color:#dfd001;
+    color:var(--cor-amarelo-mostarda);
 
     margin-bottom:15px;
 
@@ -470,7 +535,7 @@ html::-webkit-scrollbar {
 
     font-size:14px;
 
-    color:#dfd001;
+    color:var(--cor-amarelo-mostarda);
 
     line-height:1.4;
 
@@ -480,7 +545,7 @@ html::-webkit-scrollbar {
 
 .item-wellness:hover i{
 
-    color:#b8c200;
+    color:var(--cor-verde-lima-hover);
 
     transform:translateY(-6px) scale(1.1);
 
@@ -488,7 +553,7 @@ html::-webkit-scrollbar {
 
 .item-wellness:hover h3{
 
-    color:#b8c200;
+    color:var(--cor-verde-lima-hover);
 
 }
 
@@ -580,7 +645,7 @@ html::-webkit-scrollbar {
     width:100%;
     min-width:0;
 
-    background:#f5f0e6;
+    background:var(--cor-bege-fundo);
     border-radius:35px;
     padding:50px;
     overflow:hidden;
@@ -594,7 +659,7 @@ html::-webkit-scrollbar {
 
     font-weight:900;
 
-    color:#0b3c79;
+    color:var(--cor-azul-marinho);
 
     margin-bottom:70px;
 }
@@ -631,9 +696,9 @@ html::-webkit-scrollbar {
 
     background:linear-gradient(
         90deg,
-        #00a8a8,
-        #0b3c79,
-        #ff9d00
+        var(--cor-teal),
+        var(--cor-azul-marinho),
+        var(--cor-laranja-timeline)
     );
 
     z-index:1;
@@ -653,7 +718,7 @@ html::-webkit-scrollbar {
 
     font-size:24px;
 
-    color:#0b3c79;
+    color:var(--cor-azul-marinho);
 
     animation:voo 15s linear infinite;
 }
@@ -711,7 +776,7 @@ html::-webkit-scrollbar {
 
     font-size:36px;
 
-    color:#0b3c79;
+    color:var(--cor-azul-marinho);
 
     transition:.4s;
 }
@@ -722,7 +787,7 @@ html::-webkit-scrollbar {
 
     transform:translateY(-12px) scale(1.12);
 
-    background:#0b3c79;
+    background:var(--cor-azul-marinho);
 }
 
 .timeline-item:hover .timeline-icon i{
@@ -738,7 +803,7 @@ html::-webkit-scrollbar {
 
     margin-top:18px;
 
-    color:#ff9900;
+    color:var(--cor-laranja-hora);
 
     font-size:18px;
 
@@ -753,7 +818,7 @@ html::-webkit-scrollbar {
 
     font-size:15px;
 
-    color:#0b3c79;
+    color:var(--cor-azul-marinho);
 }
 
 /* TEXTO */
@@ -766,7 +831,7 @@ html::-webkit-scrollbar {
 
     line-height:1.4;
 
-    color:#555;
+    color:var(--cor-cinza-texto);
 }
 
 /* ========================= */
@@ -775,7 +840,7 @@ html::-webkit-scrollbar {
 
 #proximos-eventos h2{
 
-    color:#0b3c79;
+    color:var(--cor-azul-marinho);
 
     font-size:42px;
 
@@ -866,19 +931,19 @@ html::-webkit-scrollbar {
 }
 
 .rosa{
-    background:#d1006c;
+    background:var(--cor-rosa);
 }
 
 .laranja{
-    background:#ef7c00;
+    background:var(--cor-laranja-evento);
 }
 
 .roxo{
-    background:#6d34bb;
+    background:var(--cor-roxo);
 }
 
 .azul{
-    background:#1976d2;
+    background:var(--cor-azul-evento);
 }
 
 /* RESPONSIVO */
@@ -936,8 +1001,8 @@ html::-webkit-scrollbar {
     grid-template-columns: 1.4fr 1fr;
     gap: 30px;
     padding: 50px 5%;
-    background: #f5f0e6;
-    color: #333;
+    background: var(--cor-bege-fundo);
+    color: var(--cor-cinza-escuro);
 }
 
 #mapa-clube,
@@ -950,7 +1015,7 @@ html::-webkit-scrollbar {
 
 .titulo-mapa-interativo {
     grid-column: 1 / -1;
-    color: #0b3c79;
+    color: var(--cor-azul-marinho);
     font-size: 20px;
     line-height: 1.4;
     padding: 4px 0;
@@ -969,7 +1034,7 @@ html::-webkit-scrollbar {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    border: 3px solid #fff;
+    border: 3px solid var(--cor-branco);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     cursor: pointer;
     transform: translate(-50%, -50%);
@@ -980,18 +1045,33 @@ html::-webkit-scrollbar {
     transform: translate(-50%, -50%) scale(1.3);
 }
 
-.ponto.c-lazer { background: #0f6e56; }
-.ponto.c-esporte { background: #e67e22; }
-.ponto.c-bem-estar { background: #6d34bb; }
-.ponto.c-servico { background: #27500a; }
+.ponto.c-lazer { background: var(--cor-verde-lazer); }
+.ponto.c-esporte { background: var(--cor-laranja); }
+.ponto.c-bem-estar { background: var(--cor-roxo); }
+.ponto.c-servico { background: var(--cor-verde-servico); }
+
+.ponto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ponto::before {
+    content: attr(data-local);
+    color: var(--cor-branco);
+    font-size: 11px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
 
 .ponto .tooltip {
     position: absolute;
     bottom: 130%;
     left: 50%;
     transform: translateX(-50%);
-    background: #0b3c79;
-    color: #fff;
+    background: var(--cor-azul-marinho);
+    color: var(--cor-branco);
     font-size: 13px;
     white-space: nowrap;
     padding: 6px 10px;
@@ -1016,7 +1096,7 @@ html::-webkit-scrollbar {
 
 /* ===== Painel do local (foto + descrição) ===== */
 .painel-local {
-    background: #fff;
+    background: var(--cor-branco);
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -1031,14 +1111,14 @@ html::-webkit-scrollbar {
 }
 
 .painel-local h3 {
-    color: #0b3c79;
+    color: var(--cor-azul-marinho);
     font-size: 20px;
     margin-bottom: 8px;
 }
 
 .painel-local p {
     font-size: 14px;
-    color: #555;
+    color: var(--cor-cinza-texto);
     line-height: 1.5;
 }
 
@@ -1061,7 +1141,7 @@ html::-webkit-scrollbar {
     position: relative;
     max-width: 600px;
     width: 90%;
-    background: #fff;
+    background: var(--cor-branco);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
@@ -1076,7 +1156,7 @@ html::-webkit-scrollbar {
 }
 
 .modal-local-conteudo h3 {
-    color: #0b3c79;
+    color: var(--cor-azul-marinho);
     font-size: 20px;
 }
 
@@ -1084,8 +1164,8 @@ html::-webkit-scrollbar {
     position: absolute;
     top: -15px;
     right: -15px;
-    background: #e67e22;
-    color: #fff;
+    background: var(--cor-laranja);
+    color: var(--cor-branco);
     border: none;
     width: 32px;
     height: 32px;
@@ -1100,12 +1180,12 @@ html::-webkit-scrollbar {
 /* ===== Legenda completa ===== */
 .legenda-mapa {
     padding: 50px 5% 70px;
-    background: #f5f0e6;
-    color: #333;
+    background: var(--cor-bege-fundo);
+    color: var(--cor-cinza-escuro);
 }
 
 .legenda-mapa h2 {
-    color: #0b3c79;
+    color: var(--cor-azul-marinho);
     font-size: 26px;
     margin-bottom: 20px;
 }
@@ -1138,6 +1218,11 @@ html::-webkit-scrollbar {
     transform: translateX(15px);
 }
 
+.lista-legenda li:hover {
+    background-color: var(--cor-amarelo-hover);
+    color: var(--cor-preto-suave);
+}
+
 .legenda-categorias {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1157,10 +1242,10 @@ html::-webkit-scrollbar {
     margin-top: 0;
 }
 
-.titulo-categoria.c-lazer { color: #0f6e56; }
-.titulo-categoria.c-esporte { color: #e67e22; }
-.titulo-categoria.c-bem-estar { color: #6d34bb; }
-.titulo-categoria.c-servico { color: #27500a; }
+.titulo-categoria.c-lazer { color: var(--cor-verde-lazer); }
+.titulo-categoria.c-esporte { color: var(--cor-laranja); }
+.titulo-categoria.c-bem-estar { color: var(--cor-roxo); }
+.titulo-categoria.c-servico { color: var(--cor-verde-servico); }
 
 .lista-legenda {
     list-style: none;
@@ -1174,7 +1259,7 @@ html::-webkit-scrollbar {
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    background: #fff;
+    background: var(--cor-branco);
     padding: 8px 12px;
     border-radius: 8px;
 }
@@ -1185,26 +1270,26 @@ html::-webkit-scrollbar {
     justify-content: center;
     width: 22px;
     height: 22px;
-    color: #fff;
+    color: var(--cor-branco);
     font-size: 12px;
     font-weight: bold;
     border-radius: 50%;
     flex-shrink: 0;
 }
 
-.numero-legenda.c-lazer { background: #0f6e56; }
-.numero-legenda.c-esporte { background: #e67e22; }
-.numero-legenda.c-bem-estar { background: #6d34bb; }
-.numero-legenda.c-servico { background: #27500a; }
+.numero-legenda.c-lazer { background: var(--cor-verde-lazer); }
+.numero-legenda.c-esporte { background: var(--cor-laranja); }
+.numero-legenda.c-bem-estar { background: var(--cor-roxo); }
+.numero-legenda.c-servico { background: var(--cor-verde-servico); }
 
 .icones-apoio {
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--cor-cinza-borda);
     padding-top: 20px;
 }
 
 .icones-apoio h4 {
     font-size: 15px;
-    color: #0b3c79;
+    color: var(--cor-azul-marinho);
     margin-bottom: 12px;
     gap: 45%;
     text-align: center;
@@ -1216,7 +1301,7 @@ html::-webkit-scrollbar {
     justify-content: center;
     gap: 25px;
     font-size: 13px;
-    color: #0b3c79;
+    color: var(--cor-azul-marinho);
 }
 
 .icones-apoio-lista i {
@@ -1224,13 +1309,13 @@ html::-webkit-scrollbar {
 }
 
 .icones-apoio-lista span:hover i {
-    color: #007bc2;
+    color: var(--cor-azul-hover);
     transform: translateY(-4px) scale(1.15);
     display: inline-block;
 }
 
 .icones-apoio-lista span:hover {
-    color: #007bc2;
+    color: var(--cor-azul-hover);
     
 }
 
@@ -1284,7 +1369,7 @@ html::-webkit-scrollbar {
     outline: none;
     font-size: 16px;
     padding: 12px;
-    color: #ffe81d;
+    color: var(--cor-amarelo-contato);
     background: rgba(0, 0, 0, 0.4); 
     border-radius: 4px;
 }
@@ -1327,7 +1412,7 @@ html::-webkit-scrollbar {
     left: 15%;          
     width: 36%;          
     height: 6%;         
-    background: #e6c522;
+    background: var(--cor-amarelo-btn);
     color: white;
     border: none;
     font-size: 16px;
@@ -1339,7 +1424,7 @@ html::-webkit-scrollbar {
 }
 
 .btn-enviar:hover {
-    background: #ffdd01;
+    background: var(--cor-amarelo-btn-hover);
 }
 
 
@@ -1361,7 +1446,7 @@ html::-webkit-scrollbar {
     .pagina-ingressos {
         display: flex;
         flex-direction: column;
-        background: #09111e; /* Dá continuidade ao azul escuro da imagem */
+        background: var(--cor-azul-fundo-mobile2); /* Dá continuidade ao azul escuro da imagem */
     }
     .painel-ingressos {
         position: relative; /* Desativa a sobreposição absoluta perigosa */
@@ -1387,7 +1472,7 @@ html::-webkit-scrollbar {
     .pagina-contato {
         display: flex;
         flex-direction: column;
-        background: #09131d; /* Dá continuidade ao fundo da praia à noite */
+        background: var(--cor-azul-fundo-mobile1); /* Dá continuidade ao fundo da praia à noite */
         padding-bottom: 40px;
     }
     .contato-form {
@@ -1417,4 +1502,367 @@ html::-webkit-scrollbar {
     .btn-enviar {
         margin-top: 5px;
     }
+}
+
+/* ==========================================================================
+   TELA DE LOGIN (login.html)
+   Cores usadas aqui vêm do bloco --cor-login-* lá no :root, no topo do arquivo.
+   ========================================================================== */
+
+.login-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, var(--cor-login-fundo-inicio), var(--cor-login-fundo-fim));
+    padding: 40px 16px;
+}
+
+.login-voltar-site {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cor-login-azul-escuro);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.login-voltar-site:hover {
+    text-decoration: underline;
+}
+
+.login-wrap {
+    width: 100%;
+    max-width: 620px;
+}
+
+/* Cada "tela" (perfis, estudante, diretoria, responsável, professor) fica
+   escondida por padrão; só a que tem a classe .tela-ativa aparece. */
+.tela-login {
+    display: none;
+}
+
+.tela-login.tela-ativa {
+    display: block;
+    animation: entrada-login .25s ease;
+}
+
+@keyframes entrada-login {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.tela-login h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--cor-login-azul-escuro);
+    margin-bottom: 6px;
+    outline: none; /* recebe foco por script ao trocar de tela, sem contorno feio */
+}
+
+.login-subtitulo {
+    text-align: center;
+    color: var(--cor-login-texto-apoio);
+    font-size: 14px;
+    margin-bottom: 34px;
+}
+
+.login-instrucao {
+    text-align: center;
+    color: var(--cor-login-texto-apoio);
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* ---------- Lista de perfis (tela 1) ---------- */
+.lista-perfis {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.linha-perfil {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: var(--cor-branco);
+    border: 1px solid var(--cor-login-borda);
+    border-radius: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    text-align: left;
+    box-shadow: 0 2px 6px rgba(20, 30, 60, 0.05);
+    transition: .2s;
+    font-family: var(--fonte-texto);
+}
+
+.linha-perfil:hover {
+    border-color: var(--cor-login-azul);
+    box-shadow: 0 4px 14px rgba(20, 30, 60, 0.1);
+}
+
+.perfil-textos {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.rotulo-sou {
+    font-size: 12px;
+    color: var(--cor-login-texto-apoio);
+}
+
+.nome-perfil {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cor-login-azul-escuro);
+}
+
+.nota-perfil {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--cor-login-restrito);
+    background: rgba(181, 101, 29, 0.12);
+    padding: 4px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.seta-perfil {
+    color: var(--cor-login-texto-apoio);
+    font-size: 14px;
+}
+
+/* ---------- Formulários (telas 2 a 5) ---------- */
+.form-login {
+    background: var(--cor-branco);
+    border: 1px solid var(--cor-login-borda);
+    border-radius: 14px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(20, 30, 60, 0.07);
+}
+
+.linha-campos {
+    display: flex;
+    gap: 12px;
+}
+
+.campo-principal {
+    flex: 1;
+}
+
+.campo-pequeno {
+    width: 90px;
+}
+
+.campo-uf {
+    width: 100px;
+}
+
+/* ---------- Campo flutuante (label acessível que "vira" um placeholder) ----------
+   O <label> fica sempre no HTML (leitor de tela lê ele sempre). Visualmente,
+   ele começa em cima do texto digitado (como um placeholder) e sobe quando
+   o campo recebe foco OU já tem algo digitado (:not(:placeholder-shown)). */
+.campo-flutuante {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.campo-flutuante input,
+.campo-flutuante select {
+    width: 100%;
+    padding: 20px 14px 8px;
+    border: 1px solid var(--cor-login-borda);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: var(--fonte-texto);
+    color: var(--cor-login-azul-escuro);
+    background: var(--cor-branco);
+    outline: none;
+    transition: border-color .15s;
+}
+
+.campo-flutuante select {
+    padding-top: 20px;
+    padding-bottom: 8px;
+}
+
+.campo-flutuante input:focus,
+.campo-flutuante select:focus {
+    border-color: var(--cor-login-azul);
+}
+
+.campo-flutuante label {
+    position: absolute;
+    left: 14px;
+    top: 16px;
+    font-size: 15px;
+    color: var(--cor-login-texto-apoio);
+    pointer-events: none;
+    transition: .15s;
+    background: var(--cor-branco);
+    padding: 0 2px;
+}
+
+.campo-flutuante input:focus + label,
+.campo-flutuante input:not(:placeholder-shown) + label {
+    top: -8px;
+    font-size: 11px;
+    color: var(--cor-login-azul);
+}
+
+/* O <select> de UF não tem placeholder, então o rótulo já fica sempre "flutuando" em cima */
+.rotulo-select {
+    position: static;
+    display: block;
+    font-size: 11px;
+    color: var(--cor-login-texto-apoio);
+    margin-bottom: 2px;
+    background: none;
+}
+
+.campo-uf .campo-flutuante,
+.campo-uf select {
+    margin-bottom: 0;
+}
+
+/* Botão de mostrar/esconder senha */
+.botao-olho {
+    position: absolute;
+    right: 12px;
+    top: 14px;
+    background: none;
+    border: none;
+    color: var(--cor-login-texto-apoio);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.botao-olho:hover {
+    color: var(--cor-login-azul);
+}
+
+/* Tipo de documento (Responsável) */
+.opcoes-documento {
+    border: none;
+    display: flex;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.opcoes-documento legend {
+    font-size: 11px;
+    color: var(--cor-login-texto-apoio);
+    margin-bottom: 6px;
+    width: 100%;
+}
+
+.opcao-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--cor-login-azul-escuro);
+    cursor: pointer;
+}
+
+.link-esqueci {
+    display: block;
+    text-align: right;
+    font-size: 12px;
+    color: var(--cor-login-texto-apoio);
+    text-decoration: none;
+    margin-bottom: 22px;
+}
+
+.link-esqueci strong {
+    color: var(--cor-login-azul);
+    text-decoration: underline;
+}
+
+.mensagem-login {
+    font-size: 13px;
+    color: var(--cor-login-restrito);
+    margin-bottom: 14px;
+    min-height: 1px;
+}
+
+.botoes-login {
+    display: flex;
+    gap: 14px;
+}
+
+.botao-voltar,
+.botao-acessar {
+    flex: 1;
+    padding: 14px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+    font-family: var(--fonte-texto);
+}
+
+.botao-voltar {
+    background: var(--cor-branco);
+    border: 1px solid var(--cor-login-azul);
+    color: var(--cor-login-azul);
+}
+
+.botao-voltar:hover {
+    background: var(--cor-login-fundo-inicio);
+}
+
+.botao-acessar {
+    background: var(--cor-login-azul);
+    border: 1px solid var(--cor-login-azul);
+    color: var(--cor-branco);
+}
+
+.botao-acessar:hover {
+    background: var(--cor-login-azul-escuro);
+}
+
+@media (max-width: 600px) {
+    .linha-campos {
+        flex-direction: column;
+        gap: 0;
+    }
+    .campo-uf, .campo-pequeno {
+        width: 100%;
+    }
+    .form-login {
+        padding: 22px;
+    }
+}
+
+/* Aviso de planilha privada (ingressos.html) — some quando Diretoria/Professor loga */
+.aviso-planilha-privada {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--cor-cinza-detalhe);
+}
+
+.aviso-planilha-privada a {
+    color: var(--cor-dourado);
+    font-weight: bold;
+}
+
+/* Link "Entrar" no menu do topo, destacado dos demais */
+.topnav a.link-entrar {
+    margin-left: auto;
+    background: rgba(255, 255, 0, 0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
 }

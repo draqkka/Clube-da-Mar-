@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Entrar</title>
+<link rel="stylesheet" href="style.css">
+<!-- ======================================================================
+     FONTES DO GOOGLE FONTS
+     Pra trocar a fonte do site inteiro, troque o link abaixo e o nome
+     da fonte em style.css, dentro do :root (--fonte-titulos / --fonte-texto).
+     Catálogo completo de fontes: https://fonts.google.com
+     ====================================================================== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="login-body">
+
+<!--
+  ======================================================================
+  IMPORTANTE PRA VOCÊ LER (isso é só um comentário, não aparece no site):
+
+  DIRETORIA e PROFESSOR agora usam login DE VERDADE, com o Firebase
+  Authentication (e-mail + senha) e o Firestore (pra guardar qual é o
+  perfil de cada conta). Veja o passo a passo completo — criar o
+  projeto, ativar o login por e-mail/senha, criar as contas e configurar
+  as regras de segurança — na conversa onde esse arquivo foi gerado, ou
+  no arquivo COMO-CONFIGURAR-FIREBASE.md que também te entreguei.
+
+  Antes de publicar o site, troque o objeto "firebaseConfig" logo
+  abaixo pelas chaves do SEU projeto Firebase (Configurações do projeto
+  → Geral → seus apps → SDK do Firebase).
+
+  ESTUDANTE e RESPONSÁVEL continuam em modo demonstração (mostram uma
+  mensagem ao clicar em Acessar) porque usam RA/RG, não e-mail — pra
+  isso funcionar de verdade com Firebase, precisaria de uma função de
+  backend que traduza RA/RG num e-mail interno. Se quiser, posso montar
+  isso depois.
+  ======================================================================
+-->
+
+<!-- ======================================================================
+     FIREBASE — SDK (versão modular, direto do CDN do Google, sem precisar
+     instalar nada). Carregado como "module" porque o Firebase usa import/export.
+     ====================================================================== -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+        getAuth,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // ==================================================================
+    // TROQUE ISSO AQUI pelas chaves do SEU projeto Firebase.
+    // Onde achar: console.firebase.google.com → seu projeto →
+    // ⚙️ Configurações do projeto → aba "Geral" → "Seus apps" → SDK.
+    // ==================================================================
+    const firebaseConfig = {
+        apiKey: "GBww-54fgv5Gz2_g6dGGFSogrjsw1c6xiKwXKCJ_yiA",
+        authDomain: "SEU-PROJETO.firebaseapp.com",
+        projectId: "club-da-mare",
+        storageBucket: "SEU-PROJETO.appspot.com",
+        messagingSenderId: "SEU-SENDER-ID",
+        appId: "SEU-APP-ID",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Deixa auth/db acessíveis pro outro <script> (sem type="module") lá embaixo
+    window.clubeMareFirebase = { auth, signInWithEmailAndPassword, onAuthStateChanged, db, doc, getDoc };
+</script>
+
+<a href="index.html" class="login-voltar-site">
+    <i class="fa-solid fa-arrow-left"></i> Voltar ao site
+</a>
+
+<main class="login-wrap">
+
+    <!-- ============================================================
+         TELA 1 — Escolha de perfil (igual à sua imagem de referência)
+         ============================================================ -->
+    <section id="tela-perfis" class="tela-login tela-ativa" aria-live="polite">
+        <h1>Olá, novamente!</h1>
+        <p class="login-subtitulo">Já estávamos sentindo sua falta.</p>
+
+        <p class="login-instrucao">Escolha abaixo um perfil para acessar.</p>
+
+        <div class="lista-perfis" role="list">
+
+            <!-- Perfil 1: ESTUDANTE — mantido igual ao pedido -->
+            <button type="button" class="linha-perfil" data-abrir="tela-estudante">
+                <span class="perfil-textos">
+                    <span class="rotulo-sou">Sou</span>
+                    <span class="nome-perfil">Estudante</span>
+                </span>
+                <i class="fa-solid fa-chevron-right seta-perfil"></i>
+            </button>
+
+            <!-- Perfil 2: DIRETORIA — substitui o antigo "Servidor".
+                 Depois do login, vai direto pra página secreta (ingressos.html) -->
+            <button type="button" class="linha-perfil linha-perfil-restrita" data-abrir="tela-diretoria">
+                <span class="perfil-textos">
+                    <span class="rotulo-sou">Sou</span>
+                    <span class="nome-perfil">Diretoria</span>
+                </span>
+                <span class="nota-perfil">acesso restrito</span>
+                <i class="fa-solid fa-chevron-right seta-perfil"></i>
+            </button>
+
+            <!-- Perfil 3: RESPONSÁVEL — mantido igual ao pedido -->
+            <button type="button" class="linha-perfil" data-abrir="tela-responsavel">
+                <span class="perfil-textos">
+                    <span class="rotulo-sou">Sou</span>
+                    <span class="nome-perfil">Responsável</span>
+                </span>
+                <i class="fa-solid fa-chevron-right seta-perfil"></i>
+            </button>
+
+            <!-- Perfil 4: PROFESSOR — novo. Também abre a página de ingressos,
+                 mas com o link de outra planilha (diferente da Diretoria) -->
+            <button type="button" class="linha-perfil linha-perfil-restrita" data-abrir="tela-professor">
+                <span class="perfil-textos">
+                    <span class="rotulo-sou">Sou</span>
+                    <span class="nome-perfil">Professor</span>
+                </span>
+                <span class="nota-perfil">acesso restrito</span>
+                <i class="fa-solid fa-chevron-right seta-perfil"></i>
+            </button>
+
+        </div>
+    </section>
+
+    <!-- ============================================================
+         TELA 2 — Estudante (RA + dígito + UF + senha), igual à imagem
+         ============================================================ -->
+    <section id="tela-estudante" class="tela-login" data-perfil="estudante">
+        <h1>Estudante</h1>
+        <p class="login-subtitulo">Preencha seus dados abaixo para acessar o sistema.</p>
+
+        <form class="form-login" novalidate>
+
+            <div class="linha-campos">
+                <!-- Campo flutuante: o <label> some visualmente igual um
+                     placeholder, mas continua no HTML — leitor de tela lê ele sempre -->
+                <div class="campo-flutuante campo-principal">
+                    <input type="text" id="ra-estudante" placeholder=" " autocomplete="off" required>
+                    <label for="ra-estudante">RA</label>
+                </div>
+
+                <div class="campo-flutuante campo-pequeno">
+                    <input type="text" id="digito-ra" placeholder=" " maxlength="1" autocomplete="off">
+                    <label for="digito-ra">Dígito</label>
+                </div>
+
+                <div class="campo-flutuante campo-uf">
+                    <label for="uf-estudante" class="rotulo-select">UF</label>
+                    <select id="uf-estudante">
+                        <option>SP</option><option>RJ</option><option>MG</option><option>PR</option>
+                        <option>SC</option><option>RS</option><option>BA</option><option>Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="campo-flutuante">
+                <input type="password" id="senha-estudante" placeholder=" " autocomplete="current-password" required>
+                <label for="senha-estudante">Senha</label>
+                <button type="button" class="botao-olho" data-alvo="senha-estudante" aria-label="Mostrar senha">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <a href="#" class="link-esqueci">Esqueceu a senha? <strong>Clique aqui</strong> para saber como recuperá-la.</a>
+
+            <p class="mensagem-login" role="alert"></p>
+
+            <div class="botoes-login">
+                <button type="button" class="botao-voltar" data-voltar>Voltar</button>
+                <button type="submit" class="botao-acessar">Acessar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- ============================================================
+         TELA 3 — Diretoria (substitui "Servidor").
+         Ao acessar, é redirecionada pra ingressos.html (página secreta).
+         ============================================================ -->
+    <section id="tela-diretoria" class="tela-login" data-perfil="diretoria">
+        <h1>Diretoria</h1>
+        <p class="login-subtitulo">Área restrita à equipe da diretoria da escola.</p>
+
+        <form class="form-login" novalidate>
+
+            <div class="campo-flutuante">
+                <input type="email" id="usuario-diretoria" placeholder=" " autocomplete="username" required>
+                <label for="usuario-diretoria">E-mail</label>
+            </div>
+
+            <div class="campo-flutuante">
+                <input type="password" id="senha-diretoria" placeholder=" " autocomplete="current-password" required>
+                <label for="senha-diretoria">Senha</label>
+                <button type="button" class="botao-olho" data-alvo="senha-diretoria" aria-label="Mostrar senha">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <a href="#" class="link-esqueci">Esqueceu a senha? <strong>Clique aqui</strong> para saber como recuperá-la.</a>
+
+            <p class="mensagem-login" role="alert"></p>
+
+            <div class="botoes-login">
+                <button type="button" class="botao-voltar" data-voltar>Voltar</button>
+                <button type="submit" class="botao-acessar">Acessar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- ============================================================
+         TELA 4 — Responsável (RG/CIN/RNE + UF + senha), igual à imagem
+         ============================================================ -->
+    <section id="tela-responsavel" class="tela-login" data-perfil="responsavel">
+        <h1>Responsável</h1>
+        <p class="login-subtitulo">Preencha seus dados abaixo para acessar o sistema.</p>
+
+        <form class="form-login" novalidate>
+
+            <fieldset class="opcoes-documento">
+                <legend>Tipo de documento</legend>
+                <label class="opcao-radio">
+                    <input type="radio" name="doc-responsavel" value="rg" checked> RG
+                </label>
+                <label class="opcao-radio">
+                    <input type="radio" name="doc-responsavel" value="cin"> CIN
+                </label>
+                <label class="opcao-radio">
+                    <input type="radio" name="doc-responsavel" value="rne"> RNE
+                </label>
+            </fieldset>
+
+            <div class="linha-campos">
+                <div class="campo-flutuante campo-principal">
+                    <input type="text" id="documento-responsavel" placeholder=" " autocomplete="off" required>
+                    <label for="documento-responsavel">Número do documento</label>
+                </div>
+
+                <div class="campo-flutuante campo-uf">
+                    <label for="uf-responsavel" class="rotulo-select">UF</label>
+                    <select id="uf-responsavel">
+                        <option>SP</option><option>RJ</option><option>MG</option><option>PR</option>
+                        <option>SC</option><option>RS</option><option>BA</option><option>Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="campo-flutuante">
+                <input type="password" id="senha-responsavel" placeholder=" " autocomplete="current-password" required>
+                <label for="senha-responsavel">Senha</label>
+                <button type="button" class="botao-olho" data-alvo="senha-responsavel" aria-label="Mostrar senha">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <a href="#" class="link-esqueci">Esqueci minha senha</a>
+
+            <p class="mensagem-login" role="alert"></p>
+
+            <div class="botoes-login">
+                <button type="button" class="botao-voltar" data-voltar>Voltar</button>
+                <button type="submit" class="botao-acessar">Acessar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- ============================================================
+         TELA 5 — Professor (novo). Também vai pra ingressos.html,
+         mas com acesso à planilha de PROFESSORES (diferente da Diretoria).
+         ============================================================ -->
+    <section id="tela-professor" class="tela-login" data-perfil="professor">
+        <h1>Professor</h1>
+        <p class="login-subtitulo">Área para professores acompanhantes da excursão.</p>
+
+        <form class="form-login" novalidate>
+
+            <div class="campo-flutuante">
+                <input type="email" id="usuario-professor" placeholder=" " autocomplete="username" required>
+                <label for="usuario-professor">E-mail</label>
+            </div>
+
+            <div class="campo-flutuante">
+                <input type="password" id="senha-professor" placeholder=" " autocomplete="current-password" required>
+                <label for="senha-professor">Senha</label>
+                <button type="button" class="botao-olho" data-alvo="senha-professor" aria-label="Mostrar senha">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <a href="#" class="link-esqueci">Esqueceu a senha? <strong>Clique aqui</strong> para saber como recuperá-la.</a>
+
+            <p class="mensagem-login" role="alert"></p>
+
+            <div class="botoes-login">
+                <button type="button" class="botao-voltar" data-voltar>Voltar</button>
+                <button type="submit" class="botao-acessar">Acessar</button>
+            </div>
+        </form>
+    </section>
+
+</main>
+
+<script>
+/* ==========================================================================
+   LÓGICA DA TELA DE LOGIN
+   ========================================================================== */
+
+var telas = document.querySelectorAll('.tela-login');
+
+function mostrarTela(id) {
+    telas.forEach(function (tela) {
+        tela.classList.toggle('tela-ativa', tela.id === id);
+    });
+    // manda o foco pro título da tela nova (ajuda quem navega por teclado/leitor de tela)
+    var novaTela = document.getElementById(id);
+    var titulo = novaTela.querySelector('h1');
+    if (titulo) {
+        titulo.setAttribute('tabindex', '-1');
+        titulo.focus();
+    }
+}
+
+// Botões "Sou Estudante / Diretoria / Responsável / Professor"
+document.querySelectorAll('[data-abrir]').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+        mostrarTela(botao.getAttribute('data-abrir'));
+    });
+});
+
+// Botões "Voltar" dentro de cada formulário
+document.querySelectorAll('[data-voltar]').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+        mostrarTela('tela-perfis');
+    });
+});
+
+// Botão de "olho" pra mostrar/esconder a senha
+document.querySelectorAll('.botao-olho').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+        var campo = document.getElementById(botao.getAttribute('data-alvo'));
+        var icone = botao.querySelector('i');
+        var mostrando = campo.type === 'text';
+        campo.type = mostrando ? 'password' : 'text';
+        icone.classList.toggle('fa-eye', mostrando);
+        icone.classList.toggle('fa-eye-slash', !mostrando);
+        botao.setAttribute('aria-label', mostrando ? 'Mostrar senha' : 'Esconder senha');
+    });
+});
+
+// Envio de cada formulário
+document.querySelectorAll('.form-login').forEach(function (form) {
+    form.addEventListener('submit', function (evento) {
+        evento.preventDefault();
+
+        var tela = form.closest('.tela-login');
+        var perfil = tela.getAttribute('data-perfil');
+        var mensagem = form.querySelector('.mensagem-login');
+        var botaoAcessar = form.querySelector('.botao-acessar');
+
+        // ---------------------------------------------------------
+        // DIRETORIA e PROFESSOR: login de verdade via Firebase.
+        // ---------------------------------------------------------
+        if (perfil === 'diretoria' || perfil === 'professor') {
+            var email = document.getElementById('usuario-' + perfil).value.trim();
+            var senha = document.getElementById('senha-' + perfil).value;
+            var fb = window.clubeMareFirebase;
+
+            mensagem.textContent = '';
+            botaoAcessar.disabled = true;
+            botaoAcessar.textContent = 'Entrando...';
+
+            fb.signInWithEmailAndPassword(fb.auth, email, senha)
+                .then(function (credencial) {
+                    // Depois de logar, confere no Firestore qual é o perfil
+                    // de verdade dessa conta (documento "perfis/<uid>").
+                    var refPerfil = fb.doc(fb.db, 'perfis', credencial.user.uid);
+                    return fb.getDoc(refPerfil).then(function (snap) {
+                        if (!snap.exists()) {
+                            throw new Error('sem-perfil');
+                        }
+                        var perfilReal = snap.data().perfil; // "diretoria" ou "professor"
+                        if (perfilReal !== perfil) {
+                            throw new Error('perfil-errado');
+                        }
+                        // Perfil confirmado: manda pra página secreta de ingressos.
+                        // (o ingressos.html vai checar de novo com o Firebase, isso
+                        // aqui é só pra ele já saber qual botão mostrar na hora)
+                        sessionStorage.setItem('clubeMarePerfil', perfilReal);
+                        window.location.href = 'ingressos.html';
+                    });
+                })
+                .catch(function (erro) {
+                    botaoAcessar.disabled = false;
+                    botaoAcessar.textContent = 'Acessar';
+                    if (erro.message === 'perfil-errado' || erro.message === 'sem-perfil') {
+                        mensagem.textContent = 'Essa conta existe, mas não tem permissão de ' + perfil + '.';
+                    } else if (erro.code === 'auth/invalid-credential' || erro.code === 'auth/wrong-password' || erro.code === 'auth/user-not-found') {
+                        mensagem.textContent = 'E-mail ou senha incorretos.';
+                    } else {
+                        mensagem.textContent = 'Não deu pra entrar agora (' + (erro.code || erro.message) + '). Tente de novo.';
+                    }
+                });
+            return;
+        }
+
+        // ---------------------------------------------------------
+        // ESTUDANTE e RESPONSÁVEL: ainda em modo demonstração — usam
+        // RA/RG, então precisariam de uma função de backend própria
+        // pra funcionar com o Firebase Authentication (que é baseado
+        // em e-mail). Ver comentário no topo do arquivo.
+        // ---------------------------------------------------------
+        mensagem.textContent = 'Login de demonstração: os dados foram preenchidos, ' +
+            'mas este perfil ainda não tem um sistema de verdade por trás pra conferir e liberar o acesso.';
+    });
+});
+</script>
+
+</body>
+</html>

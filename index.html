@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clube da Maré</title>
 <link rel="stylesheet" href="style.css">
+<!-- ======================================================================
+     FONTES DO GOOGLE FONTS
+     Pra trocar a fonte do site inteiro, troque o link abaixo e o nome
+     da fonte em style.css, dentro do :root (--fonte-titulos / --fonte-texto).
+     Catálogo completo de fontes: https://fonts.google.com
+     ====================================================================== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 </head>
@@ -18,12 +27,14 @@
     <a href="mapa.html">Mapa</a>
     <a href="ingressos.html">Ingressos</a>
     <a href="contato.html">Contato</a>
+    <a href="login.html" class="link-entrar"><i class="fa-solid fa-right-to-bracket"></i> Entrar</a>
 </nav>
 </header>
 
 <!-- INÍCIO -->
  <main>
 <div id="inicio" class="hero">
+    <!-- IMAGEM DE CONTEÚDO — banner principal, já tem um bom alt (mantido) -->
     <img src="menu1.png" alt="Clube da Maré - Vive o momento, escape da rotina">
 </div>
 </main>
@@ -34,20 +45,33 @@
 <!-- QUEM SOMOS -->
 
     <section id="quem-somos" class="quemsomos-container">
-    <img src="fundo.quemsomos.png" class="fundo-quemsomos" alt="">
+    <!-- IMAGEM DECORATIVA — só o fundo da seção Quem Somos, texto já existe no HTML ao lado. alt vazio de propósito (leitor de tela pula ela). -->
+    <img src="fundo.quemsomos.png" class="fundo-quemsomos" alt="fundo da seção Quem Somos">
 
     <div class="quemsomos-conteudo">
         <div class="quemsomos-texto">
             <h2>Quem Somos</h2>
-            <p>Essa missão nasceu no coração de duas estudantes genuinamente: Julia e Rebeca.</p>
-            <p>Como estudantes do Novo Ensino Médio integrado ao Técnico, vivenciando uma rotina exaustiva de muitas aulas e poucas pausas, consequentemente, gerando um burnout não só nelas, mas em todos os estudantes, através de uma pesquisa feita entre alunos e entre outras fontes visitadas.</p>
-            <p>Foi assim que surgiu o Clube da Maré, um beach club dedicado exclusivamente para estudantes de toda a rede pública, com o objetivo de ser uma "Fuga de Realidade".</p>
+            <p>O Clube da Maré Beach Club foi criado para proporcionar uma experiência única de lazer, diversão e bem-estar em um ambiente inspirado nas mais belas paisagens tropicais. Mais do que um simples espaço de entretenimento, o clube reúne atrações para todas as idades, combinando conforto, natureza e momentos inesquecíveis à beira-mar. Cada detalhe foi planejado para oferecer aos visitantes uma atmosfera acolhedora, onde é possível relaxar, praticar esportes, participar de atividades recreativas e aproveitar uma programação repleta de experiências especiais.
+
+Ao chegar ao Clube da Maré, os visitantes encontram uma estrutura completa, com áreas de convivência, espaços para descanso, ambientes gastronômicos e diversas atrações distribuídas por todo o complexo. As piscinas foram projetadas para atender diferentes perfis de público, desde aqueles que buscam tranquilidade até quem prefere atividades aquáticas e momentos de diversão em grupo. Os decks e lounges oferecem uma vista privilegiada do cenário tropical, criando o ambiente ideal para apreciar o pôr do sol ou simplesmente desfrutar da brisa do mar.
+
+Para os amantes de esportes e aventura, o clube disponibiliza quadras de areia, áreas para desafios recreativos e espaços destinados a competições amistosas. As atividades esportivas incentivam a integração entre os participantes, promovendo espírito de equipe, superação e muita diversão. Além disso, eventos temáticos e torneios especiais acontecem regularmente, tornando cada visita uma experiência diferente e cheia de novidades.
+
+O bem-estar também é uma prioridade dentro do Clube da Maré. Os visitantes podem aproveitar espaços dedicados ao relaxamento, meditação e reconexão com a natureza. Ambientes cuidadosamente planejados oferecem conforto e tranquilidade para quem deseja desacelerar a rotina e aproveitar momentos de paz em meio ao clima tropical. A combinação entre paisagens naturais, áreas verdes e serviços de qualidade cria uma experiência completa de descanso e renovação.
+
+A programação diária é outro destaque do clube. Durante todo o dia, diferentes atividades são realizadas para garantir entretenimento contínuo aos visitantes. Desde recepções animadas e gincanas até apresentações musicais, karaokês e cerimônias de premiação, cada momento é pensado para proporcionar interação e diversão. Essa variedade de atrações faz com que o Clube da Maré seja um destino ideal tanto para famílias quanto para grupos de amigos.
+
+Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o Clube da Maré Beach Club se destaca como um destino completo para quem busca experiências memoráveis. Seja para relaxar, praticar esportes, participar de eventos ou simplesmente aproveitar a beleza do litoral, o clube oferece tudo o que é necessário para transformar cada visita em um momento especial e inesquecível.</p>
+
         </div>
 
         <div class="quemsomos-fotos">
-            <img src="polaroid1.png" alt="">
-            <img src="polaroid2.png" alt="">
-            <img src="polaroid3.png" alt="">
+            <!-- IMAGEM DE CONTEÚDO — troque o texto do alt se trocar a foto -->
+            <img src="polaroid1.png" alt="Foto 1 do Clube da Maré em um porta-retrato estilo polaroid">
+            <!-- IMAGEM DE CONTEÚDO — troque o texto do alt se trocar a foto -->
+            <img src="polaroid2.png" alt="Foto 2 do Clube da Maré em um porta-retrato estilo polaroid">
+            <!-- IMAGEM DE CONTEÚDO — troque o texto do alt se trocar a foto -->
+            <img src="polaroid3.png" alt="Foto 3 do Clube da Maré em um porta-retrato estilo polaroid">
         </div>
     </div>
 </section>
@@ -56,6 +80,7 @@
 <main class="conteudo-pagina secao-home-eventos">
 <!-- EVENTOS -->
     <section class="hero-eventos">
+    <!-- IMAGEM DE CONTEÚDO — banner da seção Eventos, já tem alt -->
     <img src="fundo1.png" alt="Eventos da excursão" class="fundo-hero-eventos">
 </section>
 
@@ -64,6 +89,7 @@
 
     <div class="grid-eventos">
         <article class="card-evento">
+            <!-- IMAGEM DE CONTEÚDO — card de evento, já tem alt -->
             <img src="evento1.png" alt="Desafio Meninas VS Meninos" class="imagem-card-evento">
             <div class="info-evento">
                 <h3>Desafio Meninas VS Meninos</h3>
@@ -72,6 +98,7 @@
         </article>
 
         <article class="card-evento">
+            <!-- IMAGEM DE CONTEÚDO — card de evento, já tem alt -->
             <img src="evento2.png" alt="Caça ao Tesouro na Areia" class="imagem-card-evento">
             <div class="info-evento">
                 <h3>Caça ao Tesouro na Areia</h3>
@@ -80,6 +107,7 @@
         </article>
 
         <article class="card-evento">
+            <!-- IMAGEM DE CONTEÚDO — card de evento, já tem alt -->
             <img src="evento3.png" alt="Torneio Beach Soccer" class="imagem-card-evento">
             <div class="info-evento">
                 <h3>Torneio Beach Soccer</h3>
@@ -88,7 +116,8 @@
         </article>
 
         <article class="card-evento">
-            <img src="evento4.png" alt="Nome do evento 4" class="imagem-card-evento">
+            <!-- IMAGEM DE CONTEÚDO — o alt estava com texto de rascunho ('Nome do evento 4'), corrigido pro nome real do card -->
+            <img src="evento4.png" alt="Circuito de Desafios" class="imagem-card-evento">
             <div class="info-evento">
                 <h3>Circuito de Desafios</h3>
                 
@@ -102,6 +131,7 @@
     <main class="conteudo-pagina secao-home-wellness">
 
     <section class="hero-wellness">
+     <!-- IMAGEM DE CONTEÚDO — banner da seção Wellness, já tem alt -->
      <img src="evento5.png" alt="Eventos de Wellness" class="fundo-hero-wellness">
     </section>
 
@@ -146,6 +176,7 @@
 
     <!-- Fundo full-width -->
     <section class="hero-eventos-programacao">
+        <!-- IMAGEM DE CONTEÚDO — fundo da seção Programação do Dia, já tem alt -->
         <img src="eventos6.png" alt="Programação do dia" class="fundo-eventos-programacao">
 
     
@@ -329,13 +360,13 @@
                 
 
     </section>
-    <!-- fecha #proximos-eventos -->
+    <!-- Fecha #proximos-eventos -->
 
     </section>
     <!-- NOVO: fecha .eventos-programacao-container -->
 
     </section>
-    <!-- NOVO: fecha .hero-eventos-programacao -->
+    <!-- Fecha .hero-eventos-programacao -->
 
     <section>
 
@@ -344,6 +375,7 @@
 
     <!-- HERO MAPA -->
     <section class="hero-mapa">
+        <!-- IMAGEM DE CONTEÚDO — banner do Mapa, já tem alt -->
         <img src="Hero-mapa.png" alt="Vista panorâmica do Aloha Escape" class="fundo-hero-mapa">
         
     </section>
@@ -359,6 +391,7 @@
             <div class="mapa-container" id="mapa-clube">
             </div>
             
+            <!-- IMAGEM DE CONTEÚDO — mapa ilustrado, já tem alt -->
             <img src="mapa-base.png" alt="Mapa ilustrado do Aloha Escape" class="mapa-base">
 
 
@@ -384,7 +417,8 @@
         </div>
 
         <div class="painel-local" id="painel-local">
-            <img src="faixada-beachclub.png" alt="" id="foto-local">
+            <!-- IMAGEM DE CONTEÚDO — foto padrão do painel do mapa, mostrada antes do visitante clicar em um ponto -->
+            <img src="faixada-beachclub.png" alt="Fachada do Clube da Maré Beach Club" id="foto-local">
             <h3 id="nome-local">¡Importante!</h3>
             <p id="descricao-local">Clique em um ponto do mapa pra ver os detalhes do local.</p>
         </div>
@@ -453,10 +487,11 @@
 
     </section>
 
-<!-- NOVO: modal que abre a imagem do local ao clicar em um ponto do mapa -->
+<!-- Modal que abre a imagem do local ao clicar em um ponto do mapa -->
 <div class="modal-local" id="modal-local">
     <div class="modal-local-conteudo">
         <button class="modal-fechar" id="modal-fechar">&times;</button>
+        <!-- IMAGEM DINÂMICA — src e alt ficam vazios aqui de propósito; são preenchidos pelo JavaScript lá embaixo quando o visitante clica em um ponto do mapa -->
         <img src="" alt="" id="modal-imagem">
         <h3 id="modal-titulo"></h3>
     </div>
@@ -481,7 +516,7 @@ document.querySelectorAll('.slide').forEach(function (slide) {
     });
 });
 
-// NOVO: clique em um ponto do mapa abre a imagem do local no modal
+// Clique em um ponto do mapa abre a imagem do local no modal
 document.querySelectorAll('.ponto').forEach(function (ponto) {
     ponto.addEventListener('click', function () {
         var id = ponto.getAttribute('data-local');
@@ -507,6 +542,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 <!-- INGRESSOS -->
 <section id="ingressos" class="pagina-ingressos">
+    <!-- IMAGEM DE CONTEÚDO — fundo da seção Ingressos, já tem alt -->
     <img src="menu4.png" class="background-ingressos" alt="Ingressos">
 
     <div class="painel-ingressos">
@@ -534,13 +570,107 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
             </div>
         </div>
 
-        <div class="area-botao-planilha">
-            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94" target="_blank" class="btn-planilha-atalho">
-                Verificar Status na Planilha
+        <!-- ==================================================================
+             ÁREA SECRETA — só aparece pra quem entrou como Diretoria ou
+             Professor pela tela de login (login.html). Fica escondida por
+             padrão e o JavaScript lá embaixo mostra o botão certo pra cada
+             perfil, com o link da planilha certa.
+             ================================================================== -->
+        <div class="area-botao-planilha" id="area-planilha-secreta" hidden>
+            <!-- Diretoria: link real que você já tinha configurado -->
+            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94"
+               target="_blank" class="btn-planilha-atalho" id="link-planilha-diretoria" hidden>
+                Verificar Status na Planilha (Diretoria)
+            </a>
+
+            <!-- Professor: TROQUE o href abaixo pelo link da planilha
+                 específica dos professores quando você tiver ela pronta -->
+            <a href="https://www.appsheet.com/start/COLOQUE-AQUI-O-LINK-DA-PLANILHA-DOS-PROFESSORES"
+               target="_blank" class="btn-planilha-atalho" id="link-planilha-professor" hidden>
+                Verificar Status na Planilha (Professores)
             </a>
         </div>
+
+        <!-- Mensagem mostrada pra quem NÃO entrou como Diretoria/Professor -->
+        <p class="aviso-planilha-privada" id="aviso-planilha-privada">
+            🔒 O link de acompanhamento da planilha é exclusivo da Diretoria e dos Professores.
+            <a href="login.html">Clique aqui para entrar</a> com o seu login.
+        </p>
+
+        <!-- Aparece só depois que o Firebase confirma quem é a pessoa logada -->
+        <p class="aviso-planilha-privada" id="botao-sair-wrap" hidden>
+            Você entrou como <strong id="texto-perfil-logado"></strong>.
+            <a href="#" id="botao-sair">Sair</a>
+        </p>
     </div>
 </section>
+
+<!-- ======================================================================
+     FIREBASE — mesma configuração do login.html. TROQUE aqui também
+     pelas chaves do SEU projeto (tem que ser o MESMO projeto das duas
+     páginas, senão o login de uma não é reconhecido na outra).
+     ====================================================================== -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // TROQUE ISSO AQUI — igualzinho ao que você colocou em login.html
+    const firebaseConfig = {
+        apiKey: "COLOQUE-AQUI-A-SUA-API-KEY",
+        authDomain: "SEU-PROJETO.firebaseapp.com",
+        projectId: "SEU-PROJETO",
+        storageBucket: "SEU-PROJETO.appspot.com",
+        messagingSenderId: "SEU-SENDER-ID",
+        appId: "SEU-APP-ID",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    var areaSecreta = document.getElementById('area-planilha-secreta');
+    var avisoPrivado = document.getElementById('aviso-planilha-privada');
+    var botaoSairWrap = document.getElementById('botao-sair-wrap');
+    var textoPerfilLogado = document.getElementById('texto-perfil-logado');
+
+    /* ==================================================================
+       Isso roda toda vez que a página carrega. É a CONFERÊNCIA DE VERDADE:
+       mesmo que alguém force "clubeMarePerfil" no sessionStorage pelo
+       console do navegador, essa checagem no Firestore não deixa passar,
+       porque ela pergunta pro servidor do Firebase, não confia só no
+       que está guardado no navegador da pessoa.
+       ================================================================== */
+    onAuthStateChanged(auth, function (usuario) {
+        if (!usuario) {
+            // Ninguém logado — mantém só o aviso de acesso restrito.
+            return;
+        }
+
+        getDoc(doc(db, 'perfis', usuario.uid)).then(function (snap) {
+            var perfilReal = snap.exists() ? snap.data().perfil : null;
+
+            if (perfilReal === 'diretoria' || perfilReal === 'professor') {
+                sessionStorage.setItem('clubeMarePerfil', perfilReal); // só um cache local, não é a fonte da verdade
+                areaSecreta.hidden = false;
+                avisoPrivado.hidden = true;
+                botaoSairWrap.hidden = false;
+                textoPerfilLogado.textContent = perfilReal === 'diretoria' ? 'Diretoria' : 'Professor';
+                document.getElementById('link-planilha-' + perfilReal).hidden = false;
+            }
+            // Logado mas sem perfil de diretoria/professor: fica só o aviso de acesso restrito.
+        });
+    });
+
+    document.getElementById('botao-sair').addEventListener('click', function (evento) {
+        evento.preventDefault();
+        sessionStorage.removeItem('clubeMarePerfil');
+        signOut(auth).then(function () {
+            window.location.href = 'login.html';
+        });
+    });
+</script>
+
 
 <!-- CONTATO -->
 <section id="contato" class="pagina-contato">
@@ -564,8 +694,3 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 </main>
 </body>
 </html>
-
-
-
-
-

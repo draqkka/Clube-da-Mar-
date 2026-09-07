@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clube da Maré - Ingressos</title>
 <link rel="stylesheet" href="style.css">
+<!-- ======================================================================
+     FONTES DO GOOGLE FONTS
+     Pra trocar a fonte do site inteiro, troque o link abaixo e o nome
+     da fonte em style.css, dentro do :root (--fonte-titulos / --fonte-texto).
+     Catálogo completo de fontes: https://fonts.google.com
+     ====================================================================== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -17,11 +26,13 @@
     <a href="mapa.html">Mapa</a>
     <a href="ingressos.html">Ingressos</a>
     <a href="contato.html">Contato</a>
+    <a href="login.html" class="link-entrar"><i class="fa-solid fa-right-to-bracket"></i> Entrar</a>
 </nav>
 </header>
 
 <!-- INGRESSOS -->
 <section id="ingressos" class="pagina-ingressos">
+    <!-- IMAGEM DE CONTEÚDO — fundo da seção Ingressos, já tem alt -->
     <img src="menu4.png" class="background-ingressos" alt="Ingressos">
 
     <div class="painel-ingressos">
@@ -49,13 +60,106 @@
             </div>
         </div>
 
-        <div class="area-botao-planilha">
-            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94" target="_blank" class="btn-planilha-atalho">
-                Verificar Status na Planilha
+        <!-- ==================================================================
+             ÁREA SECRETA — só aparece pra quem entrou como Diretoria ou
+             Professor pela tela de login (login.html). Fica escondida por
+             padrão e o JavaScript lá embaixo mostra o botão certo pra cada
+             perfil, com o link da planilha certa.
+             ================================================================== -->
+        <div class="area-botao-planilha" id="area-planilha-secreta" hidden>
+            <!-- Diretoria: link real que você já tinha configurado -->
+            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94"
+               target="_blank" class="btn-planilha-atalho" id="link-planilha-diretoria" hidden>
+                Verificar Status na Planilha (Diretoria)
+            </a>
+
+            <!-- Professor: TROQUE o href abaixo pelo link da planilha
+                 específica dos professores quando você tiver ela pronta -->
+            <a href="https://www.appsheet.com/start/COLOQUE-AQUI-O-LINK-DA-PLANILHA-DOS-PROFESSORES"
+               target="_blank" class="btn-planilha-atalho" id="link-planilha-professor" hidden>
+                Verificar Status na Planilha (Professores)
             </a>
         </div>
+
+        <!-- Mensagem mostrada pra quem NÃO entrou como Diretoria/Professor -->
+        <p class="aviso-planilha-privada" id="aviso-planilha-privada">
+            🔒 O link de acompanhamento da planilha é exclusivo da Diretoria e dos Professores.
+            <a href="login.html">Clique aqui para entrar</a> com o seu login.
+        </p>
+
+        <!-- Aparece só depois que o Firebase confirma quem é a pessoa logada -->
+        <p class="aviso-planilha-privada" id="botao-sair-wrap" hidden>
+            Você entrou como <strong id="texto-perfil-logado"></strong>.
+            <a href="#" id="botao-sair">Sair</a>
+        </p>
     </div>
 </section>
+
+<!-- ======================================================================
+     FIREBASE — mesma configuração do login.html. TROQUE aqui também
+     pelas chaves do SEU projeto (tem que ser o MESMO projeto das duas
+     páginas, senão o login de uma não é reconhecido na outra).
+     ====================================================================== -->
+<script type="module">
+    import { initializeApp } from "https://www.gstagstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // TROQUE ISSO AQUI — igualzinho ao que você colocou em login.html
+    const firebaseConfig = {
+        apiKey: "COLOQUE-AQUI-A-SUA-API-KEY",
+        authDomain: "SEU-PROJETO.firebaseapp.com",
+        projectId: "SEU-PROJETO",
+        storageBucket: "SEU-PROJETO.appspot.com",
+        messagingSenderId: "SEU-SENDER-ID",
+        appId: "SEU-APP-ID",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    var areaSecreta = document.getElementById('area-planilha-secreta');
+    var avisoPrivado = document.getElementById('aviso-planilha-privada');
+    var botaoSairWrap = document.getElementById('botao-sair-wrap');
+    var textoPerfilLogado = document.getElementById('texto-perfil-logado');
+
+    /* ==================================================================
+       Isso roda toda vez que a página carrega. É a CONFERÊNCIA DE VERDADE:
+       mesmo que alguém force "clubeMarePerfil" no sessionStorage pelo
+       console do navegador, essa checagem no Firestore não deixa passar,
+       porque ela pergunta pro servidor do Firebase, não confia só no
+       que está guardado no navegador da pessoa.
+       ================================================================== */
+    onAuthStateChanged(auth, function (usuario) {
+        if (!usuario) {
+            // Ninguém logado — mantém só o aviso de acesso restrito.
+            return;
+        }
+
+        getDoc(doc(db, 'perfis', usuario.uid)).then(function (snap) {
+            var perfilReal = snap.exists() ? snap.data().perfil : null;
+
+            if (perfilReal === 'diretoria' || perfilReal === 'professor') {
+                sessionStorage.setItem('clubeMarePerfil', perfilReal); // só um cache local, não é a fonte da verdade
+                areaSecreta.hidden = false;
+                avisoPrivado.hidden = true;
+                botaoSairWrap.hidden = false;
+                textoPerfilLogado.textContent = perfilReal === 'diretoria' ? 'Diretoria' : 'Professor';
+                document.getElementById('link-planilha-' + perfilReal).hidden = false;
+            }
+            // Logado mas sem perfil de diretoria/professor: fica só o aviso de acesso restrito.
+        });
+    });
+
+    document.getElementById('botao-sair').addEventListener('click', function (evento) {
+        evento.preventDefault();
+        sessionStorage.removeItem('clubeMarePerfil');
+        signOut(auth).then(function () {
+            window.location.href = 'login.html';
+        });
+    });
+</script>
 
 </body>
 </html>

@@ -26,16 +26,10 @@
     <a href="mapa.html">Mapa</a>
     <a href="ingressos.html">Ingressos</a>
     <a href="feedback.html">Feedback</a>
+
 </nav>
 </header>
 
-<!-- Aviso de acesso restrito (Estudante/Responsável tentando entrar na planilha).
-     Fica escondido por padrão; o <script> no fim da página só exibe ele quando
-     a URL vem como index.html?acesso=negado (redirecionado pelo login.html). -->
-<div class="aviso-acesso" id="aviso-acesso" role="alert">
-    <span>🔒 Área restrita: só para autoridades da escola.</span>
-    <button type="button" id="aviso-acesso-fechar" aria-label="Fechar aviso">&times;</button>
-</div>
 
 <!-- INÍCIO -->
  <main>
@@ -135,13 +129,12 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 
     </section>
 
-    <main class="conteudo-pagina secao-home-wellness">
-
+        <main class="conteudo-pagina secao-home-wellness">
+ 
     <section class="hero-wellness">
      <img src="evento5.png" alt="Área de wellness e relaxamento à beira-mar" class="fundo-hero-wellness">
      <!-- ALT: imagem de fundo da seção Wellness -->
-    </section>
-
+ 
     <section class="painel-wellness">
         <div class="titulo-wellness">
             <h2>WELLNESS & RECONEXÃO</h2>
@@ -150,36 +143,39 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
                 Desacelere, respire e reconecte-se com o que realmente importa.
             </p>
         </div>
-
+ 
         <div class="wellness-itens">
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-spa"></i>
                 <h3>YOGA &<br> MEDITAÇÃO</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-hands-holding-circle"></i>
                 <h3>SPA &<br> MASSAGENS</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-seedling"></i>
                 <h3>TERAPIAS<br> NATURAIS</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-couch"></i>
                 <h3>LOUNGE<br> DA PAZ</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-sun"></i>
                 <h3>POR DO SOL<br> ALOHA</h3>
             </div>
-
+ 
         </div>
     </section>
+    </section>
+ 
+
 
     <!-- Fundo full-width -->
     <section class="hero-eventos-programacao">
@@ -546,20 +542,6 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     if (e.target === this) this.classList.remove('ativo');
 });
 
-// Aviso de acesso restrito: se veio de login.html?acesso=negado, mostra o aviso
-// e depois limpa o "?acesso=negado" da URL (pra não reaparecer se recarregar a página).
-var parametrosUrl = new URLSearchParams(window.location.search);
-if (parametrosUrl.get('acesso') === 'negado') {
-    var avisoAcesso = document.getElementById('aviso-acesso');
-    avisoAcesso.classList.add('visivel');
-
-    var esconderAviso = function () { avisoAcesso.classList.remove('visivel'); };
-    document.getElementById('aviso-acesso-fechar').addEventListener('click', esconderAviso);
-    setTimeout(esconderAviso, 6000);
-
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
-
 </script>
 
 
@@ -593,24 +575,22 @@ if (parametrosUrl.get('acesso') === 'negado') {
             </div>
         </div>
 
-        <!-- O botão abaixo NÃO vai mais direto pro AppSheet: primeiro manda pro
-             login.html, pra escolher o perfil. Só Diretoria e Professor chegam na
-             planilha; Estudante e Responsável são barrados e voltam pro início. -->
         <div class="area-botao-planilha">
-            <a href="login.html" class="btn-planilha-atalho">
+            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94" target="_blank" class="btn-planilha-atalho">
                 Verificar Status na Planilha
             </a>
         </div>
     </div>
 </section>
 
-<!-- Feedback -->
-<section id="Feedback" class="pagina-contato">
-    <img src="menu5.png" class="background-contato" alt="Fundo Contato">
+<!-- CONTATO -->
+<section id="contato" class="pagina-contato">
+    <img src="menu5.png" class="background-contato" alt="Fundo praiano da seção de Contato">
+    <!-- ALT: imagem de fundo da seção Contato -->
 
     <form action="https://api.web3forms.com/submit" method="POST" class="contato-form">
 
-        <input type="hidden" name="access_key" value="9ee5ea36-a62d-4559-b0a6-a9c6a4ad3105">
+        <input type="hidden" name="access_key" value="621b4e4a-b2b5-41a2-bb25-39019db6dbf5">
         <input type="hidden" name="botcheck" style="display: none;">
 
         <input type="text" name="name" class="input-nome" placeholder="Digite seu nome" required>
@@ -622,7 +602,16 @@ if (parametrosUrl.get('acesso') === 'negado') {
     </form>
 </section>
 
+<script>
 
+const menuBtn = document.querySelector('.menu-mobile');
+const menuLinks = document.querySelector('.menu-links');
+
+menuBtn.addEventListener('click', () => {
+    menuLinks.classList.toggle('ativo');
+});
+
+</script>
 
 </main>
 </body>

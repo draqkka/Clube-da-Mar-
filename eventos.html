@@ -6,6 +6,15 @@
 <title>Clube da Maré - Eventos</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- ===== FONTES DO GOOGLE FONTS =====
+     Cole aqui o link de cada fonte nova que você pegar no fonts.google.com
+     (Get font > Get embed code). O NOME que aparece na URL (depois de family=)
+     é o mesmo nome que você usa no style.css dentro de --fonte-titulos ou --fonte-textos. -->
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+<!-- Exemplo de como adicionar outra fonte (apague o // do começo da linha pra ativar): -->
+<!-- <link href="https://fonts.googleapis.com/css2?family=NOME+DA+FONTE&display=swap" rel="stylesheet"> -->
+
 </head>
 <body>
 
@@ -16,7 +25,11 @@
     <a href="eventos.html">Eventos</a>
     <a href="mapa.html">Mapa</a>
     <a href="ingressos.html">Ingressos</a>
-    <a href="contato.html">Contato</a>
+    <a href="feedback.html">Feedback</a>
+
+</nav>
+</header>
+
 </nav>
 </header>
 
@@ -25,7 +38,8 @@
 
     <!-- EVENTOS -->
     <section class="hero-eventos">
-    <img src="fundo1.png" alt="Eventos da excursão" class="fundo-hero-eventos">
+    <img src="fundo1.png" alt="Palco e área de shows do Clube da Maré ao entardecer" class="fundo-hero-eventos">
+    <!-- ALT: imagem de fundo da seção Eventos -->
 </section>
 
 <section class="painel-eventos">
@@ -34,6 +48,7 @@
     <div class="grid-eventos">
         <article class="card-evento">
             <img src="evento1.png" alt="Desafio Meninas VS Meninos" class="imagem-card-evento">
+            <!-- ALT: card de evento 1 -->
             <div class="info-evento">
                 <h3>Desafio Meninas VS Meninos</h3>
             
@@ -42,6 +57,7 @@
 
         <article class="card-evento">
             <img src="evento2.png" alt="Caça ao Tesouro na Areia" class="imagem-card-evento">
+            <!-- ALT: card de evento 2 -->
             <div class="info-evento">
                 <h3>Caça ao Tesouro na Areia</h3>
 
@@ -50,6 +66,7 @@
 
         <article class="card-evento">
             <img src="evento3.png" alt="Torneio Beach Soccer" class="imagem-card-evento">
+            <!-- ALT: card de evento 3 -->
             <div class="info-evento">
                 <h3>Torneio Beach Soccer</h3>
      
@@ -57,7 +74,8 @@
         </article>
 
         <article class="card-evento">
-            <img src="evento4.png" alt="Nome do evento 4" class="imagem-card-evento">
+            <img src="evento4.png" alt="Circuito de Desafios" class="imagem-card-evento">
+            <!-- ALT: card de evento 4 (corrigido — estava "Nome do evento 4", texto de placeholder esquecido) -->
             <div class="info-evento">
                 <h3>Circuito de Desafios</h3>
                 
@@ -67,12 +85,14 @@
 </section>
 
 
-            <main class="conteudo-pagina secao-home-wellness">
-
+        <!-- CORRIGIDO: havia um segundo <main> aberto aqui (nunca fechado) — <main>
+         só pode existir 1x por página, senão quebra a navegação por leitor de tela.
+         A classe "secao-home-wellness" também não se aplica aqui (é só do index.html). -->
+ 
     <section class="hero-wellness">
-     <img src="evento5.png" alt="Eventos de Wellness" class="fundo-hero-wellness">
-    </section>
-
+     <img src="evento5.png" alt="Área de wellness e relaxamento à beira-mar" class="fundo-hero-wellness">
+     <!-- ALT: imagem de fundo da seção Wellness -->
+ 
     <section class="painel-wellness">
         <div class="titulo-wellness">
             <h2>WELLNESS & RECONEXÃO</h2>
@@ -81,41 +101,44 @@
                 Desacelere, respire e reconecte-se com o que realmente importa.
             </p>
         </div>
-
+ 
         <div class="wellness-itens">
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-spa"></i>
                 <h3>YOGA &<br> MEDITAÇÃO</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-hands-holding-circle"></i>
                 <h3>SPA &<br> MASSAGENS</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-seedling"></i>
                 <h3>TERAPIAS<br> NATURAIS</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-couch"></i>
                 <h3>LOUNGE<br> DA PAZ</h3>
             </div>
-
+ 
             <div class="item-wellness">
                 <i class="fa-solid fa-sun"></i>
                 <h3>POR DO SOL<br> ALOHA</h3>
             </div>
-
+ 
         </div>
     </section>
+    </section>
+
 
 
     <!-- Fundo full-width -->
     <section class="hero-eventos-programacao">
-        <img src="eventos6.png" alt="Programação do dia" class="fundo-eventos-programacao">
+        <img src="eventos6.png" alt="Praia ao amanhecer, fundo da seção Programação do Dia" class="fundo-eventos-programacao">
+        <!-- ALT: imagem de fundo da seção Programação do Dia -->
     
 
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Estudante</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- ===== FONTES DO GOOGLE FONTS ===== -->
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+<!-- <link href="https://fonts.googleapis.com/css2?family=NOME+DA+FONTE&display=swap" rel="stylesheet"> -->
+
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="quemsomos.html">Quem Somos</a>
+    <a href="eventos.html">Eventos</a>
+    <a href="mapa.html">Mapa</a>
+    <a href="ingressos.html">Ingressos</a>
+    <a href="feedback.html">Feedback</a>
+    <a href="index.html" class="link-entrar"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+</nav>
+</header>
+
+<!--
+    LOGIN/CADASTRO - ESTUDANTE
+    Como o site é só front-end (sem servidor), este formulário NÃO faz
+    autenticação de verdade — ele só decide o destino do "Acessar".
+    Estudante não tem acesso à planilha: ao clicar em "Acessar", vai pra
+    index.html?acesso=negado (index.html mostra o aviso "Área restrita:
+    só para autoridades da escola").
+-->
+<main class="pagina-login">
+
+    <div>
+        <a href="login.html" class="form-login-voltar">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao site
+        </a>
+
+        <div class="login-saudacao">
+            <h1>Estudante</h1>
+            <p>Preencha seus dados abaixo para acessar o sistema.</p>
+        </div>
+    </div>
+
+    <form class="form-login-card" id="form-acesso">
+
+        <!-- Campos de Estudante/Responsável (RA + Dígito + UF) -->
+        <div>
+            <div class="form-login-linha">
+                <input type="text" class="form-login-campo" placeholder="RA">
+                <input type="text" class="form-login-campo" placeholder="Dígito" style="flex: 0 0 70px;">
+                <select class="form-login-campo">
+                    <option>UF</option>
+                    <option>SP</option>
+                    <option>RJ</option>
+                    <option>MG</option>
+                    <option>PR</option>
+                    <option>Outro</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Campo de Diretoria/Professor (e-mail institucional) -->
+
+        <div class="form-login-senha-caixa">
+            <input type="password" class="form-login-campo" id="campo-senha" placeholder="Senha">
+            <button type="button" class="form-login-olho" id="botao-olho" aria-label="Mostrar senha">
+                <i class="fa-regular fa-eye"></i>
+            </button>
+        </div>
+
+
+        <div class="form-login-botoes">
+            <a href="login.html" class="btn-form-voltar">Voltar</a>
+            <button type="submit" class="btn-form-acessar">Acessar</button>
+        </div>
+
+    </form>
+
+</main>
+
+<script>
+var URL_PLANILHA = 'https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94';
+
+// Mostrar/esconder a senha ao clicar no ícone do olho
+document.getElementById('botao-olho').addEventListener('click', function () {
+    var campoSenha = document.getElementById('campo-senha');
+    var icone = this.querySelector('i');
+    var vaiMostrar = campoSenha.type === 'password';
+    campoSenha.type = vaiMostrar ? 'text' : 'password';
+    icone.classList.toggle('fa-eye', !vaiMostrar);
+    icone.classList.toggle('fa-eye-slash', vaiMostrar);
+});
+
+// Ao clicar em "Acessar"
+document.getElementById('form-acesso').addEventListener('submit', function (evento) {
+    evento.preventDefault();
+    window.location.href = 'index.html?acesso=negado';
+});
+</script>
+
+
+
+</body>
+</html>

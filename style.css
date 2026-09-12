@@ -44,6 +44,7 @@
     /* ===== DETALHES ESPECÍFICOS (usados uma única vez) ===== */
     --cor-gradiente-laranja: #ff9d00;   /* ponta da linha do tempo (timeline) */
     --cor-hora: #ff9900;                /* horário na timeline de programação */
+    --cor-amarelo-contato: #ffe81d;     /* cor do texto digitado no formulário de Feedback */
 }
 
 
@@ -224,18 +225,36 @@ html::-webkit-scrollbar {
     transform: translateY(-2px);
 }
 
-/* ==========================================================================
-   SEÇÃO DE INGRESSOS - Responsivo
-   O painel continua sobreposto e centralizado na imagem (como no desktop),
-   só que em telas estreitas ele passa a ocupar quase a largura toda da
-   imagem, com um fundo escuro translúcido atrás do texto pra garantir
-   contraste e leitura, e a grade de detalhes ajusta pra caber melhor.
-   ========================================================================== */
-@media (max-width: 700px) {
-    /* NOVO: dá altura mínima pra seção — sem isso, a caixa de texto (que é
-       % da altura da imagem) fica curta demais e corta o 4º item. A imagem
-       continua sem esticar: só passa a cobrir (recortar) esse espaço extra,
-       igual uma foto de capa normal. */
+.ingresso-container{
+    display:flex;
+    gap:30px;
+    align-items:center;
+}
+
+@media(max-width:768px){
+
+    .ingresso-container{
+        flex-direction:column;
+        padding:20px;
+    }
+
+    .ingresso-info{
+        width:100%;
+    }
+
+    .passos{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+@media(max-width:768px){
+
+    .passos{
+        grid-template-columns:1fr;
+    }
+
+}
     .pagina-ingressos {
         min-height: 640px;
     }
@@ -246,6 +265,7 @@ html::-webkit-scrollbar {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: left top; /* mantém o texto "Ingresso Digital", que fica à esquerda na imagem original, visível */
     }
     .painel-ingressos {
         top: 4%;
@@ -253,7 +273,7 @@ html::-webkit-scrollbar {
         width: 92%;
         height: 92%;
         padding: 14px;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.92); /* bem mais opaco — evita o texto da imagem "vazar" atrás dos cards */
         border-radius: 14px;
         overflow-y: auto;
     }
@@ -286,13 +306,6 @@ html::-webkit-scrollbar {
     }
 }
 
-/* Em telas MUITO estreitas, 2 colunas de detalhe ficam pequenas demais —
-   aí sim vira 1 coluna, mas o painel continua sobreposto na imagem */
-@media (max-width: 380px) {
-    .grid-detalhes {
-        grid-template-columns: 1fr;
-    }
-}
 
 
 /* ==========================================================================
@@ -383,6 +396,11 @@ html::-webkit-scrollbar {
     margin-top: 5px;
 }
 
+/* Espaço extra entre Eventos e Wellness, só na versão de tudo-em-uma-página (index.html) */
+.secao-home-wellness {
+    margin-top: 40px;
+}
+
 /*EVENTOS */
 
 /* ===== Fundo full-width ===== */
@@ -467,6 +485,7 @@ html::-webkit-scrollbar {
 
 }
 
+
 .card-evento:hover{
 
     transform:scale(1.07);
@@ -475,6 +494,37 @@ html::-webkit-scrollbar {
     0 20px 40px rgba(0,0,0,.35);
 
     z-index:20;
+
+}
+
+.cards-eventos{
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.card-evento{
+    width: 280px;
+}
+
+@media (max-width:768px){
+
+    .cards-eventos{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:15px;
+        padding:15px;
+    }
+
+    .card-evento{
+        width:100%;
+    }
+
+    .card-evento img{
+        width:100%;
+        height:auto;
+    }
 
 }
 
@@ -504,23 +554,6 @@ html::-webkit-scrollbar {
 
 
 
-/* ===== Responsivo ===== */
-@media (max-width: 768px) {
-    .fundo-hero-eventos {
-        height: 300px;
-    }
-    .grid-eventos {
-        grid-template-columns: 1fr 1fr;
-        max-width: 100%;
-        margin-right: auto;
-        gap: 12px;
-    }
-    .painel-eventos {
-        margin-top: -220px;
-        border-radius: 16px 16px 0 0;
-    }
-}
-
 
 /* ==========================
    WELLNESS
@@ -540,15 +573,7 @@ html::-webkit-scrollbar {
     display: block;
 }
 
-.painel-wellness {
-    position: relative;
-    z-index: 10;
-    margin-top: -460px;
-    width: 100%;
-    background: none;
-    padding: 40px 30px;
-    border-radius: 20px 20px 0 0;
-}
+
 
 #wellness{
 
@@ -566,7 +591,7 @@ html::-webkit-scrollbar {
 
     text-align:center;
 
-    margin-bottom:35px;
+    margin-bottom:0px;
 
 }
 
@@ -662,17 +687,31 @@ html::-webkit-scrollbar {
 
 }
 
-/* RESPONSIVO */
+.lista-beneficios{
+    display:flex;
+    justify-content:center;
+    gap:50px;
+    flex-wrap:wrap;
+}
 
 @media(max-width:768px){
+
+    .lista-beneficios{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:25px;
+    }
+
+}
+
+
 
     .fundo-hero-wellness {
         height: 280px;
     }
 
-    .painel-wellness {
-        margin-top: -60px;
-        padding: 30px 15px;
+    .titulo-wellness p {
+        color: var(--cor-texto-escuro);
     }
 
     .titulo-wellness h2 {
@@ -697,7 +736,7 @@ html::-webkit-scrollbar {
 
     }
 
-}
+
 
 
 
@@ -1450,6 +1489,12 @@ html::-webkit-scrollbar {
     margin-top: 0;
 }
 
+/* Cada bloco de categoria dentro da legenda do mapa */
+.categoria-legenda {
+    display: flex;
+    flex-direction: column;
+}
+
 .titulo-categoria.c-lazer { color: var(--cor-cat-lazer); }
 .titulo-categoria.c-esporte { color: var(--cor-laranja); }
 .titulo-categoria.c-bem-estar { color: var(--cor-roxo); }
@@ -1538,6 +1583,13 @@ html::-webkit-scrollbar {
     }
     .fundo-hero-mapa {
         height: 260px;
+    }
+    .ponto {
+        width: 30px;
+        height: 30px;
+    }
+    .ponto::before {
+        font-size: 13px;
     }
 }
 
@@ -1638,12 +1690,36 @@ html::-webkit-scrollbar {
     background: var(--cor-amarelo-wellness);
 }
 
-/* NOVO: telas estreitas — o formulário em % sobre a imagem quebra (a caixa
-   calculada em % fica mais baixa que o próprio texto/botão, cortando o
-   fundo amarelo). Abaixo de 700px o formulário sai da sobreposição e passa
-   a empilhar normalmente, num cartão escuro embaixo da imagem — cada campo
-   com o tamanho certo pro seu conteúdo, sem depender de % de altura. */
+
+.formulario{
+    width:100%;
+    max-width:700px;
+    margin:auto;
+}
+
+.formulario input,
+.formulario textarea{
+    width:100%;
+}
+
+@media(max-width:768px){
+
+    .formulario{
+        padding:15px;
+    }
+
+}
+
+/* NOVO: formulário de Feedback no celular — o bug era a caixa do formulário
+   (.contato-form) continuar cobrindo a imagem inteira (top:0/height:100%)
+   enquanto só os campos internos viravam "static": isso fazia os campos
+   começarem bem no topo da imagem, por cima da logo/título. Agora a caixa
+   toda sai da sobreposição e vira um cartão normal, embaixo da imagem. */
 @media (max-width: 700px) {
+    .pagina-contato {
+        display: flex;
+        flex-direction: column;
+    }
     .contato-form {
         position: static;
         width: 100%;
@@ -1670,7 +1746,6 @@ html::-webkit-scrollbar {
     }
 }
 
-/* Fonte um pouco menor nos campos em telas bem pequenas */
 @media (max-width: 480px) {
     .contato-form input,
     .contato-form textarea {
@@ -1680,25 +1755,9 @@ html::-webkit-scrollbar {
 }
 
 
-/* RESPONSIVIDADE PARA CELULARES (Telas de até 768px de largura) */
-@media (max-width: 768px) {
-    
-    /* Ajusta os botões do menu superior para não sumirem no celular */
-    .topnav {
-        gap: 12px;
-        padding: 12px 5px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    .topnav a {
-        font-size: 14px;
-    }
-    /* No celular o menu já quebra linha e fica centralizado — não faz sentido
-       isolar o "Entrar" no canto aqui, senão ele desalinha o resto. */
-    .topnav a.link-entrar {
-        margin-left: 0;
-    }
-}
+
+
+
 
 
 /* ==========================================================================
@@ -1934,4 +1993,44 @@ select.form-login-campo {
     .form-login-botoes {
         flex-direction: column;
     }
+    .form-login-linha {
+        flex-wrap: wrap;
+    }
+    .form-login-linha input[placeholder="RA"] {
+        flex: 1 1 100%;
+    }
+}
+
+/* RESPONSIVIDADE GERAL */
+*{
+    box-sizing: border-box;
+}
+
+img{
+    max-width: 100%;
+    height: auto;
+}
+
+body{
+    overflow-x: hidden;
+}
+
+/* MENU */
+@media (max-width: 768px){
+
+    nav ul{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    nav ul li{
+        margin: 5px;
+    }
+
+    nav ul li a{
+        font-size: 1rem;
+    }
+
 }

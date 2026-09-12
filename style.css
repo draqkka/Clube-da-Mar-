@@ -1,73 +1,74 @@
 /* ==========================================================================
-   PAINEL DE CONTROLE — CORES E FONTES DO SITE
-   Mude os valores aqui embaixo pra mudar a cor/fonte em TODO o site de uma vez.
-   Cada linha tem um comentário dizendo onde aquela cor é usada.
+   CONTROLE CENTRAL DE FONTES E CORES
+   Mude um valor aqui e ele se aplica no site inteiro.
    ========================================================================== */
 :root {
 
-    /* ---------- FONTES (ver os links do Google Fonts no <head> de cada página) ---------- */
-    --fonte-titulos: 'Poppins', sans-serif;   /* usada em h1, h2, h3, h4 (títulos) */
-    --fonte-texto: 'Inter', sans-serif;       /* usada no texto corrido (parágrafos, botões, menu) */
+    /* ===== FONTES =====
+       Troque o nome aqui depois de linkar a fonte nova no <head> do HTML. */
+    --fonte-titulos: "Fjalla One", sans-serif;      /* usada em todos os h1, h2, h3, h4 */
+    --fonte-textos: Arial, Helvetica, sans-serif;   /* usada nos parágrafos e textos gerais */
 
-    --cor-azul-marinho: #0b3c79;  /* Azul marinho principal — títulos, ícones da linha do tempo, pinos de serviço no mapa */
-    --cor-branco: #fff;  /* Branco — textos sobre fundo escuro, fundos de caixinhas */
-    --cor-laranja: #e67e22;  /* Laranja — botões de ação, borda dos cards de ingressos, pino/legenda 'Esportes' no mapa */
-    --cor-amarelo-mostarda: #dfd001;  /* Amarelo mostarda — ícones da seção Wellness, fundo dos cards de Eventos */
-    --cor-roxo: #6d34bb;  /* Roxo — pino/legenda 'Bem-Estar' no mapa, card 'Próximos Eventos' roxo */
-    --cor-bege-fundo: #f5f0e6;  /* Bege claro — fundo do card de Programação do Dia, fundo do mapa e da legenda */
-    --cor-cinza-texto: #555;  /* Cinza médio — parágrafos de apoio (Wellness, timeline, painel do local) */
-    --cor-cinza-escuro: #333;  /* Cinza escuro — texto padrão sobre fundo claro (Quem Somos / Legenda) */
-    --cor-verde-servico: #27500a;  /* Verde escuro — pino/legenda 'Serviços e Apoio' no mapa */
-    --cor-verde-lazer: #0f6e56;  /* Verde-água — pino/legenda 'Lazer e Diversão' no mapa */
-    --cor-teal: #00a8a8;  /* Azul-esverdeado (teal) — título 'Eventos da Excursão', nome dos eventos, linha do tempo */
-    --cor-cinza-claro: #e0e0e0;  /* Cinza claro — fundo neutro de imagem (placeholder de card de evento) */
-    --cor-verde-lima-hover: #b8c200;  /* Verde-lima — efeito hover dos ícones da seção Wellness */
-    --cor-azul-hover: #007bc2;  /* Azul — efeito hover dos ícones de apoio do mapa */
-    --cor-amarelo-hover: #fff59d;  /* Amarelo claro — fundo ao passar o mouse nos itens da legenda do mapa */
-    --cor-amarelo-contato: #ffe81d;  /* Amarelo — cor do texto digitado nos campos do formulário de Contato */
-    --cor-amarelo-btn-hover: #ffdd01;  /* Amarelo vivo — hover do botão 'Enviar Mensagem' do Contato */
-    --cor-dourado: #ffd700;  /* Dourado — título '🎟️ Como Funciona o Seu Ingresso?' */
-    --cor-laranja-timeline: #ff9d00;  /* Laranja — parte do degradê da linha do tempo (Programação do Dia) */
-    --cor-laranja-hora: #ff9900;  /* Laranja — horário (ex: 08:00) na linha do tempo */
-    --cor-cinza-muito-claro: #f0f0f0;  /* Cinza quase branco — texto do parágrafo 'Quem Somos' */
-    --cor-laranja-evento: #ef7c00;  /* Laranja — card 'Próximos Eventos' laranja (Torneio Beach Soccer) */
-    --cor-amarelo-btn: #e6c522;  /* Amarelo — fundo do botão 'Enviar Mensagem' do Contato */
-    --cor-cinza-borda: #ddd;  /* Cinza — linha divisória acima dos 'Ícones de Apoio' do mapa */
-    --cor-laranja-hover: #d35400;  /* Laranja escuro — hover do botão 'Verificar Status na Planilha' */
-    --cor-rosa: #d1006c;  /* Rosa/pink — card 'Próximos Eventos' rosa (Desafio Meninas VS Meninos) */
-    --cor-cinza-detalhe: #ccc;  /* Cinza — texto pequeno dos detalhes de ingressos */
-    --cor-cinza-borda-img: #b0b0b0;  /* Cinza — borda tracejada do placeholder de imagem dos cards de evento */
-    --cor-verde-sucesso: #2ecc71;  /* Verde — títulos dos itens de detalhe em Ingressos */
-    --cor-preto-suave: #1f1f1f;  /* Quase preto — texto ao passar o mouse na legenda do mapa */
-    --cor-azul-evento: #1976d2;  /* Azul — card 'Próximos Eventos' azul (Pool Party) */
-    --cor-azul-fundo-mobile1: #09131d;  /* Azul bem escuro — fundo da seção Contato no celular */
-    --cor-azul-fundo-mobile2: #09111e;  /* Azul bem escuro — fundo da seção Ingressos no celular */
+    /* ===== CORES DE BASE ===== */
+    --cor-preto: #000;             /* fundo geral do site (body) */
+    --cor-branco: #fff;            /* texto/fundos claros */
+    --cor-texto-escuro: #333;      /* texto em fundos claros (creme) */
+    --cor-texto-medio: #555;       /* texto secundário, descrições */
+    --cor-cinza: #ccc;             /* texto claro sobre fundo escuro */
+    --cor-cinza-claro: #e0e0e0;    /* texto claro, detalhes */
 
-    /* ---------- Cores exclusivas da tela de Login (login.html) ---------- */
-    --cor-login-fundo-inicio: #eef1fb;  /* Início do degradê de fundo da tela de login */
-    --cor-login-fundo-fim: #dfe6f7;     /* Fim do degradê de fundo da tela de login */
-    --cor-login-azul: #3f66b3;          /* Azul dos botões "Acessar" e dos links */
-    --cor-login-azul-escuro: #223b6b;   /* Azul dos títulos da tela de login */
-    --cor-login-borda: #d7ddef;         /* Borda das caixinhas de perfil e dos campos */
-    --cor-login-texto-apoio: #6b7280;   /* Cinza-azulado dos textos de apoio */
-    --cor-login-restrito: #b5651d;      /* Cor do aviso "acesso restrito" (Diretoria/Professor) */
+    /* ===== CORES DE MARCA (usadas em várias seções) ===== */
+    --cor-menu-amarelo: yellow;         /* links do menu de navegação */
+    --cor-azul-escuro: #0b3c79;         /* títulos e ícones em azul (mapa, programação) */
+    --cor-verde-agua: #00a8a8;          /* títulos "Quem Somos", eventos */
+    --cor-creme: #f5f0e6;               /* fundo dos painéis claros (programação, mapa, legenda) */
+    --cor-laranja: #e67e22;             /* botões, bordas e categoria "Esportes" */
+    --cor-dourado: #ffd700;             /* detalhes em dourado (ingressos) */
+    --cor-roxo: #6d34bb;                /* categoria "Bem-Estar" e evento roxo */
+    --cor-verde-claro: #2ecc71;         /* destaques em verde (ingressos) */
+
+    /* ===== WELLNESS ===== */
+    --cor-amarelo-wellness: #dfd001;        /* ícones e título da seção Wellness */
+    --cor-amarelo-wellness-hover: #b8c200;  /* cor do hover nos itens de Wellness */
+
+    /* ===== CARTÕES DE "PRÓXIMOS EVENTOS" ===== */
+    --cor-evento-rosa: #d1006c;
+    --cor-evento-laranja: #ef7c00;
+    --cor-evento-azul: #1976d2;
+
+    /* ===== CATEGORIAS DO MAPA (pontos e legenda) ===== */
+    --cor-cat-lazer: #0f6e56;
+    --cor-cat-servico: #27500a;
+    /* Esportes usa --cor-laranja e Bem-Estar usa --cor-roxo, já definidos acima */
+
+    /* ===== DETALHES ESPECÍFICOS (usados uma única vez) ===== */
+    --cor-gradiente-laranja: #ff9d00;   /* ponta da linha do tempo (timeline) */
+    --cor-hora: #ff9900;                /* horário na timeline de programação */
 }
+
 
 /* Resete de Margens Geral */
-
-/* ---------- Aplicação das fontes do Google Fonts ---------- */
-body {
-    font-family: var(--fonte-texto);
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: var(--fonte-titulos);
-}
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+
+/* Estilo base do site: fundo, cor de texto e fonte padrão */
+body {
+    background: var(--cor-preto);
+    color: var(--cor-branco);
+    font-family: var(--fonte-textos);
+    /* NOVO: rede de segurança contra rolagem horizontal — qualquer elemento
+       que por algum motivo (ex: valor fixo em px) ultrapasse a largura da
+       tela fica cortado em vez de criar uma barra de rolagem lateral */
+    overflow-x: hidden;
+}
+
+/* Todos os títulos do site usam a fonte de destaque definida acima */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--fonte-titulos);
 }
 
 
@@ -92,12 +93,12 @@ html::-webkit-scrollbar {
     display: flex;
     gap: 20px;
     padding: 20px;
-    background: rgba(0, 0, 0, .7);
+    background: rgba(0, 0, 0, .88);
     z-index: 1000;
 }
 
 .topnav a {
-    color: yellow;
+    color: var(--cor-menu-amarelo);
     text-decoration: none;
     font-size: 20px;
     font-weight: bold;
@@ -105,6 +106,28 @@ html::-webkit-scrollbar {
 
 .topnav a:hover {
     color: var(--cor-branco);
+}
+
+/* NOVO: ícone do link "Entrar" (login) no menu */
+.topnav a i {
+    margin-right: 4px;
+}
+
+/* NOVO: "Entrar" fica isolado no canto direito do menu, longe dos outros links */
+.topnav a.link-entrar {
+    margin-left: auto;
+}
+
+/* NOVO: telas médias (tablets deitados, notebooks pequenos) — reduz antes
+   de estourar a largura, já que só a partir de 768px o menu quebra linha */
+@media (max-width: 1100px) {
+    .topnav {
+        gap: 14px;
+        padding: 16px 3%;
+    }
+    .topnav a {
+        font-size: 16px;
+    }
 }
 
 /* Imagens das Seções Padrão (Menu 1, 2 e 3) */
@@ -168,14 +191,14 @@ html::-webkit-scrollbar {
 
 .item-detalhe h4 {
     font-size: 15px;
-    color: var(--cor-verde-sucesso); 
+    color: var(--cor-verde-claro); 
     margin-bottom: 4px;
 }
 
 .item-detalhe p {
     font-size: 12px;
     line-height: 1.3;
-    color: var(--cor-cinza-detalhe);
+    color: var(--cor-cinza);
 }
 
 .area-botao-planilha {
@@ -187,7 +210,7 @@ html::-webkit-scrollbar {
     display: inline-block;
     padding: 12px 25px;
     background: var(--cor-laranja);
-    color: white !important;
+    color: var(--cor-branco) !important;
     text-decoration: none;
     font-size: 15px;
     font-weight: bold;
@@ -197,8 +220,78 @@ html::-webkit-scrollbar {
 }
 
 .btn-planilha-atalho:hover {
-    background: var(--cor-laranja-hover);
+    background: #d35400;
     transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   SEÇÃO DE INGRESSOS - Responsivo
+   O painel continua sobreposto e centralizado na imagem (como no desktop),
+   só que em telas estreitas ele passa a ocupar quase a largura toda da
+   imagem, com um fundo escuro translúcido atrás do texto pra garantir
+   contraste e leitura, e a grade de detalhes ajusta pra caber melhor.
+   ========================================================================== */
+@media (max-width: 700px) {
+    /* NOVO: dá altura mínima pra seção — sem isso, a caixa de texto (que é
+       % da altura da imagem) fica curta demais e corta o 4º item. A imagem
+       continua sem esticar: só passa a cobrir (recortar) esse espaço extra,
+       igual uma foto de capa normal. */
+    .pagina-ingressos {
+        min-height: 640px;
+    }
+    .background-ingressos {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .painel-ingressos {
+        top: 4%;
+        left: 4%;
+        width: 92%;
+        height: 92%;
+        padding: 14px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 14px;
+        overflow-y: auto;
+    }
+    .bloco-info h3 {
+        font-size: 17px;
+        margin-bottom: 6px;
+    }
+    .bloco-info p {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    .grid-detalhes {
+        gap: 8px;
+    }
+    .item-detalhe {
+        padding: 8px;
+    }
+    .item-detalhe h4 {
+        font-size: 12px;
+    }
+    .item-detalhe p {
+        font-size: 10px;
+    }
+    .area-botao-planilha {
+        margin-top: 12px;
+    }
+    .btn-planilha-atalho {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+
+/* Em telas MUITO estreitas, 2 colunas de detalhe ficam pequenas demais —
+   aí sim vira 1 coluna, mas o painel continua sobreposto na imagem */
+@media (max-width: 380px) {
+    .grid-detalhes {
+        grid-template-columns: 1fr;
+    }
 }
 
 
@@ -254,7 +347,7 @@ html::-webkit-scrollbar {
     font-size: 15px;
     line-height: 1.1;
     margin-bottom: 16px;
-    color: var(--cor-cinza-muito-claro);
+    color: #f0f0f0;
 }
 
 .quemsomos-fotos {
@@ -272,6 +365,12 @@ html::-webkit-scrollbar {
 @media (max-width: 800px) {
     .quemsomos-conteudo {
         grid-template-columns: 1fr;
+    }
+    .quemsomos-texto h2 {
+        font-size: 30px;
+    }
+    .quemsomos-texto p {
+        font-size: 14px;
     }
 }
 
@@ -324,14 +423,14 @@ html::-webkit-scrollbar {
     z-index: 10;
     margin-top: -460px;
     padding: 40px 5%;
-    color: var(--cor-cinza-escuro);
+    color: var(--cor-texto-escuro);
     background: none;
 }
 
 .painel-eventos h2 {
     font-size: 25px;
     margin-bottom: 4px;
-    color: var(--cor-teal);
+    color: var(--cor-verde-agua);
     text-align: center;
     margin-top: -60px;
 }
@@ -348,7 +447,7 @@ html::-webkit-scrollbar {
     gap: 20px;
     max-width: 900px;
     margin-left: auto;
-    margin-right: 210px;
+    margin-right: auto;
 }
 
 
@@ -356,7 +455,7 @@ html::-webkit-scrollbar {
 
 .card-evento{
 
-    background: var(--cor-amarelo-mostarda);
+    background: var(--cor-amarelo-wellness);
 
     border-radius:18px;
 
@@ -386,7 +485,7 @@ html::-webkit-scrollbar {
     object-fit: cover;
     display: block;
     background: var(--cor-cinza-claro);
-    border: 2px dashed var(--cor-cinza-borda-img);
+    border: 2px dashed #b0b0b0;
     border-radius: 8px 8px 0 0;
 }
 
@@ -399,7 +498,7 @@ html::-webkit-scrollbar {
 .info-evento h3 {
     font-size: 15px;
     margin-bottom: 4px;
-    color: var(--cor-teal);
+    color: var(--cor-verde-agua);
 
 }
 
@@ -407,11 +506,17 @@ html::-webkit-scrollbar {
 
 /* ===== Responsivo ===== */
 @media (max-width: 768px) {
+    .fundo-hero-eventos {
+        height: 300px;
+    }
     .grid-eventos {
         grid-template-columns: 1fr 1fr;
+        max-width: 100%;
+        margin-right: auto;
+        gap: 12px;
     }
     .painel-eventos {
-        margin-top: -40px;
+        margin-top: -220px;
         border-radius: 16px 16px 0 0;
     }
 }
@@ -467,7 +572,7 @@ html::-webkit-scrollbar {
 
 .titulo-wellness h2{
 
-    color:var(--cor-amarelo-mostarda);
+    color:var(--cor-amarelo-wellness);
 
     font-size:38px;
 
@@ -479,7 +584,7 @@ html::-webkit-scrollbar {
 
 .titulo-wellness p{
 
-    color:var(--cor-cinza-texto);
+    color:var(--cor-texto-medio);
 
     font-size:15px;
 
@@ -523,7 +628,7 @@ html::-webkit-scrollbar {
 
     font-size:42px;
 
-    color:var(--cor-amarelo-mostarda);
+    color:var(--cor-amarelo-wellness);
 
     margin-bottom:15px;
 
@@ -535,7 +640,7 @@ html::-webkit-scrollbar {
 
     font-size:14px;
 
-    color:var(--cor-amarelo-mostarda);
+    color:var(--cor-amarelo-wellness);
 
     line-height:1.4;
 
@@ -545,7 +650,7 @@ html::-webkit-scrollbar {
 
 .item-wellness:hover i{
 
-    color:var(--cor-verde-lima-hover);
+    color:var(--cor-amarelo-wellness-hover);
 
     transform:translateY(-6px) scale(1.1);
 
@@ -553,13 +658,26 @@ html::-webkit-scrollbar {
 
 .item-wellness:hover h3{
 
-    color:var(--cor-verde-lima-hover);
+    color:var(--cor-amarelo-wellness-hover);
 
 }
 
 /* RESPONSIVO */
 
 @media(max-width:768px){
+
+    .fundo-hero-wellness {
+        height: 280px;
+    }
+
+    .painel-wellness {
+        margin-top: -60px;
+        padding: 30px 15px;
+    }
+
+    .titulo-wellness h2 {
+        font-size: 26px;
+    }
 
     .wellness-itens{
 
@@ -645,7 +763,7 @@ html::-webkit-scrollbar {
     width:100%;
     min-width:0;
 
-    background:var(--cor-bege-fundo);
+    background:var(--cor-creme);
     border-radius:35px;
     padding:50px;
     overflow:hidden;
@@ -659,7 +777,7 @@ html::-webkit-scrollbar {
 
     font-weight:900;
 
-    color:var(--cor-azul-marinho);
+    color:var(--cor-azul-escuro);
 
     margin-bottom:70px;
 }
@@ -696,9 +814,9 @@ html::-webkit-scrollbar {
 
     background:linear-gradient(
         90deg,
-        var(--cor-teal),
-        var(--cor-azul-marinho),
-        var(--cor-laranja-timeline)
+        var(--cor-verde-agua),
+        var(--cor-azul-escuro),
+        var(--cor-gradiente-laranja)
     );
 
     z-index:1;
@@ -718,7 +836,7 @@ html::-webkit-scrollbar {
 
     font-size:24px;
 
-    color:var(--cor-azul-marinho);
+    color:var(--cor-azul-escuro);
 
     animation:voo 15s linear infinite;
 }
@@ -755,7 +873,7 @@ html::-webkit-scrollbar {
 
     height:90px;
 
-    background:white;
+    background:var(--cor-branco);
 
     border-radius:50%;
 
@@ -776,7 +894,7 @@ html::-webkit-scrollbar {
 
     font-size:36px;
 
-    color:var(--cor-azul-marinho);
+    color:var(--cor-azul-escuro);
 
     transition:.4s;
 }
@@ -787,12 +905,12 @@ html::-webkit-scrollbar {
 
     transform:translateY(-12px) scale(1.12);
 
-    background:var(--cor-azul-marinho);
+    background:var(--cor-azul-escuro);
 }
 
 .timeline-item:hover .timeline-icon i{
 
-    color:white;
+    color:var(--cor-branco);
 }
 
 /* HORA */
@@ -803,7 +921,7 @@ html::-webkit-scrollbar {
 
     margin-top:18px;
 
-    color:var(--cor-laranja-hora);
+    color:var(--cor-hora);
 
     font-size:18px;
 
@@ -818,7 +936,7 @@ html::-webkit-scrollbar {
 
     font-size:15px;
 
-    color:var(--cor-azul-marinho);
+    color:var(--cor-azul-escuro);
 }
 
 /* TEXTO */
@@ -831,7 +949,7 @@ html::-webkit-scrollbar {
 
     line-height:1.4;
 
-    color:var(--cor-cinza-texto);
+    color:var(--cor-texto-medio);
 }
 
 /* ========================= */
@@ -840,7 +958,7 @@ html::-webkit-scrollbar {
 
 #proximos-eventos h2{
 
-    color:var(--cor-azul-marinho);
+    color:var(--cor-azul-escuro);
 
     font-size:42px;
 
@@ -863,7 +981,7 @@ html::-webkit-scrollbar {
 
     height:100px;
 
-    color:white;
+    color:var(--cor-branco);
 
     transition:.3s;
 }
@@ -931,11 +1049,11 @@ html::-webkit-scrollbar {
 }
 
 .rosa{
-    background:var(--cor-rosa);
+    background:var(--cor-evento-rosa);
 }
 
 .laranja{
-    background:var(--cor-laranja-evento);
+    background:var(--cor-evento-laranja);
 }
 
 .roxo{
@@ -943,7 +1061,7 @@ html::-webkit-scrollbar {
 }
 
 .azul{
-    background:var(--cor-azul-evento);
+    background:var(--cor-evento-azul);
 }
 
 /* RESPONSIVO */
@@ -965,6 +1083,63 @@ html::-webkit-scrollbar {
     .timeline-item{
 
         min-width:130px;
+    }
+}
+
+@media (max-width: 768px) {
+    .programacao-dia {
+        padding: 25px 20px;
+        border-radius: 20px;
+    }
+
+    .titulo-programacao {
+        font-size: 28px;
+        margin-bottom: 35px;
+    }
+
+    #proximos-eventos h2 {
+        font-size: 26px;
+    }
+
+    .evento-item {
+        height: auto;
+        min-height: 90px;
+        padding: 10px 0;
+    }
+
+    .evento-item:hover {
+        transform: translateX(15px);
+    }
+
+    .data {
+        width: 70px;
+        flex-shrink: 0;
+    }
+
+    .data span {
+        font-size: 30px;
+    }
+
+    .data small {
+        font-size: 14px;
+    }
+
+    .texto {
+        padding-left: 12px;
+    }
+
+    .texto h3 {
+        font-size: 15px;
+    }
+
+    .texto p {
+        font-size: 12px;
+    }
+
+    .evento-item i {
+        font-size: 26px;
+        margin-right: 15px;
+        flex-shrink: 0;
     }
 }
 
@@ -1001,8 +1176,8 @@ html::-webkit-scrollbar {
     grid-template-columns: 1.4fr 1fr;
     gap: 30px;
     padding: 50px 5%;
-    background: var(--cor-bege-fundo);
-    color: var(--cor-cinza-escuro);
+    background: var(--cor-creme);
+    color: var(--cor-texto-escuro);
 }
 
 #mapa-clube,
@@ -1015,7 +1190,7 @@ html::-webkit-scrollbar {
 
 .titulo-mapa-interativo {
     grid-column: 1 / -1;
-    color: var(--cor-azul-marinho);
+    color: var(--cor-azul-escuro);
     font-size: 20px;
     line-height: 1.4;
     padding: 4px 0;
@@ -1045,10 +1220,10 @@ html::-webkit-scrollbar {
     transform: translate(-50%, -50%) scale(1.3);
 }
 
-.ponto.c-lazer { background: var(--cor-verde-lazer); }
+.ponto.c-lazer { background: var(--cor-cat-lazer); }
 .ponto.c-esporte { background: var(--cor-laranja); }
 .ponto.c-bem-estar { background: var(--cor-roxo); }
-.ponto.c-servico { background: var(--cor-verde-servico); }
+.ponto.c-servico { background: var(--cor-cat-servico); }
 
 .ponto {
     display: flex;
@@ -1070,7 +1245,7 @@ html::-webkit-scrollbar {
     bottom: 130%;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--cor-azul-marinho);
+    background: var(--cor-azul-escuro);
     color: var(--cor-branco);
     font-size: 13px;
     white-space: nowrap;
@@ -1111,15 +1286,48 @@ html::-webkit-scrollbar {
 }
 
 .painel-local h3 {
-    color: var(--cor-azul-marinho);
+    color: var(--cor-azul-escuro);
     font-size: 20px;
     margin-bottom: 8px;
 }
 
 .painel-local p {
     font-size: 14px;
-    color: var(--cor-cinza-texto);
+    color: var(--cor-texto-medio);
     line-height: 1.5;
+}
+
+/* NOVO: aviso de acesso restrito na home (Estudante/Responsável barrados da planilha) */
+.aviso-acesso {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    max-width: 90%;
+    align-items: center;
+    gap: 14px;
+    background: var(--cor-branco);
+    color: var(--cor-texto-escuro);
+    border: 2px solid var(--cor-laranja);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    font-size: 15px;
+}
+
+.aviso-acesso.visivel {
+    display: flex;
+}
+
+.aviso-acesso #aviso-acesso-fechar {
+    background: none;
+    border: none;
+    color: var(--cor-texto-medio);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
 }
 
 /* NOVO: modal de imagem do local (abre ao clicar no ponto do mapa) */
@@ -1156,7 +1364,7 @@ html::-webkit-scrollbar {
 }
 
 .modal-local-conteudo h3 {
-    color: var(--cor-azul-marinho);
+    color: var(--cor-azul-escuro);
     font-size: 20px;
 }
 
@@ -1180,12 +1388,12 @@ html::-webkit-scrollbar {
 /* ===== Legenda completa ===== */
 .legenda-mapa {
     padding: 50px 5% 70px;
-    background: var(--cor-bege-fundo);
-    color: var(--cor-cinza-escuro);
+    background: var(--cor-creme);
+    color: var(--cor-texto-escuro);
 }
 
 .legenda-mapa h2 {
-    color: var(--cor-azul-marinho);
+    color: var(--cor-azul-escuro);
     font-size: 26px;
     margin-bottom: 20px;
 }
@@ -1204,7 +1412,7 @@ html::-webkit-scrollbar {
 
     height:100px;
 
-    color:white;
+    color:var(--cor-branco);
 
     transition:.3s;
 }
@@ -1219,8 +1427,8 @@ html::-webkit-scrollbar {
 }
 
 .lista-legenda li:hover {
-    background-color: var(--cor-amarelo-hover);
-    color: var(--cor-preto-suave);
+    background-color: #fff59d;
+    color: #1f1f1f;
 }
 
 .legenda-categorias {
@@ -1242,10 +1450,10 @@ html::-webkit-scrollbar {
     margin-top: 0;
 }
 
-.titulo-categoria.c-lazer { color: var(--cor-verde-lazer); }
+.titulo-categoria.c-lazer { color: var(--cor-cat-lazer); }
 .titulo-categoria.c-esporte { color: var(--cor-laranja); }
 .titulo-categoria.c-bem-estar { color: var(--cor-roxo); }
-.titulo-categoria.c-servico { color: var(--cor-verde-servico); }
+.titulo-categoria.c-servico { color: var(--cor-cat-servico); }
 
 .lista-legenda {
     list-style: none;
@@ -1277,19 +1485,19 @@ html::-webkit-scrollbar {
     flex-shrink: 0;
 }
 
-.numero-legenda.c-lazer { background: var(--cor-verde-lazer); }
+.numero-legenda.c-lazer { background: var(--cor-cat-lazer); }
 .numero-legenda.c-esporte { background: var(--cor-laranja); }
 .numero-legenda.c-bem-estar { background: var(--cor-roxo); }
-.numero-legenda.c-servico { background: var(--cor-verde-servico); }
+.numero-legenda.c-servico { background: var(--cor-cat-servico); }
 
 .icones-apoio {
-    border-top: 1px solid var(--cor-cinza-borda);
+    border-top: 1px solid #ddd;
     padding-top: 20px;
 }
 
 .icones-apoio h4 {
     font-size: 15px;
-    color: var(--cor-azul-marinho);
+    color: var(--cor-azul-escuro);
     margin-bottom: 12px;
     gap: 45%;
     text-align: center;
@@ -1301,7 +1509,7 @@ html::-webkit-scrollbar {
     justify-content: center;
     gap: 25px;
     font-size: 13px;
-    color: var(--cor-azul-marinho);
+    color: var(--cor-azul-escuro);
 }
 
 .icones-apoio-lista i {
@@ -1309,13 +1517,13 @@ html::-webkit-scrollbar {
 }
 
 .icones-apoio-lista span:hover i {
-    color: var(--cor-azul-hover);
+    color: #007bc2;
     transform: translateY(-4px) scale(1.15);
     display: inline-block;
 }
 
 .icones-apoio-lista span:hover {
-    color: var(--cor-azul-hover);
+    color: #007bc2;
     
 }
 
@@ -1327,6 +1535,9 @@ html::-webkit-scrollbar {
     }
     .legenda-categorias {
         grid-template-columns: 1fr 1fr;
+    }
+    .fundo-hero-mapa {
+        height: 260px;
     }
 }
 
@@ -1412,8 +1623,8 @@ html::-webkit-scrollbar {
     left: 15%;          
     width: 36%;          
     height: 6%;         
-    background: var(--cor-amarelo-btn);
-    color: white;
+    background: var(--cor-amarelo-wellness);
+    color: rgb(255, 255, 254);
     border: none;
     font-size: 16px;
     font-weight: bold;
@@ -1424,7 +1635,48 @@ html::-webkit-scrollbar {
 }
 
 .btn-enviar:hover {
-    background: var(--cor-amarelo-btn-hover);
+    background: var(--cor-amarelo-wellness);
+}
+
+/* NOVO: telas estreitas — o formulário em % sobre a imagem quebra (a caixa
+   calculada em % fica mais baixa que o próprio texto/botão, cortando o
+   fundo amarelo). Abaixo de 700px o formulário sai da sobreposição e passa
+   a empilhar normalmente, num cartão escuro embaixo da imagem — cada campo
+   com o tamanho certo pro seu conteúdo, sem depender de % de altura. */
+@media (max-width: 700px) {
+    .contato-form {
+        position: static;
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 24px 6% 40px;
+        background: rgba(0, 0, 0, 0.88);
+    }
+    .contato-form input,
+    .contato-form textarea,
+    .btn-enviar {
+        position: static;
+        width: 100%;
+        height: auto;
+    }
+    .textarea-mensagem {
+        min-height: 110px;
+    }
+    .btn-enviar {
+        padding: 14px;
+        font-size: 15px;
+    }
+}
+
+/* Fonte um pouco menor nos campos em telas bem pequenas */
+@media (max-width: 480px) {
+    .contato-form input,
+    .contato-form textarea {
+        font-size: 13px;
+        padding: 10px;
+    }
 }
 
 
@@ -1441,428 +1693,245 @@ html::-webkit-scrollbar {
     .topnav a {
         font-size: 14px;
     }
-
-    /* REVOLUÇÃO DO LAYOUT DE INGRESSOS NO CELULAR */
-    .pagina-ingressos {
-        display: flex;
-        flex-direction: column;
-        background: var(--cor-azul-fundo-mobile2); /* Dá continuidade ao azul escuro da imagem */
-    }
-    .painel-ingressos {
-        position: relative; /* Desativa a sobreposição absoluta perigosa */
-        top: auto;
-        left: auto;
-        width: 100%;
-        height: auto;
-        padding: 25px 15px;
-    }
-    .grid-detalhes {
-        grid-template-columns: 1fr; /* Muda para 1 coluna empilhada, super legível */
-        gap: 12px;
-    }
-    .bloco-info h3 {
-        font-size: 20px;
-    }
-    .btn-planilha-atalho {
-        width: 100%; /* Botão largo perfeito para clicar com o polegar */
-        padding: 15px;
-    }
-
-    /* REVOLUÇÃO DO LAYOUT DE CONTATO NO CELULAR */
-    .pagina-contato {
-        display: flex;
-        flex-direction: column;
-        background: var(--cor-azul-fundo-mobile1); /* Dá continuidade ao fundo da praia à noite */
-        padding-bottom: 40px;
-    }
-    .contato-form {
-        position: relative; /* Remove o absoluto para o formulário não flutuar solto */
-        top: auto;
-        left: auto;
-        width: 100%;
-        height: auto;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px; /* Espaço igualitário automático entre os campos */
-    }
-    /* Transforma os campos em caixas com tamanhos fixos excelentes para celular */
-    .contato-form input,
-    .contato-form textarea,
-    .btn-enviar {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        width: 100% !important;
-        height: 50px !important; /* Altura confortável para o toque */
-    }
-    .contato-form textarea {
-        height: 140px !important; /* Mais espaço para escrever a mensagem */
-    }
-    .btn-enviar {
-        margin-top: 5px;
+    /* No celular o menu já quebra linha e fica centralizado — não faz sentido
+       isolar o "Entrar" no canto aqui, senão ele desalinha o resto. */
+    .topnav a.link-entrar {
+        margin-left: 0;
     }
 }
+
 
 /* ==========================================================================
-   TELA DE LOGIN (login.html)
-   Cores usadas aqui vêm do bloco --cor-login-* lá no :root, no topo do arquivo.
+   PÁGINA DE LOGIN
    ========================================================================== */
-
-.login-body {
+.pagina-login {
     min-height: 100vh;
+    padding: 100px 5% 60px;
+    background: linear-gradient(160deg, #dfe6f5, #eef1fa);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(160deg, var(--cor-login-fundo-inicio), var(--cor-login-fundo-fim));
-    padding: 40px 16px;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.login-voltar-site {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--cor-login-azul-escuro);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.login-voltar-site:hover {
-    text-decoration: underline;
-}
-
-.login-wrap {
-    width: 100%;
-    max-width: 620px;
-}
-
-/* Cada "tela" (perfis, estudante, diretoria, responsável, professor) fica
-   escondida por padrão; só a que tem a classe .tela-ativa aparece. */
-.tela-login {
-    display: none;
-}
-
-.tela-login.tela-ativa {
-    display: block;
-    animation: entrada-login .25s ease;
-}
-
-@keyframes entrada-login {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.tela-login h1 {
+.login-saudacao {
     text-align: center;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--cor-login-azul-escuro);
-    margin-bottom: 6px;
-    outline: none; /* recebe foco por script ao trocar de tela, sem contorno feio */
+    color: var(--cor-texto-medio);
 }
 
-.login-subtitulo {
-    text-align: center;
-    color: var(--cor-login-texto-apoio);
+.login-saudacao h1 {
+    font-size: 26px;
+    color: #3b4a63;
+}
+
+.login-saudacao p {
     font-size: 14px;
-    margin-bottom: 34px;
+    margin-top: 4px;
 }
 
 .login-instrucao {
     text-align: center;
-    color: var(--cor-login-texto-apoio);
-    font-size: 13px;
-    margin-bottom: 16px;
-}
-
-/* ---------- Lista de perfis (tela 1) ---------- */
-.lista-perfis {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.linha-perfil {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    background: var(--cor-branco);
-    border: 1px solid var(--cor-login-borda);
-    border-radius: 10px;
-    padding: 18px 20px;
-    cursor: pointer;
-    text-align: left;
-    box-shadow: 0 2px 6px rgba(20, 30, 60, 0.05);
-    transition: .2s;
-    font-family: var(--fonte-texto);
-}
-
-.linha-perfil:hover {
-    border-color: var(--cor-login-azul);
-    box-shadow: 0 4px 14px rgba(20, 30, 60, 0.1);
-}
-
-.perfil-textos {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-.rotulo-sou {
-    font-size: 12px;
-    color: var(--cor-login-texto-apoio);
-}
-
-.nome-perfil {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--cor-login-azul-escuro);
-}
-
-.nota-perfil {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: var(--cor-login-restrito);
-    background: rgba(181, 101, 29, 0.12);
-    padding: 4px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-
-.seta-perfil {
-    color: var(--cor-login-texto-apoio);
     font-size: 14px;
+    color: var(--cor-texto-medio);
+    margin-bottom: 20px;
 }
 
-/* ---------- Formulários (telas 2 a 5) ---------- */
-.form-login {
-    background: var(--cor-branco);
-    border: 1px solid var(--cor-login-borda);
-    border-radius: 14px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(20, 30, 60, 0.07);
-}
-
-.linha-campos {
+.login-perfis {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
     display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
-.campo-principal {
-    flex: 1;
-}
-
-.campo-pequeno {
-    width: 90px;
-}
-
-.campo-uf {
-    width: 100px;
-}
-
-/* ---------- Campo flutuante (label acessível que "vira" um placeholder) ----------
-   O <label> fica sempre no HTML (leitor de tela lê ele sempre). Visualmente,
-   ele começa em cima do texto digitado (como um placeholder) e sobe quando
-   o campo recebe foco OU já tem algo digitado (:not(:placeholder-shown)). */
-.campo-flutuante {
-    position: relative;
-    margin-bottom: 18px;
-}
-
-.campo-flutuante input,
-.campo-flutuante select {
-    width: 100%;
-    padding: 20px 14px 8px;
-    border: 1px solid var(--cor-login-borda);
-    border-radius: 8px;
-    font-size: 15px;
-    font-family: var(--fonte-texto);
-    color: var(--cor-login-azul-escuro);
-    background: var(--cor-branco);
-    outline: none;
-    transition: border-color .15s;
-}
-
-.campo-flutuante select {
-    padding-top: 20px;
-    padding-bottom: 8px;
-}
-
-.campo-flutuante input:focus,
-.campo-flutuante select:focus {
-    border-color: var(--cor-login-azul);
-}
-
-.campo-flutuante label {
-    position: absolute;
-    left: 14px;
-    top: 16px;
-    font-size: 15px;
-    color: var(--cor-login-texto-apoio);
-    pointer-events: none;
-    transition: .15s;
-    background: var(--cor-branco);
-    padding: 0 2px;
-}
-
-.campo-flutuante input:focus + label,
-.campo-flutuante input:not(:placeholder-shown) + label {
-    top: -8px;
-    font-size: 11px;
-    color: var(--cor-login-azul);
-}
-
-/* O <select> de UF não tem placeholder, então o rótulo já fica sempre "flutuando" em cima */
-.rotulo-select {
-    position: static;
-    display: block;
-    font-size: 11px;
-    color: var(--cor-login-texto-apoio);
-    margin-bottom: 2px;
-    background: none;
-}
-
-.campo-uf .campo-flutuante,
-.campo-uf select {
-    margin-bottom: 0;
-}
-
-/* Botão de mostrar/esconder senha */
-.botao-olho {
-    position: absolute;
-    right: 12px;
-    top: 14px;
-    background: none;
-    border: none;
-    color: var(--cor-login-texto-apoio);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 4px;
-}
-
-.botao-olho:hover {
-    color: var(--cor-login-azul);
-}
-
-/* Tipo de documento (Responsável) */
-.opcoes-documento {
-    border: none;
+.login-perfil-item {
     display: flex;
-    gap: 18px;
-    margin-bottom: 18px;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--cor-branco);
+    border: 1px solid #e2e6f0;
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: .25s;
 }
 
-.opcoes-documento legend {
-    font-size: 11px;
-    color: var(--cor-login-texto-apoio);
-    margin-bottom: 6px;
-    width: 100%;
+.login-perfil-item:hover {
+    transform: translateX(8px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    border-color: var(--cor-azul-escuro);
 }
 
-.opcao-radio {
+.login-perfil-rotulo {
+    font-size: 12px;
+    color: #9aa3b5;
+}
+
+.login-perfil-nome {
+    font-size: 20px;
+    font-weight: 700;
+    color: #3b4a63;
+}
+
+.login-perfil-extra {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--cor-texto-medio);
+}
+
+@media (max-width: 600px) {
+    .pagina-login {
+        padding: 90px 4% 40px;
+    }
+    .login-perfil-item {
+        flex-wrap: wrap;
+        gap: 4px 10px;
+    }
+    .login-perfil-extra {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   TELA DE LOGIN/CADASTRO POR PERFIL (login-formulario.html)
+   Usa o mesmo fundo claro e o mesmo cabeçalho "login-saudacao" da página de
+   escolha de perfil — só troca o conteúdo pelo formulário (RA/UF/Senha para
+   Estudante e Responsável, E-mail/Senha para Diretoria e Professor).
+   ========================================================================== */
+.form-login-voltar {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: var(--cor-login-azul-escuro);
-    cursor: pointer;
-}
-
-.link-esqueci {
-    display: block;
-    text-align: right;
-    font-size: 12px;
-    color: var(--cor-login-texto-apoio);
+    gap: 8px;
+    color: #3b4a63;
     text-decoration: none;
-    margin-bottom: 22px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 30px;
 }
 
-.link-esqueci strong {
-    color: var(--cor-login-azul);
+.form-login-voltar:hover {
+    color: var(--cor-azul-escuro);
+}
+
+.form-login-card {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--cor-branco);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(11, 60, 121, 0.12);
+}
+
+.form-login-linha {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.form-login-campo {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid #d9deea;
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--cor-texto-escuro);
+    background: var(--cor-branco);
+    font-family: var(--fonte-textos);
+}
+
+.form-login-campo:focus {
+    outline: none;
+    border-color: var(--cor-azul-escuro);
+}
+
+select.form-login-campo {
+    flex: 0 0 90px;
+}
+
+.form-login-senha-caixa {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.form-login-senha-caixa .form-login-campo {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.form-login-olho {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9aa3b5;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.form-login-esqueceu {
+    text-align: center;
+    font-size: 13px;
+    color: var(--cor-texto-medio);
+    margin: 12px 0 22px;
+}
+
+.form-login-esqueceu a {
+    color: var(--cor-azul-escuro);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.form-login-esqueceu a:hover {
     text-decoration: underline;
 }
 
-.mensagem-login {
-    font-size: 13px;
-    color: var(--cor-login-restrito);
-    margin-bottom: 14px;
-    min-height: 1px;
-}
-
-.botoes-login {
+.form-login-botoes {
     display: flex;
     gap: 14px;
 }
 
-.botao-voltar,
-.botao-acessar {
+.btn-form-voltar,
+.btn-form-acessar {
     flex: 1;
     padding: 14px;
     border-radius: 30px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
+    text-align: center;
     cursor: pointer;
-    transition: .2s;
-    font-family: var(--fonte-texto);
+    border: 2px solid var(--cor-azul-escuro);
+    font-family: var(--fonte-textos);
 }
 
-.botao-voltar {
+.btn-form-voltar {
     background: var(--cor-branco);
-    border: 1px solid var(--cor-login-azul);
-    color: var(--cor-login-azul);
+    color: var(--cor-azul-escuro);
+    text-decoration: none;
 }
 
-.botao-voltar:hover {
-    background: var(--cor-login-fundo-inicio);
+.btn-form-voltar:hover {
+    background: #f0f3fa;
 }
 
-.botao-acessar {
-    background: var(--cor-login-azul);
-    border: 1px solid var(--cor-login-azul);
+.btn-form-acessar {
+    background: var(--cor-azul-escuro);
     color: var(--cor-branco);
 }
 
-.botao-acessar:hover {
-    background: var(--cor-login-azul-escuro);
+.btn-form-acessar:hover {
+    background: #092c5c;
 }
 
-@media (max-width: 600px) {
-    .linha-campos {
+@media (max-width: 480px) {
+    .form-login-card {
+        padding: 22px 18px;
+    }
+    .form-login-botoes {
         flex-direction: column;
-        gap: 0;
     }
-    .campo-uf, .campo-pequeno {
-        width: 100%;
-    }
-    .form-login {
-        padding: 22px;
-    }
-}
-
-/* Aviso de planilha privada (ingressos.html) — some quando Diretoria/Professor loga */
-.aviso-planilha-privada {
-    margin-top: 25px;
-    text-align: center;
-    font-size: 13px;
-    color: var(--cor-cinza-detalhe);
-}
-
-.aviso-planilha-privada a {
-    color: var(--cor-dourado);
-    font-weight: bold;
-}
-
-/* Link "Entrar" no menu do topo, destacado dos demais */
-.topnav a.link-entrar {
-    margin-left: auto;
-    background: rgba(255, 255, 0, 0.15);
-    padding: 6px 14px;
-    border-radius: 20px;
 }

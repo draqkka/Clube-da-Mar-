@@ -5,16 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clube da Maré</title>
 <link rel="stylesheet" href="style.css">
-<!-- ======================================================================
-     FONTES DO GOOGLE FONTS
-     Pra trocar a fonte do site inteiro, troque o link abaixo e o nome
-     da fonte em style.css, dentro do :root (--fonte-titulos / --fonte-texto).
-     Catálogo completo de fontes: https://fonts.google.com
-     ====================================================================== -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- ===== FONTES DO GOOGLE FONTS =====
+     Cole aqui o link de cada fonte nova que você pegar no fonts.google.com
+     (Get font > Get embed code). O NOME que aparece na URL (depois de family=)
+     é o mesmo nome que você usa no style.css dentro de --fonte-titulos ou --fonte-textos. -->
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+<!-- Exemplo de como adicionar outra fonte (apague o // do começo da linha pra ativar): -->
+<!-- <link href="https://fonts.googleapis.com/css2?family=NOME+DA+FONTE&display=swap" rel="stylesheet"> -->
 
 </head>
 <body>
@@ -26,16 +25,23 @@
     <a href="eventos.html">Eventos</a>
     <a href="mapa.html">Mapa</a>
     <a href="ingressos.html">Ingressos</a>
-    <a href="contato.html">Contato</a>
-    <a href="login.html" class="link-entrar"><i class="fa-solid fa-right-to-bracket"></i> Entrar</a>
+    <a href="feedback.html">Feedback</a>
 </nav>
 </header>
+
+<!-- Aviso de acesso restrito (Estudante/Responsável tentando entrar na planilha).
+     Fica escondido por padrão; o <script> no fim da página só exibe ele quando
+     a URL vem como index.html?acesso=negado (redirecionado pelo login.html). -->
+<div class="aviso-acesso" id="aviso-acesso" role="alert">
+    <span>🔒 Área restrita: só para autoridades da escola.</span>
+    <button type="button" id="aviso-acesso-fechar" aria-label="Fechar aviso">&times;</button>
+</div>
 
 <!-- INÍCIO -->
  <main>
 <div id="inicio" class="hero">
-    <!-- IMAGEM DE CONTEÚDO — banner principal, já tem um bom alt (mantido) -->
     <img src="menu1.png" alt="Clube da Maré - Vive o momento, escape da rotina">
+    <!-- ALT: banner principal de abertura do site -->
 </div>
 </main>
 
@@ -45,8 +51,9 @@
 <!-- QUEM SOMOS -->
 
     <section id="quem-somos" class="quemsomos-container">
-    <!-- IMAGEM DECORATIVA — só o fundo da seção Quem Somos, texto já existe no HTML ao lado. alt vazio de propósito (leitor de tela pula ela). -->
-    <img src="fundo.quemsomos.png" class="fundo-quemsomos" alt="fundo da seção Quem Somos">
+    <img src="fundo.quemsomos.png" class="fundo-quemsomos" alt="">
+    <!-- ALT: vazio de propósito — é só o fundo decorativo atrás do texto,
+         leitor de tela deve pular (o conteúdo real está no texto ao lado) -->
 
     <div class="quemsomos-conteudo">
         <div class="quemsomos-texto">
@@ -66,12 +73,12 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
         </div>
 
         <div class="quemsomos-fotos">
-            <!-- IMAGEM DE CONTEÚDO — troque o texto do alt se trocar a foto -->
-            <img src="polaroid1.png" alt="Foto 1 do Clube da Maré em um porta-retrato estilo polaroid">
-            <!-- IMAGEM DE CONTEÚDO — troque o texto do alt se trocar a foto -->
-            <img src="polaroid2.png" alt="Foto 2 do Clube da Maré em um porta-retrato estilo polaroid">
-            <!-- IMAGEM DE CONTEÚDO — troque o texto do alt se trocar a foto -->
-            <img src="polaroid3.png" alt="Foto 3 do Clube da Maré em um porta-retrato estilo polaroid">
+            <img src="polaroid1.png" alt="Alunos aproveitando a piscina do Clube da Maré">
+            <!-- ALT: 1ª foto da colagem "Quem Somos" -->
+            <img src="polaroid2.png" alt="Grupo de alunos reunido ao ar livre no clube">
+            <!-- ALT: 2ª foto da colagem "Quem Somos" -->
+            <img src="polaroid3.png" alt="Pôr do sol na área de lazer do Clube da Maré">
+            <!-- ALT: 3ª foto da colagem "Quem Somos" -->
         </div>
     </div>
 </section>
@@ -80,8 +87,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 <main class="conteudo-pagina secao-home-eventos">
 <!-- EVENTOS -->
     <section class="hero-eventos">
-    <!-- IMAGEM DE CONTEÚDO — banner da seção Eventos, já tem alt -->
-    <img src="fundo1.png" alt="Eventos da excursão" class="fundo-hero-eventos">
+    <img src="fundo1.png" alt="Palco e área de shows do Clube da Maré ao entardecer" class="fundo-hero-eventos">
+    <!-- ALT: imagem de fundo da seção Eventos -->
 </section>
 
 <section class="painel-eventos">
@@ -89,8 +96,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 
     <div class="grid-eventos">
         <article class="card-evento">
-            <!-- IMAGEM DE CONTEÚDO — card de evento, já tem alt -->
             <img src="evento1.png" alt="Desafio Meninas VS Meninos" class="imagem-card-evento">
+            <!-- ALT: card de evento 1 -->
             <div class="info-evento">
                 <h3>Desafio Meninas VS Meninos</h3>
             
@@ -98,8 +105,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
         </article>
 
         <article class="card-evento">
-            <!-- IMAGEM DE CONTEÚDO — card de evento, já tem alt -->
             <img src="evento2.png" alt="Caça ao Tesouro na Areia" class="imagem-card-evento">
+            <!-- ALT: card de evento 2 -->
             <div class="info-evento">
                 <h3>Caça ao Tesouro na Areia</h3>
 
@@ -107,8 +114,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
         </article>
 
         <article class="card-evento">
-            <!-- IMAGEM DE CONTEÚDO — card de evento, já tem alt -->
             <img src="evento3.png" alt="Torneio Beach Soccer" class="imagem-card-evento">
+            <!-- ALT: card de evento 3 -->
             <div class="info-evento">
                 <h3>Torneio Beach Soccer</h3>
      
@@ -116,8 +123,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
         </article>
 
         <article class="card-evento">
-            <!-- IMAGEM DE CONTEÚDO — o alt estava com texto de rascunho ('Nome do evento 4'), corrigido pro nome real do card -->
             <img src="evento4.png" alt="Circuito de Desafios" class="imagem-card-evento">
+            <!-- ALT: card de evento 4 (corrigido — estava "Nome do evento 4", texto de placeholder esquecido) -->
             <div class="info-evento">
                 <h3>Circuito de Desafios</h3>
                 
@@ -131,8 +138,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
     <main class="conteudo-pagina secao-home-wellness">
 
     <section class="hero-wellness">
-     <!-- IMAGEM DE CONTEÚDO — banner da seção Wellness, já tem alt -->
-     <img src="evento5.png" alt="Eventos de Wellness" class="fundo-hero-wellness">
+     <img src="evento5.png" alt="Área de wellness e relaxamento à beira-mar" class="fundo-hero-wellness">
+     <!-- ALT: imagem de fundo da seção Wellness -->
     </section>
 
     <section class="painel-wellness">
@@ -176,8 +183,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 
     <!-- Fundo full-width -->
     <section class="hero-eventos-programacao">
-        <!-- IMAGEM DE CONTEÚDO — fundo da seção Programação do Dia, já tem alt -->
-        <img src="eventos6.png" alt="Programação do dia" class="fundo-eventos-programacao">
+        <img src="eventos6.png" alt="Praia ao amanhecer, fundo da seção Programação do Dia" class="fundo-eventos-programacao">
+        <!-- ALT: imagem de fundo da seção Programação do Dia -->
 
     
 
@@ -375,9 +382,8 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 
     <!-- HERO MAPA -->
     <section class="hero-mapa">
-        <!-- IMAGEM DE CONTEÚDO — banner do Mapa, já tem alt -->
-        <img src="Hero-mapa.png" alt="Vista panorâmica do Aloha Escape" class="fundo-hero-mapa">
-        
+        <img src="Hero-mapa.png" alt="Vista panorâmica aérea do Clube da Maré ao entardecer" class="fundo-hero-mapa">
+        <!-- ALT: imagem de fundo do topo da seção Mapa -->
     </section>
 
       
@@ -386,13 +392,14 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
    
     <section class="mapa-interativo-container">
         
-        <div class="mapa-container" id="mapa-clube">
         <h3 class="titulo-mapa-interativo">Mapa interativo</h3>
-            <div class="mapa-container" id="mapa-clube">
-            </div>
-            
-            <!-- IMAGEM DE CONTEÚDO — mapa ilustrado, já tem alt -->
-            <img src="mapa-base.png" alt="Mapa ilustrado do Aloha Escape" class="mapa-base">
+        <!-- CORRIGIDO: havia uma <div class="mapa-container" id="mapa-clube"> vazia e duplicada
+             aqui dentro, com o mesmo id repetido duas vezes (inválido em HTML e confunde
+             leitor de tela). Removida — sobrou só a de fora. -->
+        <div class="mapa-container" id="mapa-clube">
+
+            <img src="mapa-base.png" alt="Mapa ilustrado do Clube da Maré com 16 pontos numerados" class="mapa-base">
+            <!-- ALT: imagem base do mapa interativo -->
 
 
             <button class="ponto c-lazer" style="top:23.8%; left:18.7%;" data-local="1"><span class="tooltip">Piscinas e Praia Artificial</span></button>
@@ -417,8 +424,9 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
         </div>
 
         <div class="painel-local" id="painel-local">
-            <!-- IMAGEM DE CONTEÚDO — foto padrão do painel do mapa, mostrada antes do visitante clicar em um ponto -->
-            <img src="faixada-beachclub.png" alt="Fachada do Clube da Maré Beach Club" id="foto-local">
+            <img src="faixada-beachclub.png" alt="Fachada do Clube da Maré — selecione um ponto no mapa para ver a foto do local" id="foto-local">
+            <!-- ALT: imagem padrão do painel, antes do usuário clicar em um ponto do mapa
+                 (o JS troca esse alt dinamicamente para o nome do local clicado) -->
             <h3 id="nome-local">¡Importante!</h3>
             <p id="descricao-local">Clique em um ponto do mapa pra ver os detalhes do local.</p>
         </div>
@@ -491,8 +499,9 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 <div class="modal-local" id="modal-local">
     <div class="modal-local-conteudo">
         <button class="modal-fechar" id="modal-fechar">&times;</button>
-        <!-- IMAGEM DINÂMICA — src e alt ficam vazios aqui de propósito; são preenchidos pelo JavaScript lá embaixo quando o visitante clica em um ponto do mapa -->
         <img src="" alt="" id="modal-imagem">
+        <!-- ALT: vazio de propósito — o JavaScript preenche o src E o alt
+             dinamicamente com o nome do local, no momento do clique -->
         <h3 id="modal-titulo"></h3>
     </div>
 </div>
@@ -537,13 +546,27 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     if (e.target === this) this.classList.remove('ativo');
 });
 
+// Aviso de acesso restrito: se veio de login.html?acesso=negado, mostra o aviso
+// e depois limpa o "?acesso=negado" da URL (pra não reaparecer se recarregar a página).
+var parametrosUrl = new URLSearchParams(window.location.search);
+if (parametrosUrl.get('acesso') === 'negado') {
+    var avisoAcesso = document.getElementById('aviso-acesso');
+    avisoAcesso.classList.add('visivel');
+
+    var esconderAviso = function () { avisoAcesso.classList.remove('visivel'); };
+    document.getElementById('aviso-acesso-fechar').addEventListener('click', esconderAviso);
+    setTimeout(esconderAviso, 6000);
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 </script>
 
 
 <!-- INGRESSOS -->
 <section id="ingressos" class="pagina-ingressos">
-    <!-- IMAGEM DE CONTEÚDO — fundo da seção Ingressos, já tem alt -->
-    <img src="menu4.png" class="background-ingressos" alt="Ingressos">
+    <img src="menu4.png" class="background-ingressos" alt="Fundo tropical da seção de Ingressos">
+    <!-- ALT: imagem de fundo da seção Ingressos -->
 
     <div class="painel-ingressos">
         <div class="bloco-info">
@@ -570,115 +593,24 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
             </div>
         </div>
 
-        <!-- ==================================================================
-             ÁREA SECRETA — só aparece pra quem entrou como Diretoria ou
-             Professor pela tela de login (login.html). Fica escondida por
-             padrão e o JavaScript lá embaixo mostra o botão certo pra cada
-             perfil, com o link da planilha certa.
-             ================================================================== -->
-        <div class="area-botao-planilha" id="area-planilha-secreta" hidden>
-            <!-- Diretoria: link real que você já tinha configurado -->
-            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94"
-               target="_blank" class="btn-planilha-atalho" id="link-planilha-diretoria" hidden>
-                Verificar Status na Planilha (Diretoria)
-            </a>
-
-            <!-- Professor: TROQUE o href abaixo pelo link da planilha
-                 específica dos professores quando você tiver ela pronta -->
-            <a href="https://www.appsheet.com/start/COLOQUE-AQUI-O-LINK-DA-PLANILHA-DOS-PROFESSORES"
-               target="_blank" class="btn-planilha-atalho" id="link-planilha-professor" hidden>
-                Verificar Status na Planilha (Professores)
+        <!-- O botão abaixo NÃO vai mais direto pro AppSheet: primeiro manda pro
+             login.html, pra escolher o perfil. Só Diretoria e Professor chegam na
+             planilha; Estudante e Responsável são barrados e voltam pro início. -->
+        <div class="area-botao-planilha">
+            <a href="login.html" class="btn-planilha-atalho">
+                Verificar Status na Planilha
             </a>
         </div>
-
-        <!-- Mensagem mostrada pra quem NÃO entrou como Diretoria/Professor -->
-        <p class="aviso-planilha-privada" id="aviso-planilha-privada">
-            🔒 O link de acompanhamento da planilha é exclusivo da Diretoria e dos Professores.
-            <a href="login.html">Clique aqui para entrar</a> com o seu login.
-        </p>
-
-        <!-- Aparece só depois que o Firebase confirma quem é a pessoa logada -->
-        <p class="aviso-planilha-privada" id="botao-sair-wrap" hidden>
-            Você entrou como <strong id="texto-perfil-logado"></strong>.
-            <a href="#" id="botao-sair">Sair</a>
-        </p>
     </div>
 </section>
 
-<!-- ======================================================================
-     FIREBASE — mesma configuração do login.html. TROQUE aqui também
-     pelas chaves do SEU projeto (tem que ser o MESMO projeto das duas
-     páginas, senão o login de uma não é reconhecido na outra).
-     ====================================================================== -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-    // TROQUE ISSO AQUI — igualzinho ao que você colocou em login.html
-    const firebaseConfig = {
-        apiKey: "COLOQUE-AQUI-A-SUA-API-KEY",
-        authDomain: "SEU-PROJETO.firebaseapp.com",
-        projectId: "SEU-PROJETO",
-        storageBucket: "SEU-PROJETO.appspot.com",
-        messagingSenderId: "SEU-SENDER-ID",
-        appId: "SEU-APP-ID",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    var areaSecreta = document.getElementById('area-planilha-secreta');
-    var avisoPrivado = document.getElementById('aviso-planilha-privada');
-    var botaoSairWrap = document.getElementById('botao-sair-wrap');
-    var textoPerfilLogado = document.getElementById('texto-perfil-logado');
-
-    /* ==================================================================
-       Isso roda toda vez que a página carrega. É a CONFERÊNCIA DE VERDADE:
-       mesmo que alguém force "clubeMarePerfil" no sessionStorage pelo
-       console do navegador, essa checagem no Firestore não deixa passar,
-       porque ela pergunta pro servidor do Firebase, não confia só no
-       que está guardado no navegador da pessoa.
-       ================================================================== */
-    onAuthStateChanged(auth, function (usuario) {
-        if (!usuario) {
-            // Ninguém logado — mantém só o aviso de acesso restrito.
-            return;
-        }
-
-        getDoc(doc(db, 'perfis', usuario.uid)).then(function (snap) {
-            var perfilReal = snap.exists() ? snap.data().perfil : null;
-
-            if (perfilReal === 'diretoria' || perfilReal === 'professor') {
-                sessionStorage.setItem('clubeMarePerfil', perfilReal); // só um cache local, não é a fonte da verdade
-                areaSecreta.hidden = false;
-                avisoPrivado.hidden = true;
-                botaoSairWrap.hidden = false;
-                textoPerfilLogado.textContent = perfilReal === 'diretoria' ? 'Diretoria' : 'Professor';
-                document.getElementById('link-planilha-' + perfilReal).hidden = false;
-            }
-            // Logado mas sem perfil de diretoria/professor: fica só o aviso de acesso restrito.
-        });
-    });
-
-    document.getElementById('botao-sair').addEventListener('click', function (evento) {
-        evento.preventDefault();
-        sessionStorage.removeItem('clubeMarePerfil');
-        signOut(auth).then(function () {
-            window.location.href = 'login.html';
-        });
-    });
-</script>
-
-
-<!-- CONTATO -->
-<section id="contato" class="pagina-contato">
+<!-- Feedback -->
+<section id="Feedback" class="pagina-contato">
     <img src="menu5.png" class="background-contato" alt="Fundo Contato">
 
     <form action="https://api.web3forms.com/submit" method="POST" class="contato-form">
 
-        <input type="hidden" name="access_key" value="621b4e4a-b2b5-41a2-bb25-39019db6dbf5">
+        <input type="hidden" name="access_key" value="9ee5ea36-a62d-4559-b0a6-a9c6a4ad3105">
         <input type="hidden" name="botcheck" style="display: none;">
 
         <input type="text" name="name" class="input-nome" placeholder="Digite seu nome" required>
@@ -689,6 +621,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         <button type="submit" class="btn-enviar">Enviar Mensagem</button>
     </form>
 </section>
+
 
 
 </main>

@@ -544,7 +544,6 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 </script>
 
-
 <!-- INGRESSOS -->
 <section id="ingressos" class="pagina-ingressos">
     <img src="menu4.png" class="background-ingressos" alt="Fundo tropical da seção de Ingressos">
@@ -575,13 +574,20 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
             </div>
         </div>
 
+        <!-- O botão abaixo NÃO vai mais direto pro AppSheet: primeiro manda pro
+             login.html, pra escolher o perfil. Só Diretoria e Professor chegam na
+             planilha; Estudante e Responsável são barrados e voltam pro início. -->
         <div class="area-botao-planilha">
-            <a href="https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94" target="_blank" class="btn-planilha-atalho">
+            <a href="login.html" class="btn-planilha-atalho">
                 Verificar Status na Planilha
             </a>
         </div>
     </div>
 </section>
+
+</body>
+</html>
+
 
 <!-- CONTATO -->
 <section id="contato" class="pagina-contato">

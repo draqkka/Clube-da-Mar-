@@ -32,8 +32,8 @@
 
 <!-- INGRESSOS -->
 <section id="ingressos" class="pagina-ingressos">
-    <!-- IMAGEM DE CONTEÚDO — fundo da seção Ingressos, já tem alt -->
-    <img src="menu4.png" class="background-ingressos" alt="Ingressos">
+    <img src="menu4.png" class="background-ingressos" alt="Fundo tropical da seção de Ingressos">
+    <!-- ALT: imagem de fundo da seção Ingressos -->
 
     <div class="painel-ingressos">
         <div class="bloco-info">
@@ -60,6 +60,17 @@
             </div>
         </div>
 
+        <!-- O botão abaixo NÃO vai mais direto pro AppSheet: primeiro manda pro
+             login.html, pra escolher o perfil. Só Diretoria e Professor chegam na
+             planilha; Estudante e Responsável são barrados e voltam pro início. -->
+        <div class="area-botao-planilha">
+            <a href="login.html" class="btn-planilha-atalho">
+                Verificar Status na Planilha
+            </a>
+        </div>
+    </div>
+</section>
+     
         <!-- ==================================================================
              ÁREA SECRETA — só aparece pra quem entrou como Diretoria ou
              Professor pela tela de login (login.html). Fica escondida por

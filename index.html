@@ -18,17 +18,72 @@
 </head>
 <body>
 
+
+
 <header>
 <nav class="topnav">
-    <a href="index.html">Início</a>
-    <a href="quemsomos.html">Quem Somos</a>
-    <a href="eventos.html">Eventos</a>
-    <a href="mapa.html">Mapa</a>
-    <a href="ingressos.html">Ingressos</a>
-    <a href="feedback.html">Feedback</a>
+    <button type="button" class="menu-icone" id="menu-icone" aria-label="Abrir menu" aria-expanded="false">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+    <div class="menu-dropdown" id="menu-dropdown">
+        <a href="#inicio">Início</a>
+    <a href="#quem-somos">Quem Somos</a>
+    <a href="#eventos">Eventos</a>
+    <a href="#mapa">Mapa</a>
+    <a href="#ingressos">Ingressos</a>
+    <a href="#feedback">Feedback</a>
 
+    </div>
 </nav>
 </header>
+
+</main>
+
+
+<script>
+    // Abre/fecha o painel do menu (o ícone de lupa no canto direito).
+// Usado em todas as páginas do site — o HTML de cada página só precisa ter
+// um botão com id="menu-icone" e um painel com id="menu-dropdown".
+(function () {
+    var botao = document.getElementById('menu-icone');
+    var painel = document.getElementById('menu-dropdown');
+    if (!botao || !painel) return;
+
+    function fechar() {
+        painel.classList.remove('aberto');
+        botao.setAttribute('aria-expanded', 'false');
+    }
+
+    function alternar() {
+        var vaiAbrir = !painel.classList.contains('aberto');
+        painel.classList.toggle('aberto', vaiAbrir);
+        botao.setAttribute('aria-expanded', String(vaiAbrir));
+    }
+
+    botao.addEventListener('click', function (evento) {
+        evento.stopPropagation();
+        alternar();
+    });
+
+    // Fecha o painel assim que a pessoa clica em algum link dele
+    painel.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', fechar);
+    });
+
+    // Fecha ao clicar fora do painel/ícone
+    document.addEventListener('click', function (evento) {
+        if (!painel.contains(evento.target) && evento.target !== botao) {
+            fechar();
+        }
+    });
+
+    // Fecha com a tecla Esc
+    document.addEventListener('keydown', function (evento) {
+        if (evento.key === 'Escape') fechar();
+    });
+})();
+
+</script>
 
 
 <!-- INÍCIO -->
@@ -80,7 +135,7 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 
 <main class="conteudo-pagina secao-home-eventos">
 <!-- EVENTOS -->
-    <section class="hero-eventos">
+    <section id="eventos" class="hero-eventos">
     <img src="fundo1.png" alt="Palco e área de shows do Clube da Maré ao entardecer" class="fundo-hero-eventos">
     <!-- ALT: imagem de fundo da seção Eventos -->
 </section>
@@ -386,12 +441,10 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
     <!-- MAPA INTERATIVO + PAINEL DO LOCAL -->
 
    
-    <section class="mapa-interativo-container">
+    <section id="mapa" class="mapa-interativo-container">
         
         <h3 class="titulo-mapa-interativo">Mapa interativo</h3>
-        <!-- CORRIGIDO: havia uma <div class="mapa-container" id="mapa-clube"> vazia e duplicada
-             aqui dentro, com o mesmo id repetido duas vezes (inválido em HTML e confunde
-             leitor de tela). Removida — sobrou só a de fora. -->
+       
         <div class="mapa-container" id="mapa-clube">
 
             <img src="mapa-base.png" alt="Mapa ilustrado do Clube da Maré com 16 pontos numerados" class="mapa-base">
@@ -420,9 +473,6 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
         </div>
 
         <div class="painel-local" id="painel-local">
-            <img src="faixada-beachclub.png" alt="Fachada do Clube da Maré — selecione um ponto no mapa para ver a foto do local" id="foto-local">
-            <!-- ALT: imagem padrão do painel, antes do usuário clicar em um ponto do mapa
-                 (o JS troca esse alt dinamicamente para o nome do local clicado) -->
             <h3 id="nome-local">¡Importante!</h3>
             <p id="descricao-local">Clique em um ponto do mapa pra ver os detalhes do local.</p>
         </div>
@@ -588,7 +638,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 
 <!-- CONTATO -->
-<section id="contato" class="pagina-contato">
+<section id="feedback" class="pagina-contato">
     <img src="menu5.png" class="background-contato" alt="Fundo praiano da seção de Contato">
     <!-- ALT: imagem de fundo da seção Contato -->
 
@@ -614,6 +664,7 @@ const menuLinks = document.querySelector('.menu-links');
 menuBtn.addEventListener('click', () => {
     menuLinks.classList.toggle('ativo');
 });
+
 
 </script>
 

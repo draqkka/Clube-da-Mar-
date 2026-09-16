@@ -83,94 +83,126 @@ html::-webkit-scrollbar {
     display: none;               /* Chrome, Safari, Edge novo */
 }
 
-
-/* =========================
-   MENU DE NAVEGAÇÃO
-========================= */
-
-.topnav{
-    position:fixed;
-    top:0;
-    left:0;
-
-    width:100%;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    flex-wrap:wrap; /* permite quebrar linha */
-
-    gap:12px;
-
-    padding:12px 20px;
-
-    background:rgba(255, 255, 255, 0.185);
-
-    z-index:99999;
+/* NECESSÁRIO pro menu rolar até a seção escolhida em vez de pular direto —
+   sem isso os links do menu até funcionam, mas sem suavidade nenhuma */
+html {
+    scroll-behavior: smooth;
 }
 
-.topnav a{
-    color:var(--cor-menu-amarelo);
 
-    text-decoration:none;
-
-    font-size:18px;
-
-    font-weight:bold;
-
-    padding:6px 10px;
-
-    transition:.3s;
+/* NOVO: como o menu virou um ícone fixo no topo, ele ainda cobre um pedaço
+   da tela — esse respiro faz a rolagem até cada seção parar um pouco mais
+   abaixo, sem o título da seção ficar escondido atrás do ícone. */
+#inicio,
+#quem-somos,
+#eventos,
+#mapa,
+#ingressos,
+#feedback {
+    scroll-margin-top: 90px;
 }
 
-.topnav a:hover{
-    color:#fff;
+/* Menu de Navegação Fixo no Topo — agora é só um ícone no canto direito
+   que abre um painel com os links (em vez da barra com todos os links à
+   mostra). Os links de seção viram âncoras que rolam pela própria página. */
+.topnav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 5%;
+    background: rgba(0, 0, 0, .88);
+    z-index: 1000;
 }
 
-/* NOTEBOOKS */
-
-@media (max-width:1366px){
-
-    .topnav{
-        gap:10px;
-    }
-
-    .topnav a{
-        font-size:16px;
-    }
-
+.menu-icone {
+    background: none;
+    border: none;
+    color: var(--cor-menu-amarelo);
+    font-size: 24px;
+    padding: 6px 10px;
+    cursor: pointer;
+    line-height: 1;
 }
 
-/* TABLETS */
-
-@media (max-width:1024px){
-
-    .topnav{
-        gap:8px;
-    }
-
-    .topnav a{
-        font-size:15px;
-    }
-
+.menu-icone:hover {
+    color: var(--cor-branco);
 }
 
-/* CELULARES */
+/* NOVO: botão "Sair" visível direto no topo (só nas páginas de login),
+   ao lado do ícone do menu — sem precisar abrir o painel pra achar ele */
+.link-sair-topo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--cor-menu-amarelo);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    margin-right: 10px;
+}
 
-@media (max-width:768px){
+.link-sair-topo:hover {
+    color: var(--cor-branco);
+}
 
-    .topnav{
-        justify-content:center;
-        gap:6px;
-        padding:10px;
+.menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 5%;
+    margin-top: 8px;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.96);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+.menu-dropdown.aberto {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.menu-dropdown a {
+    color: var(--cor-menu-amarelo);
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.menu-dropdown a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--cor-branco);
+}
+
+.menu-dropdown a.link-entrar {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.menu-dropdown a i {
+    margin-right: 6px;
+}
+
+@media (max-width: 480px) {
+    .menu-dropdown {
+        right: 4%;
+        left: 4%;
+        min-width: auto;
     }
-
-    .topnav a{
-        font-size:14px;
-        padding:5px 8px;
-    }
-
 }
 
 /* Imagens das Seções Padrão (Menu 1, 2 e 3) */
@@ -1005,6 +1037,101 @@ html::-webkit-scrollbar {
         font-size: 26px;
     }
 
+    /* TIMELINE (Programação do Dia) — em fileira única (horizontal) os
+       círculos e a linha ficavam cortados/desalinhados no celular. No celular
+       ela vira uma timeline VERTICAL: ícone à esquerda, hora/título/texto à
+       direita, ligados por uma linha que desce (em vez de ir da esquerda pra
+       direita) — com o aviãozinho subindo por ela. O destaque azul do ícone
+       agora dispara também ao TOCAR (:active), porque :hover sozinho não é
+       confiável em tela de toque. */
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 45px;
+        width: 100%;
+        overflow: visible;
+        padding-bottom: 0;
+    }
+
+    /* LINHA: mesmo gradiente de cores do desktop, só que vertical, ligando
+       o centro do 1º círculo ao centro do último */
+    .timeline::before {
+        top: 37px;
+        left: 37px;
+        width: 5px;
+        height: calc(100% - 74px);
+        background: linear-gradient(
+            180deg,
+            var(--cor-verde-agua),
+            var(--cor-azul-escuro),
+            var(--cor-gradiente-laranja)
+        );
+        transform: translateX(-50%);
+    }
+
+    /* AVIÃOZINHO: sobe e desce a linha vertical em vez de ir da esquerda
+       pra direita */
+    .timeline::after {
+        top: 37px;
+        left: 37px;
+        transform: translateX(-50%) rotate(90deg);
+        font-size: 20px;
+        animation-name: voo-vertical;
+    }
+
+    @keyframes voo-vertical {
+        from { top: 37px; }
+        to   { top: calc(100% - 37px); }
+    }
+
+    .timeline-item {
+        display: grid;
+        grid-template-columns: 74px 1fr;
+        column-gap: 16px;
+        align-items: center;
+        width: auto;
+        min-width: 0;
+        text-align: left;
+    }
+
+    .timeline-icon {
+        width: 74px;
+        height: 74px;
+        grid-column: 1;
+        grid-row: 1 / span 3;
+    }
+
+    .timeline-icon i {
+        font-size: 26px;
+    }
+
+    .timeline-item .hora {
+        grid-column: 2;
+        grid-row: 1;
+        margin-top: 0;
+    }
+
+    .timeline-item h4 {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .timeline-item p {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    /* mesmo efeito azul do desktop, mas disparando ao tocar/segurar o ícone,
+       já que celular não tem :hover de verdade */
+    .timeline-item:active .timeline-icon {
+        transform: scale(1.1);
+        background: var(--cor-azul-escuro);
+    }
+
+    .timeline-item:active .timeline-icon i {
+        color: var(--cor-branco);
+    }
+
     .evento-item {
         height: auto;
         min-height: 90px;
@@ -1077,15 +1204,22 @@ html::-webkit-scrollbar {
 .mapa-interativo-container {
 
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 30px;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 20px;
     padding: 50px 5%;
     background: var(--cor-creme);
     color: var(--cor-texto-escuro);
 }
 
+/* Texto ("¡Importante!") fica entre o título e o mapa */
+.painel-local {
+    order: 1;
+}
+
 #mapa-clube,
 .mapa-container {
+    order: 2;
     position: relative;
     width: 100%;
     border-radius: 16px;
@@ -1173,20 +1307,12 @@ html::-webkit-scrollbar {
     50% { transform: translate(-50%, -50%) scale(1.7); }
 }
 
-/* ===== Painel do local (foto + descrição) ===== */
+/* ===== Painel do local (descrição) ===== */
 .painel-local {
     background: var(--cor-branco);
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.painel-local img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 15px;
 }
 
 .painel-local h3 {
@@ -1440,9 +1566,6 @@ html::-webkit-scrollbar {
 
 /* ===== Responsivo ===== */
 @media (max-width: 900px) {
-    .mapa-interativo-container {
-        grid-template-columns: 1fr;
-    }
     .legenda-categorias {
         grid-template-columns: 1fr 1fr;
     }
@@ -1578,7 +1701,14 @@ html::-webkit-scrollbar {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: left top; /* mantém o texto "Ingresso Digital", que fica à esquerda na imagem original, visível */
+        /* "puxa" a imagem pra esquerda (aumentando o %, o efeito é a imagem
+           deslizar pra esquerda e revelar mais do lado direito dela) até o
+           texto "INGRESSO DIGITAL" aparecer inteiro, sem cortar o "TAL".
+           Se em algum aparelho ainda cortar um pouco, é só ajustar esse
+           valor (0% = totalmente à esquerda / mais cortado à direita,
+           valores maiores "puxam" mais a imagem, mostrando mais do que
+           fica à direita). */
+        object-position: 6% top;
     }
     .painel-ingressos {
         top: 34%;
@@ -1844,7 +1974,7 @@ html::-webkit-scrollbar {
 
     .input-nome{
 
-        margin-top:15%;
+        margin-top:14%;
         left:5%;
 
 
@@ -1854,7 +1984,7 @@ html::-webkit-scrollbar {
 
     .input-email{
 
-        margin-top:16%;
+        margin-top:13%;
         left:5%;
 
 
@@ -1864,7 +1994,7 @@ html::-webkit-scrollbar {
 
     .input-assunto{
 
-        margin-top:17%;
+        margin-top:14%;
         left:5%;
 
 
@@ -1874,7 +2004,7 @@ html::-webkit-scrollbar {
 
     .textarea-mensagem{
 
-        margin-top:18%;
+        margin-top:15%;
         left:5%;
 
 
@@ -1884,7 +2014,7 @@ html::-webkit-scrollbar {
 
     .btn-enviar{
 
-        margin-top:17%;
+        margin-top:10%;
         left:5%;
 
 
@@ -1904,7 +2034,7 @@ html::-webkit-scrollbar {
 
     .pagina-contato{
 
-        min-height:760px;
+        min-height:765px;
     }
 
     .input-nome{

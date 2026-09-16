@@ -16,12 +16,8 @@
 
 <header>
 <nav class="topnav">
-    <a href="quemsomos.html">Quem Somos</a>
-    <a href="eventos.html">Eventos</a>
-    <a href="mapa.html">Mapa</a>
-    <a href="ingressos.html">Ingressos</a>
-    <a href="feedback.html">Feedback</a>
-    <a href="index.html" class="link-entrar"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+    <a href="index.html" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+    
 </nav>
 </header>
 
@@ -38,34 +34,36 @@
 
         <!--
             IMPORTANTE — leia antes de mexer nos links abaixo:
-            Cada perfil tem seu próprio arquivo de login/cadastro:
-              - login-estudante.html   -> depois de "Acessar", vai pra
-                index.html?acesso=negado (mostra o aviso "Área restrita:
-                só para autoridades da escola")
-              - login-responsavel.html -> mesmo destino do Estudante
-              - login-diretoria.html   -> depois de "Acessar", abre a
-                planilha no AppSheet
-              - login-professor.html   -> mesmo destino da Diretoria
-            A URL do AppSheet fica dentro do <script> de cada um desses dois
-            últimos arquivos (variável URL_PLANILHA) — troque lá se precisar.
+            Os 4 perfis levam pra "login-formulario.html?perfil=...", uma tela
+            de cadastro/login (RA+UF+Senha ou E-mail+Senha) antes do destino
+            final. É a MESMA página pra todo mundo — o que muda é só o "?perfil="
+            no final do link. Dentro de login-formulario.html tem um <script> que
+            lê esse parâmetro e decide os campos certos e o que acontece quando a
+            pessoa clica em "Acessar":
+              - Estudante / Responsável -> depois de "Acessar", vai pra
+                index.html?acesso=negado (index.html mostra o aviso
+                "Área restrita: só para autoridades da escola")
+              - Diretoria / Professor   -> depois de "Acessar", abre a planilha
+                no AppSheet (a URL do AppSheet fica configurada dentro de
+                login-formulario.html, não aqui)
         -->
-        <a href="login-estudante.html" class="login-perfil-item">
+        <a href="login-formulario.html?perfil=estudante" class="login-perfil-item">
             <span class="login-perfil-rotulo">Sou</span>
             <span class="login-perfil-nome">Estudante</span>
         </a>
 
-        <a href="login-diretoria.html" class="login-perfil-item">
+        <a href="login-formulario.html?perfil=diretoria" class="login-perfil-item">
             <span class="login-perfil-rotulo">Sou</span>
             <span class="login-perfil-nome">Diretoria</span>
             <span class="login-perfil-extra">acesso via <strong>App</strong>Sheet</span>
         </a>
 
-        <a href="login-responsavel.html" class="login-perfil-item">
+        <a href="login-formulario.html?perfil=responsavel" class="login-perfil-item">
             <span class="login-perfil-rotulo">Sou</span>
             <span class="login-perfil-nome">Responsável</span>
         </a>
 
-        <a href="login-professor.html" class="login-perfil-item">
+        <a href="login-formulario.html?perfil=professor" class="login-perfil-item">
             <span class="login-perfil-rotulo">Sou</span>
             <span class="login-perfil-nome">Professor</span>
             <span class="login-perfil-extra">acesso via <strong>App</strong>Sheet</span>
@@ -74,5 +72,6 @@
 
 </main>
 
+<script src="menu.js"></script>
 </body>
 </html>

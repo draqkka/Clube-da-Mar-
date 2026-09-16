@@ -113,14 +113,14 @@ html {
     display: flex;
     justify-content: flex-end;
     padding: 16px 5%;
-    background: rgba(255, 254, 254, 0.084);
+    background: rgba(0, 0, 0, .88);
     z-index: 1000;
 }
 
 .menu-icone {
     background: none;
     border: none;
-    color: var(--cor-amarelo-wellness);
+    color: var(--cor-menu-amarelo);
     font-size: 24px;
     padding: 6px 10px;
     cursor: pointer;
@@ -137,7 +137,7 @@ html {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--cor-amarelo-wellness);
+    color: var(--cor-menu-amarelo);
     text-decoration: none;
     font-weight: bold;
     font-size: 16px;
@@ -157,7 +157,7 @@ html {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.719);
+    background: rgba(0, 0, 0, 0.96);
     border-radius: 12px;
     padding: 10px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
@@ -205,12 +205,86 @@ html {
     }
 }
 
+/* ==========================================
+   NAVEGAÇÃO — abas visíveis só no computador
+   Em telas de computador (acima de 900px) a barra mostra todos os links
+   direto, como antigamente, sem precisar clicar no ícone. No celular/tablet
+   continua sendo o ícone de lupa + painel (do jeito que já estava), porque
+   a barra inteira com 6 links não cabe numa tela estreita. A rolagem suave
+   até a seção escolhida (scroll-behavior: smooth, lá em cima) continua
+   funcionando igual nos dois formatos, porque os links continuam sendo as
+   mesmas âncoras (#inicio, #quem-somos etc.) — só muda a aparência do menu.
+========================================== */
+@media (min-width: 901px) {
+
+    .topnav {
+        justify-content: flex-start;
+    }
+
+    .menu-icone {
+        display: none;
+    }
+
+    .menu-dropdown {
+        position: static;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 30px;
+        margin-top: 0;
+        min-width: 0;
+        background: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+    }
+
+    .menu-dropdown a {
+        position: relative;
+        font-size: 17px;
+        padding: 4px 2px;
+        border-radius: 0;
+    }
+
+    .menu-dropdown a:hover {
+        background: none;
+        color: var(--cor-branco);
+    }
+
+    /* sublinhado amarelo que aparece embaixo do link ao passar o mouse */
+    .menu-dropdown a::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        right: 2px;
+        bottom: -4px;
+        height: 2px;
+        background: var(--cor-menu-amarelo);
+        transform: scaleX(0);
+        transition: transform .25s ease;
+    }
+
+    .menu-dropdown a:hover::after {
+        transform: scaleX(1);
+    }
+
+    .menu-dropdown a.link-entrar {
+        margin-top: 0;
+        padding-top: 4px;
+        border-top: none;
+    }
+
+}
+
+
 /* Imagens das Seções Padrão (Menu 1, 2 e 3) */
 .hero img {
     width: 100%;
     display: block;
 }
-
 
 
 

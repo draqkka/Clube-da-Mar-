@@ -89,7 +89,7 @@
 <!-- INÍCIO -->
  <main>
 <div id="inicio" class="hero">
-    <img src="imagens/Menu-inicial/menu.png" alt="Clube da Maré - Vive o momento, escape da rotina">
+    <img src="imagens/Menu inicial/menu.png" alt="Clube da Maré - Vive o momento, escape da rotina">
     <!-- ALT: banner principal de abertura do site -->
 </div>
 </main>
@@ -447,7 +447,7 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
        
         <div class="mapa-container" id="mapa-clube">
 
-            <img src="../imagens/Mapa/mapa-base.png" alt="Mapa ilustrado do Clube da Maré com 16 pontos numerados" class="mapa-base">
+            <img src="imagens/Mapa/mapa-base.png" alt="Mapa ilustrado do Clube da Maré com 16 pontos numerados" class="mapa-base">
             <!-- ALT: imagem base do mapa interativo -->
 
 
@@ -580,7 +580,7 @@ document.querySelectorAll('.ponto').forEach(function (ponto) {
         // CORRIGIDO: antes virava "imageslocal1.png" (sem barras, sem a
         // pasta Mapa, sem o "../"). Agora segue o mesmo caminho das outras
         // imagens desta página: ../imagens/Mapa/Local1.png, Local2.png...
-        document.getElementById('modal-imagem').src = '../imagens/Mapa/Local' + id + '.png';
+        document.getElementById('modal-imagem').src = 'imagens/Mapa/Local' + id + '.png';
         document.getElementById('modal-imagem').alt = nome;
         document.getElementById('modal-titulo').textContent = nome;
         document.getElementById('modal-local').classList.add('ativo');
@@ -642,7 +642,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 <!-- CONTATO -->
 <section id="feedback" class="pagina-contato">
-    <img src="../imagens/Contato/contato.png" class="background-contato" alt="Fundo praiano da seção de Contato">
+    <img src="imagens/Contato/contato.png" class="background-contato" alt="Fundo praiano da seção de Contato">
     <!-- ALT: imagem de fundo da seção Contato -->
 
     <form action="https://api.web3forms.com/submit" method="POST" class="contato-form">

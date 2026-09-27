@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Painel da Diretoria</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="planilha.js"></script>
+<script src="solicitacoes-local.js"></script>
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i>Voltar ao site</a>
+</nav>
+</header>
+
+<main class="conteudo-pagina painel-dashboard">
+
+    <div class="login-saudacao">
+        <h1 id="titulo-boas-vindas">Olá, Diretoria!</h1>
+        <p>Visão geral de turmas e gerenciamento de solicitações dos professores.</p>
+    </div>
+
+    <div id="carregando">Carregando todas as turmas...</div>
+
+    <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
+        <thead>
+            <tr>
+                <th>RA</th><th>Nome</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th>
+            </tr>
+        </thead>
+        <tbody id="corpo-tabela-alunos"></tbody>
+    </table>
+
+    <!-- Área de solicitações dos professores -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Gerenciar Solicitações dos Professores</h2>
+        
+        <div id="lista-solicitacoes"></div>
+        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
+    </section>
+
+</main>
+
+<script>
+var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
+if (!sessao || sessao.perfil !== 'diretoria') {
+    window.location.href = 'login.html';
+}
+
+document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'Diretoria') + '!';
+
+document.getElementById('link-sair').addEventListener('click', function (e) {
+    e.preventDefault();
+    sessionStorage.removeItem('cdm_sessao');
+    window.location.href = 'index.html';
+});
+
+// Planilha
+carregarPlanilha()
+    .then(function (dados) {
+        document.getElementById('carregando').style.display = 'none';
+        var corpo = document.getElementById('corpo-tabela-alunos');
+        dados.notas.forEach(function (a) {
+            var linha = document.createElement('tr');
+            linha.innerHTML = '<td>' + a.ra + '</td><td>' + a.nome + '</td><td>' + a.turma + '</td><td>' +
+                a.nota + '</td><td>' + a.presenca + '%</td><td>' + a.comportamento + '</td><td>' + (a.professor || '') + '</td>';
+            corpo.appendChild(linha);
+        });
+        document.getElementById('tabela-alunos').style.display = dados.notas.length ? 'table' : 'none';
+    })
+    .catch(function (erro) {
+        document.getElementById('carregando').textContent = 'Erro ao ler planilha (' + erro.message + ').';
+    });
+
+
+    // Gerenciamento de Solicitações e Notificação ao Professor
+escutarTodasSolicitacoes(function (solicitacoes) {
+    var lista = document.getElementById('lista-solicitacoes');
+    lista.innerHTML = '';
+
+    if (!solicitacoes.length) {
+        document.getElementById('sem-solicitacoes').style.display = 'block';
+        return;
+    }
+    document.getElementById('sem-solicitacoes').style.display = 'none';
+
+    solicitacoes.forEach(function (s) {
+        var card = document.createElement('div');
+        card.className = 'card-solicitacao';
+        card.style.border = '1px solid #ccc';
+        card.style.padding = '15px';
+        card.style.marginBottom = '15px';
+        card.style.borderRadius = '8px';
+
+        var ehPendente = s.status === 'Pendente';
+
+        var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ')</p>' +
+            '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
+            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
+            '<p>Status atual: <strong>' + s.status + '</strong></p>';
+
+        if (ehPendente) {
+            html += '<div style="margin-top:10px;">' +
+                '<textarea class="form-login-campo campo-resposta" data-id="' + s.id + '" placeholder="Sua resposta ao professor (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
+                '<div class="botoes-solicitacao">' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Aprovar</button> ' +
+                '<button type="button" class="btn-recusar-solicitacao" data-id="' + s.id + '">Recusar</button>' +
+                '</div></div>';
+        } else {
+            html += (s.respostaDiretoria ? '<p class="detalhe-solicitacao">Sua Resposta: ' + s.respostaDiretoria + '</p>' : '') +
+                '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
+        }
+
+        card.innerHTML = html;
+        lista.appendChild(card);
+    });
+});
+
+// Captura de eventos de clique com fallback seguro de ID
+document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
+    var refazer = evento.target.closest('.btn-refazer-solicitacao');
+    var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
+    var recusar = evento.target.closest('.btn-recusar-solicitacao');
+
+    if (refazer) {
+        var idRefazer = refazer.getAttribute('data-id');
+        reabrirSolicitacao(idRefazer);
+        return;
+    }
+
+    if (aprovar || recusar) {
+        var botao = aprovar || recusar;
+        var id = botao.getAttribute('data-id');
+        var novoStatus = aprovar ? 'Aprovado' : 'Recusado';
+        
+        var card = botao.closest('.card-solicitacao');
+        var campoTexto = card.querySelector('.campo-resposta');
+        var resposta = campoTexto ? campoTexto.value.trim() : '';
+
+        responderSolicitacao(id, novoStatus, resposta);
+    }
+});
+
+
+// Ações nos botões
+document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
+    var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
+    var recusar = evento.target.closest('.btn-recusar-solicitacao');
+    var refazer = evento.target.closest('.btn-refazer-solicitacao');
+
+    if (refazer) {
+        reabrirSolicitacao(refazer.dataset.id);
+        return;
+    }
+
+    if (!aprovar && !recusar) return;
+
+    var botao = aprovar || recusar;
+    var id = botao.dataset.id;
+    var novoStatus = aprovar ? 'Aprovado' : 'Recusado';
+    
+    var card = botao.closest('.card-solicitacao');
+    var campoTexto = card.querySelector('.campo-resposta');
+    var resposta = campoTexto ? campoTexto.value.trim() : '';
+
+    responderSolicitacao(id, novoStatus, resposta);
+});
+</script>
+
+<script src="menu.js"></script>
+</body>
+</html>

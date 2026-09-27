@@ -2432,3 +2432,236 @@ body{
     }
 
 }
+/* =========================================================================
+   PAINÉIS (Professor / Diretoria / Aluno) — passo 2 do sistema de login
+   ========================================================================= */
+.painel-dashboard{
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.lista-turmas-chip{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 20px; }
+.chip-turma{
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: .9rem;
+}
+
+.area-importar{ display:flex; align-items:center; gap:14px; margin: 20px 0 6px; }
+.botao-mais-importar{
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--cor-laranja); color: var(--cor-branco);
+    border: none; font-size: 1.2rem; cursor: pointer;
+}
+.botao-mais-importar:hover{ background: var(--cor-dourado); color: var(--cor-preto); }
+.dica-importar{ font-size:.85rem; color: var(--cor-cinza); margin-bottom: 14px; }
+#status-importacao{ margin: 6px 0 20px; color: var(--cor-verde-claro); font-size:.9rem; }
+
+.tabela-alunos{
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--cor-creme);
+    color: var(--cor-texto-escuro);
+    margin-top: 10px;
+}
+.tabela-alunos th, .tabela-alunos td{
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--cor-cinza-claro);
+    text-align: left;
+    font-size: .9rem;
+}
+.tabela-alunos th{ background: var(--cor-azul-escuro); color: var(--cor-branco); }
+
+.grid-status{ display:flex; gap:16px; flex-wrap:wrap; margin: 20px 0; }
+.card-status{
+    background: var(--cor-creme); color: var(--cor-texto-escuro);
+    border-radius: 12px; padding: 18px 24px; min-width: 140px; text-align:center;
+}
+.card-status-rotulo{ display:block; font-size:.8rem; color: var(--cor-texto-medio); }
+.card-status-valor{ display:block; font-family: var(--fonte-titulos); font-size:1.6rem; }
+
+.caixa-mensagem-resultado{ border-radius: 12px; padding: 18px 22px; margin: 20px 0; font-family: var(--fonte-titulos); }
+.caixa-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
+.caixa-reprovado{ background: #4a1010; color: var(--cor-branco); border: 1px solid #a33; }
+
+.caixa-status-solicitacao{ border-radius: 10px; padding: 14px 18px; margin: 10px 0 20px; font-size: .95rem; }
+.status-pendente{ background: #4a3d10; color: var(--cor-branco); border: 1px solid var(--cor-dourado); }
+.status-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
+.status-recusado{ background: #4a1010; color: var(--cor-branco); border: 1px solid #a33; }
+
+.area-avaliacao-professores{ margin-top: 40px; background: var(--cor-creme); color: var(--cor-texto-escuro); border-radius: 12px; padding: 20px; }
+
+.btn-solicitar-participacao{
+    background: var(--cor-azul-escuro); color: var(--cor-branco);
+    border: none; border-radius: 6px; padding: 6px 10px; font-size: .8rem; cursor: pointer;
+}
+.btn-solicitar-participacao:hover{ background: var(--cor-verde-agua); }
+
+.card-solicitacao{
+    background: var(--cor-branco); border: 1px solid var(--cor-cinza-claro);
+    border-radius: 10px; padding: 14px 16px; margin: 12px 0;
+}
+.detalhe-solicitacao{ font-size: .85rem; color: var(--cor-texto-medio); margin: 2px 0; }
+.botoes-solicitacao{ display: flex; gap: 10px; margin-top: 10px; }
+.btn-aprovar-solicitacao, .btn-recusar-solicitacao{
+    border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-family: var(--fonte-titulos);
+}
+.btn-aprovar-solicitacao{ background: var(--cor-verde-claro); color: var(--cor-preto); }
+.btn-recusar-solicitacao{ background: #a33; color: var(--cor-branco); }
+
+/* =========================================================================
+   FOOTER — passo 3
+   ========================================================================= */
+.rodape-site{
+    background: #0a0a0a;
+    color: var(--cor-cinza);
+    padding: 40px 20px 20px;
+    margin-top: 60px;
+}
+.rodape-conteudo{
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+}
+.rodape-bloco h4{
+    color: var(--cor-branco);
+    font-family: var(--fonte-titulos);
+    margin-bottom: 10px;
+}
+.rodape-bloco p, .rodape-bloco a{
+    color: var(--cor-cinza);
+    text-decoration: none;
+    font-size: .9rem;
+    display: block;
+    margin-bottom: 6px;
+}
+.rodape-bloco a:hover{ color: var(--cor-menu-amarelo); }
+.rodape-nav{ display:flex; flex-direction:column; }
+.rodape-linha{
+    text-align: center;
+    font-size: .8rem;
+    color: var(--cor-cinza);
+    margin-top: 30px;
+    border-top: 1px solid #222;
+    padding-top: 16px;
+}
+
+/* =========================================================================
+   ÍCONE / BALÃO FLUTUANTE DO ASSISTENTE VIRTUAL — passo 3
+   O botão (<button>) fica fixo no canto; o <img> dentro dele só preenche
+   o círculo. Clicar nele abre o modal do chatbot (ver bloco seguinte).
+   ========================================================================= */
+.botao-assistente-flutuante-wrapper{
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    cursor: pointer;
+    z-index: 999;
+    transition: transform .2s ease;
+    background: var(--cor-branco); /* aparece se a imagem tiver fundo transparente */
+    overflow: hidden;
+}
+.botao-assistente-flutuante-wrapper:hover{ transform: scale(1.08); }
+
+.botao-assistente-flutuante{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 600px){
+    .botao-assistente-flutuante-wrapper{ width: 54px; height: 54px; right: 14px; bottom: 14px; }
+}
+
+/* =========================================================================
+   MODAL DO CHATBOT — abre centralizado por cima do site ao clicar no ícone
+   ========================================================================= */
+.modal-chatbot-fundo{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-chatbot-fundo.aberto{ display: flex; }
+
+.modal-chatbot{
+    background: var(--cor-branco);
+    width: min(480px, 100%);
+    height: min(640px, 90vh);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,.5);
+}
+
+.chat-frame-bar{
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    padding: 14px 18px;
+    font-size: 14px;
+    font-family: var(--fonte-titulos);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.chat-frame-bar .dot{
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--cor-dourado);
+    display: inline-block;
+}
+.modal-chatbot-fechar{
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--cor-branco);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+.modal-chatbot-fechar:hover{ color: var(--cor-menu-amarelo); }
+
+.chat-frame{
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--cor-branco);
+}
+
+.chat-fallback{
+    padding: 24px;
+    font-size: 14px;
+    color: var(--cor-texto-medio);
+    background: var(--cor-branco);
+}
+.chat-fallback code{
+    display: block;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--cor-creme);
+    border-radius: 6px;
+    font-size: 12.5px;
+    word-break: break-all;
+    color: var(--cor-texto-escuro);
+}
+
+@media (max-width: 600px){
+    .modal-chatbot{ width: 100%; height: 100%; border-radius: 0; }
+}

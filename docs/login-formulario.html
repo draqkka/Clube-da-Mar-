@@ -11,12 +11,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
 <!-- <link href="https://fonts.googleapis.com/css2?family=NOME+DA+FONTE&display=swap" rel="stylesheet"> -->
 
+<!-- Lista de usuários (login/senha) direto no código -->
+<script src="usuarios.js"></script>
 </head>
 <body>
 
 <header>
 <nav class="topnav">
-    <a href="index.html" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+    <a href="login.html" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
     
     
 </nav>
@@ -42,7 +44,7 @@
 <main class="pagina-login">
 
     <div>
-        <a href="login.html" class="form-login-voltar">
+        <a href="index.html" class="form-login-voltar">
             <i class="fa-solid fa-arrow-left"></i> Voltar ao site
         </a>
 
@@ -54,19 +56,16 @@
 
     <form class="form-login-card" id="form-acesso">
 
-        <!-- Campos de Estudante/Responsável (RA + Dígito + UF) -->
+        <!--
+            Campo de Estudante/Responsável — genérico (aceita RA numérico ou
+            e-mail institucional, o que estiver cadastrado em usuarios.js).
+            Antes eram 3 campos (RA/Dígito/UF), mas como no cadastro real às
+            vezes o login é um e-mail longo, ficou mais simples e menos
+            confuso ter só um campo de texto livre.
+        -->
         <div id="campos-ra">
             <div class="form-login-linha">
-                <input type="text" class="form-login-campo" placeholder="RA">
-                <input type="text" class="form-login-campo" placeholder="Dígito" style="flex: 0 0 70px;">
-                <select class="form-login-campo">
-                    <option>UF</option>
-                    <option>SP</option>
-                    <option>RJ</option>
-                    <option>MG</option>
-                    <option>PR</option>
-                    <option>Outro</option>
-                </select>
+                <input type="text" class="form-login-campo" id="campo-login-ra" placeholder="RA ou e-mail institucional">
             </div>
         </div>
 
@@ -89,7 +88,7 @@
         </p>
 
         <div class="form-login-botoes">
-            <a href="login.html" class="btn-form-voltar">Voltar</a>
+            <a href="index.html" class="btn-form-voltar">Voltar</a>
             <button type="submit" class="btn-form-acessar">Acessar</button>
         </div>
 
@@ -102,15 +101,11 @@
 var parametros = new URLSearchParams(window.location.search);
 var perfil = parametros.get('perfil') || 'estudante';
 
-// IMPORTANTE: troque a URL abaixo pela URL real do seu app AppSheet,
-// se for diferente da que já está no resto do site.
-var URL_PLANILHA = 'https://www.appsheet.com/start/7458b26c-6ac5-4bbd-980f-ed5b7d7b6f94';
-
 var config = {
-    estudante:   { titulo: 'Estudante',   temAcessoPlanilha: false, camposRA: true  },
-    responsavel: { titulo: 'Responsável', temAcessoPlanilha: false, camposRA: true  },
-    diretoria:   { titulo: 'Diretoria',   temAcessoPlanilha: true,  camposRA: false },
-    professor:   { titulo: 'Professor',   temAcessoPlanilha: true,  camposRA: false }
+    estudante:   { titulo: 'Estudante',   camposRA: true,  destino: 'dashboard-aluno.html' },
+    responsavel: { titulo: 'Responsável', camposRA: true,  destino: 'dashboard-aluno.html' },
+    diretoria:   { titulo: 'Diretoria',   camposRA: false, destino: 'dashboard-diretoria.html' },
+    professor:   { titulo: 'Professor',   camposRA: false, destino: 'dashboard-professor.html' }
 };
 
 var dadosPerfil = config[perfil] || config.estudante;
@@ -129,15 +124,85 @@ document.getElementById('botao-olho').addEventListener('click', function () {
     icone.classList.toggle('fa-eye-slash', vaiMostrar);
 });
 
-// Ao clicar em "Acessar": manda pra planilha (Diretoria/Professor)
-// ou pro início com o aviso de acesso restrito (Estudante/Responsável)
+// Mensagem de erro (acesso negado), criada por JS pra não mexer no CSS existente
+var avisoErro = document.createElement('p');
+avisoErro.className = 'form-login-erro';
+avisoErro.style.color = '#ff5c5c';
+avisoErro.style.textAlign = 'center';
+avisoErro.style.display = 'none';
+avisoErro.textContent = 'Login, senha ou perfil incorretos. Verifique seus dados e tente novamente.';
+document.getElementById('form-acesso').insertBefore(avisoErro, document.querySelector('.form-login-botoes'));
+
+var botaoAcessar = document.querySelector('.btn-form-acessar');
+
 document.getElementById('form-acesso').addEventListener('submit', function (evento) {
     evento.preventDefault();
-    if (dadosPerfil.temAcessoPlanilha) {
-        window.open(URL_PLANILHA, '_blank');
+    avisoErro.style.display = 'none';
+
+    var login;
+    if (dadosPerfil.camposRA) {
+        // Compara direto com o campo "login" de usuarios.js — pode ser
+        // um RA numérico, CPF ou e-mail institucional, dependendo do que
+        // foi cadastrado ali para aquela pessoa.
+        login = document.getElementById('campo-login-ra').value.trim();
     } else {
-        window.location.href = 'index.html?acesso=negado';
+        login = document.querySelector('#campos-email .form-login-campo').value.trim();
     }
+    var senha = document.getElementById('campo-senha').value.trim();
+
+    if (!login || !senha) {
+        avisoErro.textContent = 'Preencha login e senha.';
+        avisoErro.style.display = 'block';
+        return;
+    }
+
+    botaoAcessar.disabled = true;
+    botaoAcessar.textContent = 'Verificando...';
+
+    // Busca em USUARIOS (usuarios.js) já é instantânea, mas o delay de 1s
+    // abaixo é só visual — dá tempo da pessoa ver o "Verificando..." antes
+    // de entrar, em vez de trocar de tela na hora.
+    setTimeout(function () {
+        try {
+            if (typeof buscarUsuario !== 'function') {
+                throw new Error('usuarios.js não foi carregado (confira se o arquivo está na mesma pasta e o nome está certo)');
+            }
+
+            var usuario = buscarUsuario(login, senha, perfil);
+
+            if (!usuario) {
+                botaoAcessar.disabled = false;
+                botaoAcessar.textContent = 'Acessar';
+                avisoErro.textContent = 'Login, senha ou perfil incorretos. Verifique seus dados e tente novamente.';
+                avisoErro.style.display = 'block';
+                return;
+            }
+
+            var turmas = String(usuario.turmas || '')
+                .split(',')
+                .map(function (t) { return t.trim(); })
+                .filter(Boolean);
+
+            // Guarda os dados da sessão no navegador (só nesta aba/site) pra usar
+            // nas páginas seguintes sem precisar logar de novo em cada uma.
+            sessionStorage.setItem('cdm_sessao', JSON.stringify({
+                login: login,
+                perfil: perfil,
+                nome: usuario.nome,
+                ra: usuario.ra,
+                turmas: turmas
+            }));
+
+            window.location.href = dadosPerfil.destino;
+        } catch (erro) {
+            // Antes, um erro aqui deixava o botão travado em "Verificando..."
+            // pra sempre, sem nenhum aviso. Agora sempre volta pro normal.
+            botaoAcessar.disabled = false;
+            botaoAcessar.textContent = 'Acessar';
+            avisoErro.textContent = 'Erro ao verificar login: ' + erro.message;
+            avisoErro.style.display = 'block';
+        }
+    }, 1000);
 });
 </script>
 

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Selecionar Perfil</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="index.html" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+</nav>
+</header>
+
+<!--
+    ESCOLHA DE PERFIL — primeira etapa do login.
+    Cada item abaixo manda pra login-formulario.html?perfil=X, e é esse "X"
+    que faz a página de formulário decidir o título, os campos certos e o
+    dashboard de destino depois do login. Se adicionar um novo perfil no
+    futuro, basta copiar um <a class="login-perfil-item"> e trocar o
+    "?perfil=" e os textos.
+-->
+<main class="pagina-login">
+
+    <div>
+        <div class="login-saudacao">
+            <h1>Selecione seu perfil</h1>
+            <p>Escolha como você acessa o sistema do Clube da Maré.</p>
+        </div>
+
+        <p class="login-instrucao">Toque em uma opção abaixo para continuar.</p>
+
+        <div class="login-perfis">
+            <a href="login-formulario.html?perfil=estudante" class="login-perfil-item">
+                <span class="login-perfil-rotulo">Perfil</span>
+                <span class="login-perfil-nome">Estudante</span>
+                <span class="login-perfil-extra"><i class="fa-solid fa-chevron-right"></i></span>
+            </a>
+
+            <a href="login-formulario.html?perfil=responsavel" class="login-perfil-item">
+                <span class="login-perfil-rotulo">Perfil</span>
+                <span class="login-perfil-nome">Responsável</span>
+                <span class="login-perfil-extra"><i class="fa-solid fa-chevron-right"></i></span>
+            </a>
+
+            <a href="login-formulario.html?perfil=professor" class="login-perfil-item">
+                <span class="login-perfil-rotulo">Perfil</span>
+                <span class="login-perfil-nome">Professor</span>
+                <span class="login-perfil-extra"><i class="fa-solid fa-chevron-right"></i></span>
+            </a>
+
+            <a href="login-formulario.html?perfil=diretoria" class="login-perfil-item">
+                <span class="login-perfil-rotulo">Perfil</span>
+                <span class="login-perfil-nome">Diretoria</span>
+                <span class="login-perfil-extra"><i class="fa-solid fa-chevron-right"></i></span>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+<script src="menu.js"></script>
+</body>
+</html>

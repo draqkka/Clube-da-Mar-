@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Painel do Professor</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="planilha.js"></script>
+<script src="solicitacoes-local.js"></script>
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Voltar ao site</a>
+</nav>
+</header>
+
+<main class="conteudo-pagina painel-dashboard">
+
+    <div class="login-saudacao">
+        <h1 id="titulo-boas-vindas">Olá, professor(a)!</h1>
+        <p>Suas turmas:</p>
+        <div id="lista-turmas-chip" class="lista-turmas-chip"></div>
+    </div>
+
+    <div class="area-importar">
+        <button type="button" class="botao-mais-importar" id="botao-importar" aria-label="Importar planilha de notas">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+        <span>Importar planilha do computador (.xlsx ou .csv)</span>
+        <input type="file" id="arquivo-planilha" accept=".xlsx,.xls,.csv" style="display:none;">
+    </div>
+
+    <div id="carregando">Carregando suas turmas...</div>
+
+    <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
+        <thead>
+            <tr>
+                <th>RA</th><th>Nome</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="corpo-tabela-alunos"></tbody>
+    </table>
+
+    <!-- Formulário de Nova Solicitação -->
+    <section class="area-avaliacao-professores" id="area-solicitacao" style="display:none; margin-top: 20px;">
+        <h2>Solicitar participação de um aluno</h2>
+        <p id="texto-aluno-selecionado"></p>
+        <textarea id="observacao-solicitacao" class="form-login-campo" placeholder="Observação para a Diretoria (opcional)" rows="3" style="width:100%; resize:vertical;"></textarea>
+        <button type="button" class="btn-planilha-atalho" id="botao-enviar-solicitacao">Enviar solicitação</button>
+        <div id="status-solicitacao"></div>
+    </section>
+
+    <!-- RESPOSTA, HISTÓRICO E OPÇÃO DE REFAZER DO PROFESSOR -->
+    <section style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+        <h2>Minhas Solicitações Enviadas</h2>
+        <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
+    </section>
+
+</main>
+
+<script>
+var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
+if (!sessao || sessao.perfil !== 'professor') {
+    window.location.href = 'login.html';
+}
+
+document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'professor(a)') + '!';
+document.getElementById('lista-turmas-chip').innerHTML = sessao.turmas
+    .map(function (t) { return '<span class="chip-turma">' + t + '</span>'; })
+    .join('');
+
+document.getElementById('link-sair').addEventListener('click', function (e) {
+    e.preventDefault();
+    sessionStorage.removeItem('cdm_sessao');
+    window.location.href = 'index.html';
+});
+
+function carregarTurmas() {
+    carregarPlanilha()
+        .then(function (dados) {
+            document.getElementById('carregando').style.display = 'none';
+
+            var alunos = dados.notas.filter(function (a) {
+                return sessao.turmas.indexOf(a.turma) !== -1;
+            });
+
+            var corpo = document.getElementById('corpo-tabela-alunos');
+            corpo.innerHTML = '';
+            alunos.forEach(function (a) {
+                var linha = document.createElement('tr');
+                linha.innerHTML = '<td>' + a.ra + '</td><td>' + a.nome + '</td><td>' + a.turma +
+                    '</td><td>' + a.nota + '</td><td>' + a.presenca + '%</td><td>' + a.comportamento +
+                    '</td><td><button type="button" class="btn-solicitar-participacao" data-ra="' + a.ra +
+                    '" data-nome="' + a.nome + '" data-turma="' + a.turma + '">Solicitar participação</button></td>';
+                corpo.appendChild(linha);
+            });
+            document.getElementById('tabela-alunos').style.display = alunos.length ? 'table' : 'none';
+        });
+}
+carregarTurmas();
+
+// Envio de solicitações
+var alunoSelecionado = null;
+
+document.getElementById('corpo-tabela-alunos').addEventListener('click', function (evento) {
+    var botao = evento.target.closest('.btn-solicitar-participacao');
+    if (!botao) return;
+
+    alunoSelecionado = { ra: botao.dataset.ra, nome: botao.dataset.nome, turma: botao.dataset.turma };
+    document.getElementById('texto-aluno-selecionado').textContent =
+        'Aluno selecionado: ' + alunoSelecionado.nome + ' (RA ' + alunoSelecionado.ra + ', ' + alunoSelecionado.turma + ')';
+    document.getElementById('area-solicitacao').style.display = 'block';
+});
+
+document.getElementById('botao-enviar-solicitacao').addEventListener('click', function () {
+    if (!alunoSelecionado) return;
+    
+    criarSolicitacao({
+        ra: alunoSelecionado.ra,
+        nomeAluno: alunoSelecionado.nome,
+        turma: alunoSelecionado.turma,
+        professor: sessao.login,
+        observacao: document.getElementById('observacao-solicitacao').value.trim()
+    })
+    .then(function () {
+        document.getElementById('status-solicitacao').textContent = 'Solicitação enviada com sucesso!';
+        document.getElementById('observacao-solicitacao').value = '';
+    });
+});
+
+// Renderização das Solicitações e Ações (Refazer / Cancelar)
+escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
+    var container = document.getElementById('lista-respostas-diretoria');
+    container.innerHTML = '';
+
+    if (!minhasSolicitacoes.length) {
+        container.textContent = 'Você não possui solicitações ativas.';
+        return;
+    }
+
+    minhasSolicitacoes.forEach(function (s) {
+        var item = document.createElement('div');
+        item.className = 'card-solicitacao-professor';
+        item.style.padding = '12px';
+        item.style.marginBottom = '10px';
+        item.style.borderRadius = '8px';
+        item.style.borderLeft = '5px solid ' + (s.status === 'Aprovado' ? '#2ecc71' : (s.status === 'Recusado' ? '#ff5c5c' : '#ffd700'));
+        item.style.background = 'rgba(0,0,0,0.2)';
+
+        var html = '<strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ') — Status: <strong>' + s.status + '</strong>' +
+            (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + s.observacao + '</p>' : '') +
+            (s.respostaDiretoria ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta Diretoria: "' + s.respostaDiretoria + '"</p>' : '') +
+            '<div style="margin-top: 10px;">' +
+            '<button type="button" class="btn-refazer-prof" data-id="' + s.id + '" style="margin-right: 8px;">Refazer / Reavaliar</button>' +
+            '<button type="button" class="btn-cancelar-prof" data-id="' + s.id + '">Cancelar Solicitação</button>' +
+            '</div>';
+
+        item.innerHTML = html;
+        container.appendChild(item);
+    });
+});
+
+// Manipulador dos botões de Refazer e Cancelar do Professor
+document.getElementById('lista-respostas-diretoria').addEventListener('click', function (evento) {
+    var btnRefazer = evento.target.closest('.btn-refazer-prof');
+    var btnCancelar = evento.target.closest('.btn-cancelar-prof');
+
+    if (btnRefazer) {
+        var id = btnRefazer.getAttribute('data-id');
+        var novaObs = prompt('Informe a nova observação/motivo para reavaliar esta solicitação:');
+        if (novaObs !== null) {
+            reavaliarSolicitacaoProfessor(id, novaObs);
+        }
+    } else if (btnCancelar) {
+        var idCancelar = btnCancelar.getAttribute('data-id');
+        if (confirm('Tem certeza que deseja cancelar esta solicitação?')) {
+            cancelarSolicitacao(idCancelar);
+        }
+    }
+});
+</script>
+
+<script src="menu.js"></script>
+</body>
+</html>

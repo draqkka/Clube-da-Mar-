@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Meu Status</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+<!-- SheetJS: lê o arquivo .xlsx da planilha local (notas, presença, comportamento) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="planilha.js"></script>
+<!-- Solicitações de participação, salvas no localStorage (sem backend) -->
+<script src="solicitacoes-local.js"></script>
+</head>
+<body>
+
+<header>
+<nav class="topnav">
+    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Voltar ao site</a>
+</nav>
+</header>
+
+<!--
+    Esta página é a MESMA para Estudante e Responsável — os dois veem os
+    mesmos dados (nota, presença, comportamento) do aluno ligado ao RA que
+    foi usado no login. O JS abaixo:
+      1) confere se existe sessão válida (senão, manda de volta pro login);
+      2) lê o Excel local e filtra só a linha daquele RA — nunca mostra
+         nota de outro aluno nesta tela;
+      3) mostra a mensagem de reprovado/aprovado conforme o critério.
+-->
+<main class="conteudo-pagina painel-dashboard">
+
+    <div class="login-saudacao">
+        <h1 id="titulo-boas-vindas">Olá!</h1>
+        <p>Confira abaixo sua situação para a excursão ao Clube da Maré.</p>
+    </div>
+
+    <div id="carregando">Carregando seus dados...</div>
+
+    <div id="conteudo-status" style="display:none;">
+
+        <div class="grid-status">
+            <div class="card-status">
+                <span class="card-status-rotulo">Nota</span>
+                <span class="card-status-valor" id="valor-nota">-</span>
+            </div>
+            <div class="card-status">
+                <span class="card-status-rotulo">Presença</span>
+                <span class="card-status-valor" id="valor-presenca">-</span>
+            </div>
+            <div class="card-status">
+                <span class="card-status-rotulo">Comportamento</span>
+                <span class="card-status-valor" id="valor-comportamento">-</span>
+            </div>
+        </div>
+
+        <div id="caixa-mensagem" class="caixa-mensagem-resultado">
+            <p id="texto-mensagem"></p>
+        </div>
+
+        <!--
+            Status da solicitação: mostra se o professor já pediu a
+            participação desse aluno à Diretoria, e se ela já respondeu
+            (Pendente/Aprovado/Recusado). Só aparece se existir alguma
+            solicitação registrada pra esse RA.
+        -->
+        <div id="caixa-solicitacao" class="caixa-status-solicitacao" style="display:none;">
+            <p id="texto-solicitacao"></p>
+        </div>
+
+        <!-- Só aparece quando o aluno está aprovado (ver critério no JS) -->
+        <div id="area-formulario" style="display:none;">
+            <h2>Para finalizarmos, responda o formulário abaixo para garantir seu ingresso:</h2>
+            <!-- Troque o link abaixo pelo link do seu Google Forms -->
+            <a href="https://forms.gle/yfcxrVVv4meHmBEG9" target="_blank" class="btn-planilha-atalho">
+                Preencher formulário de confirmação
+            </a>
+        </div>
+    </div>
+
+    <div id="erro-sem-dados" style="display:none;">
+        <p>Não encontramos seus dados na planilha ainda. Fale com a secretaria da escola.</p>
+    </div>
+
+</main>
+
+<script>
+// Critério de aprovação — ajuste os números aqui se a regra da escola mudar
+var PRESENCA_MINIMA = 85;   // em %
+var NOTA_MINIMA = 6;        // considerando nota de 0 a 10
+var COMPORTAMENTOS_RUINS = ['ruim', 'regular'];
+
+var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
+if (!sessao || (sessao.perfil !== 'estudante' && sessao.perfil !== 'responsavel')) {
+    window.location.href = 'login.html';
+}
+
+// Saudação inicial (provisória pro responsável — vira "responsável de
+// [nome do aluno]" assim que os dados do aluno chegarem, logo abaixo).
+document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || '') + '!';
+
+document.getElementById('link-sair').addEventListener('click', function (e) {
+    e.preventDefault();
+    sessionStorage.removeItem('cdm_sessao');
+    window.location.href = 'index.html';
+});
+
+carregarPlanilha()
+.then(function (dados) {
+    document.getElementById('carregando').style.display = 'none';
+
+    var aluno = dados.notas.find(function (n) { return String(n.ra) === String(sessao.ra); });
+
+    if (!aluno) {
+        document.getElementById('erro-sem-dados').style.display = 'block';
+        return;
+    }
+
+    // Responsável vê "Olá, responsável de [nome do aluno]"; estudante
+    // continua vendo o próprio nome (já definido acima).
+    if (sessao.perfil === 'responsavel') {
+        document.getElementById('titulo-boas-vindas').textContent = 'Olá, responsável de ' + aluno.nome + '!';
+    }
+
+    document.getElementById('conteudo-status').style.display = 'block';
+    document.getElementById('valor-nota').textContent = aluno.nota;
+    document.getElementById('valor-presenca').textContent = aluno.presenca + '%';
+    document.getElementById('valor-comportamento').textContent = aluno.comportamento;
+
+    var presencaOk = Number(aluno.presenca) >= PRESENCA_MINIMA;
+    var notaOk = Number(aluno.nota) >= NOTA_MINIMA;
+    var comportamentoOk = COMPORTAMENTOS_RUINS.indexOf(String(aluno.comportamento).toLowerCase()) === -1;
+    var aprovado = presencaOk && notaOk && comportamentoOk;
+
+    var caixa = document.getElementById('caixa-mensagem');
+    var texto = document.getElementById('texto-mensagem');
+
+    if (aprovado) {
+        caixa.classList.add('caixa-aprovado');
+        texto.textContent = 'Parabéns! Gosto assim, se superando, continue assim! :)';
+        document.getElementById('area-formulario').style.display = 'block';
+    } else {
+        caixa.classList.add('caixa-reprovado');
+        texto.textContent = 'A partir de agora espero que tenha mais compromisso com os estudos. Não desista, se esforce — a recompensa estará em suas mãos.';
+    }
+})
+.catch(function (erro) {
+    document.getElementById('carregando').textContent = 'Não foi possível ler a planilha agora (' + erro.message + ').';
+});
+
+// ---- Status da solicitação de participação (feita pelo professor) -------
+// Vem do Firebase agora, e atualiza sozinho ao vivo (onSnapshot) se a
+// Diretoria aprovar/recusar enquanto o aluno está com a página aberta.
+escutarStatusAluno(sessao.ra, function (solicitacao) {
+    if (!solicitacao) return; // sem solicitação registrada ainda
+
+    var caixa = document.getElementById('caixa-solicitacao');
+    var texto = document.getElementById('texto-solicitacao');
+    var status = solicitacao.status;
+
+    caixa.classList.remove('status-pendente', 'status-aprovado', 'status-recusado');
+
+    if (status === 'Aprovado') {
+        caixa.classList.add('status-aprovado');
+        texto.textContent = 'Sua participação no Beach Club já foi aprovada pela Diretoria! 🎉';
+    } else if (status === 'Recusado') {
+        caixa.classList.add('status-recusado');
+        texto.textContent = 'Sua solicitação de participação foi recusada pela Diretoria.';
+    } else {
+        caixa.classList.add('status-pendente');
+        texto.textContent = 'Sua solicitação de participação está em análise pela Diretoria.';
+    }
+    caixa.style.display = 'block';
+});
+</script>
+
+<script src="menu.js"></script>
+</body>
+</html>

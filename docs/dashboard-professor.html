@@ -34,6 +34,13 @@
         <span>Importar planilha do computador (.xlsx ou .csv)</span>
         <input type="file" id="arquivo-planilha" accept=".xlsx,.xls,.csv" style="display:none;">
     </div>
+    <p class="dica-importar">
+        A planilha precisa ter as colunas, nesta ordem: <strong>RA, Nome, Turma, Nota, Presenca, Comportamento</strong>.
+        Só linhas cuja "Turma" seja uma das suas acima serão aceitas. Ao importar, o site vai
+        <strong>baixar um arquivo "<span id="nome-arquivo-planilha-dica"></span>" atualizado</strong> —
+        envie esse arquivo pra pasta do site (substituindo o antigo) pra que as notas apareçam pra todo mundo.
+    </p>
+    <div id="status-importacao"></div>
 
     <div id="carregando">Carregando suas turmas...</div>
 
@@ -61,6 +68,21 @@
         <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
     </section>
 
+    <!--
+        Formulário do Professor — troque o link abaixo pelo Google Forms de
+        verdade (mesmo padrão do formulário de confirmação do aluno, em
+        dashboard-aluno.html). Deixei um texto genérico; ajuste conforme o
+        que esse formulário deve coletar (ex: check-in no dia do evento,
+        cadastro de disponibilidade, etc.).
+    -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Formulário do Professor</h2>
+        <p id="texto-formulario-professor">Preencha o Termo de Compromisso do Acompanhante:</p>
+        <a href="https://forms.gle/kPxU4qJXq9vyyPCZ7" target="_blank" class="btn-planilha-atalho">
+            Preencher formulário
+        </a>
+    </section>
+
 </main>
 
 <script>
@@ -68,6 +90,8 @@ var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
 if (!sessao || sessao.perfil !== 'professor') {
     window.location.href = 'login.html';
 }
+
+document.getElementById('nome-arquivo-planilha-dica').textContent = NOME_ARQUIVO_PLANILHA;
 
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'professor(a)') + '!';
 document.getElementById('lista-turmas-chip').innerHTML = sessao.turmas
@@ -149,12 +173,15 @@ escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
         item.style.padding = '12px';
         item.style.marginBottom = '10px';
         item.style.borderRadius = '8px';
-        item.style.borderLeft = '5px solid ' + (s.status === 'Aprovado' ? '#2ecc71' : (s.status === 'Recusado' ? '#ff5c5c' : '#ffd700'));
+        var corBorda = s.status === 'Aprovado' ? '#2ecc71' :
+            (s.status === 'Recusado' ? '#ff5c5c' :
+            (s.status === 'Aguardando Desenvolvedor' ? '#1976d2' : '#ffd700'));
+        item.style.borderLeft = '5px solid ' + corBorda;
         item.style.background = 'rgba(0,0,0,0.2)';
 
         var html = '<strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ') — Status: <strong>' + s.status + '</strong>' +
             (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + s.observacao + '</p>' : '') +
-            (s.respostaDiretoria ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta Diretoria: "' + s.respostaDiretoria + '"</p>' : '') +
+            (s.resposta ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta (' + (s.respondidoPor || '') + '): "' + s.resposta + '"</p>' : '') +
             '<div style="margin-top: 10px;">' +
             '<button type="button" class="btn-refazer-prof" data-id="' + s.id + '" style="margin-right: 8px;">Refazer / Reavaliar</button>' +
             '<button type="button" class="btn-cancelar-prof" data-id="' + s.id + '">Cancelar Solicitação</button>' +
@@ -182,6 +209,91 @@ document.getElementById('lista-respostas-diretoria').addEventListener('click', f
             cancelarSolicitacao(idCancelar);
         }
     }
+});
+
+// ---- Botão "+": abre o seletor de arquivo do computador -----------------
+document.getElementById('botao-importar').addEventListener('click', function () {
+    document.getElementById('arquivo-planilha').click();
+});
+
+document.getElementById('arquivo-planilha').addEventListener('change', function (evento) {
+    var arquivo = evento.target.files[0];
+    if (!arquivo) return;
+
+    var status = document.getElementById('status-importacao');
+    status.textContent = 'Lendo arquivo...';
+
+    var leitor = new FileReader();
+    leitor.onload = function (e) {
+        var dadosBrutos = new Uint8Array(e.target.result);
+        var novaPasta = XLSX.read(dadosBrutos, { type: 'array' });
+        var primeiraAba = novaPasta.Sheets[novaPasta.SheetNames[0]];
+        // header:1 -> vira array de arrays (linha 0 = cabeçalho, ignorado abaixo)
+        var linhasCruas = XLSX.utils.sheet_to_json(primeiraAba, { header: 1 });
+
+        var linhas = [];
+        for (var i = 1; i < linhasCruas.length; i++) {
+            var l = linhasCruas[i];
+            if (!l[0]) continue;
+            linhas.push({
+                ra: String(l[0]), nome: l[1], turma: l[2], nota: l[3], presenca: l[4], comportamento: l[5]
+            });
+        }
+
+        if (!linhas.length) {
+            status.textContent = 'Não encontrei linhas de dados no arquivo.';
+            return;
+        }
+
+        // SEGURANÇA: só aceita linhas cuja Turma seja uma das do professor
+        // (checagem feita aqui mesmo, já que não existe mais servidor).
+        var aceitos = [];
+        var recusados = [];
+        linhas.forEach(function (l) {
+            if (sessao.turmas.indexOf(String(l.turma)) !== -1) {
+                l.professor = sessao.login;
+                aceitos.push(l);
+            } else {
+                recusados.push(l.nome || l.ra);
+            }
+        });
+
+        if (!aceitos.length) {
+            status.textContent = 'Nenhuma linha aceita — verifique se a coluna "Turma" bate com as suas turmas.';
+            return;
+        }
+
+        // Mescla com o que já estava carregado: substitui quem já existia
+        // (mesmo RA) e acrescenta quem é novo.
+        carregarPlanilha().then(function (dados) {
+            var notasAtualizadas = dados.notas.filter(function (n) {
+                return !aceitos.some(function (a) { return String(a.ra) === String(n.ra); });
+            });
+            aceitos.forEach(function (a) { notasAtualizadas.push(a); });
+
+            // Gera a nova aba "Notas" com o cabeçalho original (mantém as
+            // outras abas intactas na pasta).
+            var linhasParaAba = notasAtualizadas.map(function (n) {
+                return {
+                    RA: n.ra, Nome: n.nome, Turma: n.turma, Nota: n.nota,
+                    Presenca: n.presenca, Comportamento: n.comportamento, Professor: n.professor || ''
+                };
+            });
+            var abaNotas = XLSX.utils.json_to_sheet(linhasParaAba, {
+                header: ['RA', 'Nome', 'Turma', 'Nota', 'Presenca', 'Comportamento', 'Professor']
+            });
+            dados.pasta.Sheets['Notas'] = abaNotas;
+
+            atualizarCacheNotas(notasAtualizadas);
+            XLSX.writeFile(dados.pasta, NOME_ARQUIVO_PLANILHA);
+
+            status.textContent = aceitos.length + ' aluno(s) atualizado(s) nesta sessão. Arquivo "' +
+                NOME_ARQUIVO_PLANILHA + '" baixado — envie-o para a pasta do site pra valer pra todo mundo.' +
+                (recusados.length ? ' Recusados (turma não é sua): ' + recusados.join(', ') : '');
+            carregarTurmas();
+        });
+    };
+    leitor.readAsArrayBuffer(arquivo);
 });
 </script>
 

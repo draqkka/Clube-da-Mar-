@@ -45,6 +45,19 @@
         <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
     </section>
 
+    <!--
+        Formulário da Diretoria — troque o link abaixo pelo Google Forms de
+        verdade (mesmo padrão do formulário de confirmação do aluno, em
+        dashboard-aluno.html).
+    -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Formulário da Diretoria</h2>
+        <p>Preencha o formulário de Diretoria — Ata de Aprovação da Excursão abaixo:</p>
+        <a href="https://forms.gle/vGSXCfCTTGxEyu3o8" target="_blank" class="btn-planilha-atalho">
+            Preencher formulário
+        </a>
+    </section>
+
 </main>
 
 <script>
@@ -93,28 +106,36 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     solicitacoes.forEach(function (s) {
         var card = document.createElement('div');
         card.className = 'card-solicitacao';
-        card.style.border = '1px solid #ccc';
-        card.style.padding = '15px';
-        card.style.marginBottom = '15px';
-        card.style.borderRadius = '8px';
 
-        var ehPendente = s.status === 'Pendente';
+        // A Diretoria só decide sobre as "Pendente" — a aprovação dela NÃO
+        // é final, só passa a bola pro Desenvolvedor confirmar. Ela só pode
+        // reabrir (refazer) uma decisão que ela mesma tomou (recusa dela).
+        var podeAgir = s.status === 'Pendente';
+        var podeReabrir = s.status === 'Recusado' && s.respondidoPor === 'Diretoria';
+        var statusLabel = s.status + (s.respondidoPor ? ' — ' + s.respondidoPor : '');
+        var classeStatus = s.status === 'Aprovado' ? 'status-aprovado' :
+            (s.status === 'Recusado' ? 'status-recusado' :
+            (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
 
         var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ')</p>' +
             '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
             (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
-            '<p>Status atual: <strong>' + s.status + '</strong></p>';
+            '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius:6px;">Status: <strong>' + statusLabel + '</strong></p>';
 
-        if (ehPendente) {
+        if (podeAgir) {
             html += '<div style="margin-top:10px;">' +
                 '<textarea class="form-login-campo campo-resposta" data-id="' + s.id + '" placeholder="Sua resposta ao professor (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
                 '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Aprovar</button> ' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Aprovar (envia pro Desenvolvedor confirmar)</button> ' +
                 '<button type="button" class="btn-recusar-solicitacao" data-id="' + s.id + '">Recusar</button>' +
                 '</div></div>';
         } else {
-            html += (s.respostaDiretoria ? '<p class="detalhe-solicitacao">Sua Resposta: ' + s.respostaDiretoria + '</p>' : '') +
-                '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
+            html += (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + (s.respondidoPor || 'Diretoria') + '): ' + s.resposta + '</p>' : '');
+            if (s.status === 'Aguardando Desenvolvedor') {
+                html += '<p class="detalhe-solicitacao">Aguardando confirmação final do Desenvolvedor.</p>';
+            } else if (podeReabrir) {
+                html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
+            }
         }
 
         card.innerHTML = html;
@@ -122,33 +143,8 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     });
 });
 
-// Captura de eventos de clique com fallback seguro de ID
-document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
-    var refazer = evento.target.closest('.btn-refazer-solicitacao');
-    var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
-    var recusar = evento.target.closest('.btn-recusar-solicitacao');
-
-    if (refazer) {
-        var idRefazer = refazer.getAttribute('data-id');
-        reabrirSolicitacao(idRefazer);
-        return;
-    }
-
-    if (aprovar || recusar) {
-        var botao = aprovar || recusar;
-        var id = botao.getAttribute('data-id');
-        var novoStatus = aprovar ? 'Aprovado' : 'Recusado';
-        
-        var card = botao.closest('.card-solicitacao');
-        var campoTexto = card.querySelector('.campo-resposta');
-        var resposta = campoTexto ? campoTexto.value.trim() : '';
-
-        responderSolicitacao(id, novoStatus, resposta);
-    }
-});
-
-
-// Ações nos botões
+// Ações nos botões (Aprovar envia pra confirmação do Desenvolvedor; Recusar
+// é decisão final da própria Diretoria; Refazer reabre uma recusa dela)
 document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
     var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
     var recusar = evento.target.closest('.btn-recusar-solicitacao');
@@ -163,13 +159,15 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
 
     var botao = aprovar || recusar;
     var id = botao.dataset.id;
-    var novoStatus = aprovar ? 'Aprovado' : 'Recusado';
-    
     var card = botao.closest('.card-solicitacao');
     var campoTexto = card.querySelector('.campo-resposta');
     var resposta = campoTexto ? campoTexto.value.trim() : '';
 
-    responderSolicitacao(id, novoStatus, resposta);
+    if (aprovar) {
+        aprovarComoDiretoria(id, resposta);
+    } else {
+        recusarComoDiretoria(id, resposta);
+    }
 });
 </script>
 

@@ -71,7 +71,11 @@
         <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
             <thead>
                 <tr>
+<<<<<<< HEAD
                     <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th><th>Outras informações</th>
+=======
+                    <th>RA</th><th>Nome</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th>
+>>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
                 </tr>
             </thead>
             <tbody id="corpo-tabela-alunos"></tbody>
@@ -160,13 +164,19 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
+<<<<<<< HEAD
 // ---- Alunos (planilha) — todas as turmas juntas (um arquivo por turma) --
 carregarTodasAsTurmas()
+=======
+// ---- Alunos (planilha) ---------------------------------------------------
+carregarPlanilha()
+>>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     .then(function (dados) {
         document.getElementById('carregando-alunos').style.display = 'none';
         var corpo = document.getElementById('corpo-tabela-alunos');
         dados.notas.forEach(function (a) {
             var linha = document.createElement('tr');
+<<<<<<< HEAD
             // Colunas extras da planilha (ex: Turno) aparecem juntas em "Outras informações".
             var outras = Object.keys(a.extras || {}).map(function (k) {
                 return escaparHtml(k) + ': ' + escaparHtml(a.extras[k]);
@@ -176,6 +186,10 @@ carregarTodasAsTurmas()
                 '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
                 '</td><td>' + escaparHtml(a.comportamento || '—') + '</td><td>' + escaparHtml(a.professor || '') +
                 '</td><td>' + (outras || '—') + '</td>';
+=======
+            linha.innerHTML = '<td>' + a.ra + '</td><td>' + a.nome + '</td><td>' + a.turma + '</td><td>' +
+                a.nota + '</td><td>' + a.presenca + '%</td><td>' + a.comportamento + '</td><td>' + (a.professor || '') + '</td>';
+>>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
             corpo.appendChild(linha);
         });
         document.getElementById('tabela-alunos').style.display = dados.notas.length ? 'table' : 'none';

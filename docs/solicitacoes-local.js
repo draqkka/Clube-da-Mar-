@@ -195,4 +195,8 @@ function escutarStatusAluno(ra, aoAtualizar) {
             .sort(function (a, b) { return b.criadoEm - a.criadoEm; });
         aoAtualizar(doAluno[0] || null);
     });
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7

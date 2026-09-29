@@ -23,7 +23,7 @@
 <header>
 <nav class="topnav">
     <button type="button" class="menu-icone" id="menu-icone" aria-label="Abrir menu" aria-expanded="false">
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-bars" id="menu-icone-simbolo"></i>
     </button>
     <div class="menu-dropdown" id="menu-dropdown">
         <a href="#inicio">Início</a>
@@ -41,7 +41,7 @@
 
 
 <script>
-    // Abre/fecha o painel do menu (o ícone de lupa no canto direito).
+    // Abre/fecha o painel do menu (o ícone de 3 linhas — "hambúrguer" — no canto direito).
 // Usado em todas as páginas do site — o HTML de cada página só precisa ter
 // um botão com id="menu-icone" e um painel com id="menu-dropdown".
 (function () {
@@ -49,15 +49,28 @@
     var painel = document.getElementById('menu-dropdown');
     if (!botao || !painel) return;
 
+    var simbolo = document.getElementById('menu-icone-simbolo');
+
+    // Fechado = 3 linhas (fa-bars); aberto = X (fa-xmark)
+    function trocarSimbolo(aberto) {
+        if (simbolo) {
+            simbolo.classList.toggle('fa-bars', !aberto);
+            simbolo.classList.toggle('fa-xmark', aberto);
+        }
+        botao.setAttribute('aria-label', aberto ? 'Fechar menu' : 'Abrir menu');
+    }
+
     function fechar() {
         painel.classList.remove('aberto');
         botao.setAttribute('aria-expanded', 'false');
+        trocarSimbolo(false);
     }
 
     function alternar() {
         var vaiAbrir = !painel.classList.contains('aberto');
         painel.classList.toggle('aberto', vaiAbrir);
         botao.setAttribute('aria-expanded', String(vaiAbrir));
+        trocarSimbolo(vaiAbrir);
     }
 
     botao.addEventListener('click', function (evento) {
@@ -554,7 +567,7 @@ Com uma estrutura moderna, ambiente acolhedor e inúmeras opções de lazer, o C
 <div class="modal-local" id="modal-local">
     <div class="modal-local-conteudo">
         <button class="modal-fechar" id="modal-fechar">&times;</button>
-        <img src="imagens/Mapa/Local16.png" alt="" id="modal-imagem">
+        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" id="modal-imagem">
         <!-- ALT: vazio de propósito — o JavaScript preenche o src E o alt
              dinamicamente com o nome do local, no momento do clique -->
         <h3 id="modal-titulo"></h3>
@@ -589,11 +602,32 @@ document.querySelectorAll('.ponto').forEach(function (ponto) {
         // Segue o mesmo caminho das outras imagens desta página (sem "../",
         // porque a pasta "imagens" fica no mesmo nível do index.html):
         // imagens/Mapa/Local1.png, Local2.png...
-        document.getElementById('modal-imagem').src = 'imagens/Mapa/Local' + id + '.png';
-        document.getElementById('modal-imagem').alt = nome;
+        // Imagens otimizadas (.webp, ~200 KB cada, em vez dos .png de ~3 MB).
+        // Se alguma falhar, tenta o .png original antes de desistir.
+        var imgModal = document.getElementById('modal-imagem');
+        var base = 'imagens/Mapa/Local' + id;
+        imgModal.style.opacity = '0.3';
+        imgModal.onload = function () { imgModal.style.opacity = '1'; };
+        imgModal.onerror = function () {
+            if (imgModal.src.indexOf('.webp') !== -1) {
+                imgModal.src = base + '.png';
+            } else {
+                imgModal.style.opacity = '1';
+            }
+        };
+        imgModal.src = base + '.webp';
+        imgModal.alt = nome;
         document.getElementById('modal-titulo').textContent = nome;
         document.getElementById('modal-local').classList.add('ativo');
     });
+});
+
+// Pré-carrega as 16 imagens dos locais em segundo plano (depois que a
+// página carregou), pra o modal abrir na hora ao clicar num ponto.
+window.addEventListener('load', function () {
+    setTimeout(function () {
+        for (var i = 1; i <= 16; i++) { new Image().src = 'imagens/Mapa/Local' + i + '.webp'; }
+    }, 1500);
 });
 
 document.getElementById('modal-fechar').addEventListener('click', function () {
@@ -668,31 +702,19 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     </form>
 </section>
 
-<script>
-
-const menuBtn = document.querySelector('.menu-mobile');
-const menuLinks = document.querySelector('.menu-links');
-
-menuBtn.addEventListener('click', () => {
-    menuLinks.classList.toggle('ativo');
-});
-
-
-</script>
-
 <!-- RODAPÉ (footer) --> 
 <footer class="rodape-site">
     <div class="rodape-conteudo">
         <div class="rodape-bloco">
             <h4>Endereço</h4>
-            <!-- Troque pelo endereço real do Clube da Maré -->
-            <p>Rodovia SP-000, km 00 — Praia da Maré, SP</p>
-            <p>CEP 00000-000</p>
+            <!-- Endereço completo (rua/número/CEP) ainda não publicado — troque
+                 quando tiver o local exato. -->
+            <p>Campinas — SP</p>
         </div>
 
         <div class="rodape-bloco">
             <h4>Contato</h4>
-            <p>(00) 00000-0000</p>
+            <p>WhatsApp: (11) 98904-7453</p>
             <p>contato@clubedamare.com.br</p>
         </div>
 
@@ -729,35 +751,33 @@ menuBtn.addEventListener('click', () => {
 
 <!--
     MODAL DO CHATBOT
-    Fica escondido (display:none) até clicar no ícone acima. O <iframe> é
-    onde entra o link do SEU chatbot (Chatbase, Botpress, Landbot, Tidio,
-    Character.AI embed, etc) — troque "SRC_DO_SEU_CHATBOT_AQUI" pela URL
-    real. Se o seu chatbot for um <script> de widget em vez de link de
-    iframe, me avisa que eu adapto essa parte.
+    Fica escondido (display:none) até clicar no ícone acima. Este é um chat
+    PRÓPRIO (não é mais um iframe de terceiro): manda a pergunta pra
+    "/api/chat" (função serverless em api/chat.js) que chama a API da
+    Claude e devolve a resposta. Precisa da variável de ambiente
+    ANTHROPIC_API_KEY configurada no projeto da Vercel — sem isso, o
+    assistente responde com uma mensagem de erro explicando o que falta.
 -->
 <div class="modal-chatbot-fundo" id="modal-chatbot-fundo">
     <div class="modal-chatbot" id="modal-chatbot" role="dialog" aria-modal="true" aria-label="Assistente Virtual - Clube da Maré">
 
         <div class="chat-frame-bar">
             <span class="dot"></span>
-            Assistente Virtual — Clube da Maré
+            Marézinho — Clube da Maré
             <button type="button" class="modal-chatbot-fechar" id="botao-fechar-chatbot" aria-label="Fechar assistente virtual">&times;</button>
         </div>
 
-        <iframe
-            class="chat-frame"
-            id="chat-frame-iframe"
-            src="https://character.ai/chat/2SufykdDnFNCL4yqYVlPP1E4BHvpMuUOhRSOeOfcRdE"
-            title="Assistente Virtual - Clube da Maré"
-            loading="lazy">
-        </iframe>
+        <div class="chat-mensagens" id="chat-mensagens"></div>
 
-        <!-- Aparece só se o navegador não conseguir carregar o iframe acima -->
+        <form class="chat-formulario" id="chat-formulario">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Digite sua pergunta..." autocomplete="off" maxlength="500">
+            <button type="submit" class="chat-botao-enviar" id="chat-botao-enviar" aria-label="Enviar mensagem">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+
         <noscript>
-            <p class="chat-fallback">
-                Ative o JavaScript para conversar com o assistente virtual, ou acesse diretamente:
-                <code>SRC_DO_SEU_CHATBOT_AQUI</code>
-            </p>
+            <p class="chat-fallback">Ative o JavaScript pra conversar com o assistente virtual.</p>
         </noscript>
     </div>
 </div>
@@ -767,10 +787,34 @@ menuBtn.addEventListener('click', () => {
     var botaoAbrir = document.getElementById('botao-abrir-chatbot');
     var botaoFechar = document.getElementById('botao-fechar-chatbot');
     var fundo = document.getElementById('modal-chatbot-fundo');
+    var caixaMensagens = document.getElementById('chat-mensagens');
+    var formulario = document.getElementById('chat-formulario');
+    var campoInput = document.getElementById('chat-input');
+    var botaoEnviar = document.getElementById('chat-botao-enviar');
+
+    // Histórico enviado pra API a cada pergunta (só texto e quem falou —
+    // a mensagem de boas-vindas abaixo é só visual, não entra aqui).
+    var historico = [];
+    var jaAbriuUmaVez = false;
+
+    function criarBolha(texto, tipo) {
+        var bolha = document.createElement('div');
+        bolha.className = 'chat-bolha chat-bolha-' + tipo;
+        bolha.textContent = texto;
+        caixaMensagens.appendChild(bolha);
+        caixaMensagens.scrollTop = caixaMensagens.scrollHeight;
+        return bolha;
+    }
 
     function abrirModal() {
         fundo.classList.add('aberto');
         document.body.style.overflow = 'hidden'; // trava o scroll do site atrás do modal
+
+        if (!jaAbriuUmaVez) {
+            jaAbriuUmaVez = true;
+            criarBolha('Olá! Seja muito bem-vindo(a) ao Clube da Maré Beach Club! ☀️🏖️🌴 Sou o Marézinho, o Assistente Virtual Oficial — posso ajudar com dúvidas sobre a excursão, ingressos, programação, atividades, segurança e funcionamento do evento. Como posso ajudar você hoje?', 'assistente');
+        }
+        campoInput.focus();
     }
 
     function fecharModal() {
@@ -781,14 +825,57 @@ menuBtn.addEventListener('click', () => {
     botaoAbrir.addEventListener('click', abrirModal);
     botaoFechar.addEventListener('click', fecharModal);
 
-    // Fecha ao clicar fora da caixa do chat (no fundo escurecido)
     fundo.addEventListener('click', function (evento) {
         if (evento.target === fundo) fecharModal();
     });
 
-    // Fecha com a tecla Esc
     document.addEventListener('keydown', function (evento) {
         if (evento.key === 'Escape') fecharModal();
+    });
+
+    formulario.addEventListener('submit', function (evento) {
+        evento.preventDefault();
+
+        var pergunta = campoInput.value.trim();
+        if (!pergunta) return;
+
+        criarBolha(pergunta, 'usuario');
+        historico.push({ papel: 'usuario', texto: pergunta });
+
+        campoInput.value = '';
+        campoInput.disabled = true;
+        botaoEnviar.disabled = true;
+
+        var indicador = document.createElement('p');
+        indicador.className = 'chat-digitando';
+        indicador.textContent = 'Digitando...';
+        caixaMensagens.appendChild(indicador);
+        caixaMensagens.scrollTop = caixaMensagens.scrollHeight;
+
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ mensagens: historico })
+        })
+            .then(function (resposta) { return resposta.json().then(function (dados) { return { ok: resposta.ok, dados: dados }; }); })
+            .then(function (resultado) {
+                indicador.remove();
+                if (!resultado.ok) {
+                    criarBolha(resultado.dados.erro || 'Não consegui responder agora.', 'erro');
+                    return;
+                }
+                criarBolha(resultado.dados.resposta, 'assistente');
+                historico.push({ papel: 'assistente', texto: resultado.dados.resposta });
+            })
+            .catch(function () {
+                indicador.remove();
+                criarBolha('Não consegui falar com o assistente agora — confira sua conexão e tente de novo.', 'erro');
+            })
+            .finally(function () {
+                campoInput.disabled = false;
+                botaoEnviar.disabled = false;
+                campoInput.focus();
+            });
     });
 })();
 </script>

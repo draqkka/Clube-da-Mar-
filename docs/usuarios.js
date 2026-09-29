@@ -28,15 +28,9 @@ var USUARIOS = [
     { login: 'prof.mariasoares@edu.sp.br', senha: 'Edu@2026', perfil: 'professor', nome: 'Maria Soares', ra: '', turmas: '2ºA,3ºA' },
     { login: 'gabrieladiretoria@edu.sp.br', senha: 'Seduc@2026', perfil: 'diretoria', nome: 'Gabriela', ra: '', turmas: '' },
     { login: 'dev@clubedamare.com.br', senha: 'Maré@2026', perfil: 'desenvolvedor', nome: 'Desenvolvedor', ra: '', turmas: '' },
-<<<<<<< HEAD
-    { login: '0000108327708xsp@al.educacao.sp.gov.br', senha: 'Apparecid@2025', perfil: 'estudante', nome: 'Julia Victória', ra: '108327708xsp', turmas: '3ºA' },
-    { login: '456.789.123-64', senha: 'Apparecid@2025', perfil: 'responsavel', nome: 'Elen (Mãe da Julia Victória)', ra: '108327708xsp', turmas: '3ºA' },
-    { login: '00001104112772sp@al.educacao.sp.gov.br', senha: 'Apparecid@2025', perfil: 'estudante', nome: 'Rebeca Pereira', ra: '1104112772sp', turmas: '2ºA' },
-=======
     { login: '0000108327708xsp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Julia Victória', ra: '108327708xsp', turmas: '3ºA' },
     { login: '456.789.123-64', senha: 'Apparecid@2025', perfil: 'responsavel', nome: 'Elen (Mãe da Julia Victória)', ra: '108327708xsp', turmas: '3ºA' },
     { login: '00001104112772sp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Rebeca Pereira', ra: '1104112772sp', turmas: '2ºA' },
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     { login: '987.654.321-00', senha: 'Apparecid@2025', perfil: 'responsavel', nome: 'Joana (Mãe da Rebeca Pereira)', ra: '1104112772sp', turmas: '2ºA' }
 ];
 
@@ -49,8 +43,4 @@ function buscarUsuario(login, senha, perfil) {
                String(u.perfil).trim().toLowerCase() === perfil;
     });
     return encontrado || null;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7

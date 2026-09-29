@@ -1,0 +1,2 @@
+/* transição suave quando a imagem do modal termina de carregar */
+.modal-local-conteudo img { transition: opacity .25s ease; background: #e9e4d8; }

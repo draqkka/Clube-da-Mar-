@@ -23,7 +23,6 @@
 
     <div class="login-saudacao">
         <h1 id="titulo-boas-vindas">Olá, professor(a)!</h1>
-<<<<<<< HEAD
         <p>Suas turmas (clique pra escolher com qual trabalhar):</p>
         <div id="lista-turmas-chip" class="lista-turmas-chip"></div>
     </div>
@@ -37,17 +36,10 @@
     <p id="aviso-turma-nova" class="dica-importar" style="display:none; color: var(--cor-dourado);"></p>
 
     <!-- Importação da planilha completa (RA/Nome/Turma/Nota/Presenca/Comportamento) -->
-=======
-        <p>Suas turmas:</p>
-        <div id="lista-turmas-chip" class="lista-turmas-chip"></div>
-    </div>
-
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     <div class="area-importar">
         <button type="button" class="botao-mais-importar" id="botao-importar" aria-label="Importar planilha de notas">
             <i class="fa-solid fa-plus"></i>
         </button>
-<<<<<<< HEAD
         <span>Importar planilha completa da turma (.xlsx ou .csv)</span>
         <input type="file" id="arquivo-planilha" accept=".xlsx,.xls,.csv" style="display:none;">
     </div>
@@ -95,41 +87,21 @@
         <div id="status-frequencia" class="dica-importar"></div>
     </section>
 
-=======
-        <span>Importar planilha do computador (.xlsx ou .csv)</span>
-        <input type="file" id="arquivo-planilha" accept=".xlsx,.xls,.csv" style="display:none;">
-    </div>
-    <p class="dica-importar">
-        A planilha precisa ter as colunas, nesta ordem: <strong>RA, Nome, Turma, Nota, Presenca, Comportamento</strong>.
-        Só linhas cuja "Turma" seja uma das suas acima serão aceitas. Ao importar, o site vai
-        <strong>baixar um arquivo "<span id="nome-arquivo-planilha-dica"></span>" atualizado</strong> —
-        envie esse arquivo pra pasta do site (substituindo o antigo) pra que as notas apareçam pra todo mundo.
-    </p>
-    <div id="status-importacao"></div>
-
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     <div id="carregando">Carregando suas turmas...</div>
 
     <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
         <thead>
             <tr>
-<<<<<<< HEAD
                 <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Ação</th>
-=======
-                <th>RA</th><th>Nome</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Ação</th>
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
             </tr>
         </thead>
         <tbody id="corpo-tabela-alunos"></tbody>
     </table>
 
-<<<<<<< HEAD
     <div style="margin-top:16px;">
         <button type="button" class="btn-planilha-atalho" id="botao-baixar-planilha">Baixar cópia de segurança desta turma (.xlsx)</button>
     </div>
 
-=======
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     <!-- Formulário de Nova Solicitação -->
     <section class="area-avaliacao-professores" id="area-solicitacao" style="display:none; margin-top: 20px;">
         <h2>Solicitar participação de um aluno</h2>
@@ -168,16 +140,7 @@ if (!sessao || sessao.perfil !== 'professor') {
     window.location.href = 'login.html';
 }
 
-<<<<<<< HEAD
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'professor(a)') + '!';
-=======
-document.getElementById('nome-arquivo-planilha-dica').textContent = NOME_ARQUIVO_PLANILHA;
-
-document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'professor(a)') + '!';
-document.getElementById('lista-turmas-chip').innerHTML = sessao.turmas
-    .map(function (t) { return '<span class="chip-turma">' + t + '</span>'; })
-    .join('');
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
 
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
@@ -185,7 +148,6 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-<<<<<<< HEAD
 // ---- Seleção de turma ------------------------------------------------------
 // Cada turma agora tem sua própria planilha; "turmaAtual" é a que está
 // sendo exibida/editada agora, e "dadosTurmaAtual" é o objeto (com
@@ -395,33 +357,6 @@ document.getElementById('botao-baixar-planilha').addEventListener('click', funct
 });
 
 // ---- Envio de solicitações --------------------------------------------------
-=======
-function carregarTurmas() {
-    carregarPlanilha()
-        .then(function (dados) {
-            document.getElementById('carregando').style.display = 'none';
-
-            var alunos = dados.notas.filter(function (a) {
-                return sessao.turmas.indexOf(a.turma) !== -1;
-            });
-
-            var corpo = document.getElementById('corpo-tabela-alunos');
-            corpo.innerHTML = '';
-            alunos.forEach(function (a) {
-                var linha = document.createElement('tr');
-                linha.innerHTML = '<td>' + a.ra + '</td><td>' + a.nome + '</td><td>' + a.turma +
-                    '</td><td>' + a.nota + '</td><td>' + a.presenca + '%</td><td>' + a.comportamento +
-                    '</td><td><button type="button" class="btn-solicitar-participacao" data-ra="' + a.ra +
-                    '" data-nome="' + a.nome + '" data-turma="' + a.turma + '">Solicitar participação</button></td>';
-                corpo.appendChild(linha);
-            });
-            document.getElementById('tabela-alunos').style.display = alunos.length ? 'table' : 'none';
-        });
-}
-carregarTurmas();
-
-// Envio de solicitações
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
 var alunoSelecionado = null;
 
 document.getElementById('corpo-tabela-alunos').addEventListener('click', function (evento) {
@@ -436,11 +371,7 @@ document.getElementById('corpo-tabela-alunos').addEventListener('click', functio
 
 document.getElementById('botao-enviar-solicitacao').addEventListener('click', function () {
     if (!alunoSelecionado) return;
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     criarSolicitacao({
         ra: alunoSelecionado.ra,
         nomeAluno: alunoSelecionado.nome,
@@ -454,11 +385,7 @@ document.getElementById('botao-enviar-solicitacao').addEventListener('click', fu
     });
 });
 
-<<<<<<< HEAD
 // ---- Renderização das Solicitações e Ações (Refazer / Cancelar) -----------
-=======
-// Renderização das Solicitações e Ações (Refazer / Cancelar)
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
 escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
     var container = document.getElementById('lista-respostas-diretoria');
     container.innerHTML = '';
@@ -493,10 +420,6 @@ escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
     });
 });
 
-<<<<<<< HEAD
-=======
-// Manipulador dos botões de Refazer e Cancelar do Professor
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
 document.getElementById('lista-respostas-diretoria').addEventListener('click', function (evento) {
     var btnRefazer = evento.target.closest('.btn-refazer-prof');
     var btnCancelar = evento.target.closest('.btn-cancelar-prof');
@@ -515,31 +438,21 @@ document.getElementById('lista-respostas-diretoria').addEventListener('click', f
     }
 });
 
-<<<<<<< HEAD
 // ---- Botão "+": importação da planilha completa (.xlsx/.csv) --------------
-=======
-// ---- Botão "+": abre o seletor de arquivo do computador -----------------
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
 document.getElementById('botao-importar').addEventListener('click', function () {
     document.getElementById('arquivo-planilha').click();
 });
 
 document.getElementById('arquivo-planilha').addEventListener('change', function (evento) {
     var arquivo = evento.target.files[0];
-<<<<<<< HEAD
     if (!arquivo || !turmaAtual || !dadosTurmaAtual) return;
 
     var turmaDaImportacao = turmaAtual;
-=======
-    if (!arquivo) return;
-
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     var status = document.getElementById('status-importacao');
     status.textContent = 'Lendo arquivo...';
 
     var leitor = new FileReader();
     leitor.onload = function (e) {
-<<<<<<< HEAD
         evento.target.value = ''; // permite escolher o mesmo arquivo de novo
 
         var lido;
@@ -561,43 +474,10 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                 aceitos.push(a);
             } else {
                 recusados.push(a.nome || a.ra);
-=======
-        var dadosBrutos = new Uint8Array(e.target.result);
-        var novaPasta = XLSX.read(dadosBrutos, { type: 'array' });
-        var primeiraAba = novaPasta.Sheets[novaPasta.SheetNames[0]];
-        // header:1 -> vira array de arrays (linha 0 = cabeçalho, ignorado abaixo)
-        var linhasCruas = XLSX.utils.sheet_to_json(primeiraAba, { header: 1 });
-
-        var linhas = [];
-        for (var i = 1; i < linhasCruas.length; i++) {
-            var l = linhasCruas[i];
-            if (!l[0]) continue;
-            linhas.push({
-                ra: String(l[0]), nome: l[1], turma: l[2], nota: l[3], presenca: l[4], comportamento: l[5]
-            });
-        }
-
-        if (!linhas.length) {
-            status.textContent = 'Não encontrei linhas de dados no arquivo.';
-            return;
-        }
-
-        // SEGURANÇA: só aceita linhas cuja Turma seja uma das do professor
-        // (checagem feita aqui mesmo, já que não existe mais servidor).
-        var aceitos = [];
-        var recusados = [];
-        linhas.forEach(function (l) {
-            if (sessao.turmas.indexOf(String(l.turma)) !== -1) {
-                l.professor = sessao.login;
-                aceitos.push(l);
-            } else {
-                recusados.push(l.nome || l.ra);
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
             }
         });
 
         if (!aceitos.length) {
-<<<<<<< HEAD
             status.textContent = 'Nenhuma linha aceita — verifique se a coluna "Turma" é "' + turmaDaImportacao + '".';
             return;
         }
@@ -623,41 +503,6 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                 });
             })
             .catch(function (erro) { status.textContent = 'Erro ao salvar: ' + erro.message; });
-=======
-            status.textContent = 'Nenhuma linha aceita — verifique se a coluna "Turma" bate com as suas turmas.';
-            return;
-        }
-
-        // Mescla com o que já estava carregado: substitui quem já existia
-        // (mesmo RA) e acrescenta quem é novo.
-        carregarPlanilha().then(function (dados) {
-            var notasAtualizadas = dados.notas.filter(function (n) {
-                return !aceitos.some(function (a) { return String(a.ra) === String(n.ra); });
-            });
-            aceitos.forEach(function (a) { notasAtualizadas.push(a); });
-
-            // Gera a nova aba "Notas" com o cabeçalho original (mantém as
-            // outras abas intactas na pasta).
-            var linhasParaAba = notasAtualizadas.map(function (n) {
-                return {
-                    RA: n.ra, Nome: n.nome, Turma: n.turma, Nota: n.nota,
-                    Presenca: n.presenca, Comportamento: n.comportamento, Professor: n.professor || ''
-                };
-            });
-            var abaNotas = XLSX.utils.json_to_sheet(linhasParaAba, {
-                header: ['RA', 'Nome', 'Turma', 'Nota', 'Presenca', 'Comportamento', 'Professor']
-            });
-            dados.pasta.Sheets['Notas'] = abaNotas;
-
-            atualizarCacheNotas(notasAtualizadas);
-            XLSX.writeFile(dados.pasta, NOME_ARQUIVO_PLANILHA);
-
-            status.textContent = aceitos.length + ' aluno(s) atualizado(s) nesta sessão. Arquivo "' +
-                NOME_ARQUIVO_PLANILHA + '" baixado — envie-o para a pasta do site pra valer pra todo mundo.' +
-                (recusados.length ? ' Recusados (turma não é sua): ' + recusados.join(', ') : '');
-            carregarTurmas();
-        });
->>>>>>> 0b890da6ff5852da057fcfc166402057dffd77c7
     };
     leitor.readAsArrayBuffer(arquivo);
 });

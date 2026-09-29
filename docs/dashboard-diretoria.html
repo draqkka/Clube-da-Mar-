@@ -31,7 +31,7 @@
     <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
         <thead>
             <tr>
-                <th>RA</th><th>Nome</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th>
+                <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th><th>Outras informações</th>
             </tr>
         </thead>
         <tbody id="corpo-tabela-alunos"></tbody>
@@ -43,6 +43,19 @@
         
         <div id="lista-solicitacoes"></div>
         <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
+    </section>
+
+    <!--
+        Formulário da Diretoria — troque o link abaixo pelo Google Forms de
+        verdade (mesmo padrão do formulário de confirmação do aluno, em
+        dashboard-aluno.html).
+    -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Formulário da Diretoria</h2>
+        <p>Preencha o formulário de Diretoria — Ata de Aprovação da Excursão abaixo:</p>
+        <a href="https://forms.gle/vGSXCfCTTGxEyu3o8" target="_blank" class="btn-planilha-atalho">
+            Preencher formulário
+        </a>
     </section>
 
 </main>
@@ -61,15 +74,23 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-// Planilha
-carregarPlanilha()
+// Planilha — a Diretoria vê todas as turmas juntas (um arquivo por turma,
+// ver TURMAS_DO_SISTEMA em planilha.js).
+carregarTodasAsTurmas()
     .then(function (dados) {
         document.getElementById('carregando').style.display = 'none';
         var corpo = document.getElementById('corpo-tabela-alunos');
         dados.notas.forEach(function (a) {
             var linha = document.createElement('tr');
-            linha.innerHTML = '<td>' + a.ra + '</td><td>' + a.nome + '</td><td>' + a.turma + '</td><td>' +
-                a.nota + '</td><td>' + a.presenca + '%</td><td>' + a.comportamento + '</td><td>' + (a.professor || '') + '</td>';
+            // Colunas extras da planilha (ex: Turno) aparecem juntas em "Outras informações".
+            var outras = Object.keys(a.extras || {}).map(function (k) {
+                return escaparHtml(k) + ': ' + escaparHtml(a.extras[k]);
+            }).join(' · ');
+            linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
+                '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(a.nota === '' ? '—' : a.nota) +
+                '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
+                '</td><td>' + escaparHtml(a.comportamento || '—') + '</td><td>' + escaparHtml(a.professor || '') +
+                '</td><td>' + (outras || '—') + '</td>';
             corpo.appendChild(linha);
         });
         document.getElementById('tabela-alunos').style.display = dados.notas.length ? 'table' : 'none';
@@ -93,28 +114,36 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     solicitacoes.forEach(function (s) {
         var card = document.createElement('div');
         card.className = 'card-solicitacao';
-        card.style.border = '1px solid #ccc';
-        card.style.padding = '15px';
-        card.style.marginBottom = '15px';
-        card.style.borderRadius = '8px';
 
-        var ehPendente = s.status === 'Pendente';
+        // A Diretoria só decide sobre as "Pendente" — a aprovação dela NÃO
+        // é final, só passa a bola pro Desenvolvedor confirmar. Ela só pode
+        // reabrir (refazer) uma decisão que ela mesma tomou (recusa dela).
+        var podeAgir = s.status === 'Pendente';
+        var podeReabrir = s.status === 'Recusado' && s.respondidoPor === 'Diretoria';
+        var statusLabel = s.status + (s.respondidoPor ? ' — ' + s.respondidoPor : '');
+        var classeStatus = s.status === 'Aprovado' ? 'status-aprovado' :
+            (s.status === 'Recusado' ? 'status-recusado' :
+            (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
 
         var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ')</p>' +
             '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
             (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
-            '<p>Status atual: <strong>' + s.status + '</strong></p>';
+            '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius:6px;">Status: <strong>' + statusLabel + '</strong></p>';
 
-        if (ehPendente) {
+        if (podeAgir) {
             html += '<div style="margin-top:10px;">' +
                 '<textarea class="form-login-campo campo-resposta" data-id="' + s.id + '" placeholder="Sua resposta ao professor (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
                 '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Aprovar</button> ' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Aprovar (envia pro Desenvolvedor confirmar)</button> ' +
                 '<button type="button" class="btn-recusar-solicitacao" data-id="' + s.id + '">Recusar</button>' +
                 '</div></div>';
         } else {
-            html += (s.respostaDiretoria ? '<p class="detalhe-solicitacao">Sua Resposta: ' + s.respostaDiretoria + '</p>' : '') +
-                '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
+            html += (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + (s.respondidoPor || 'Diretoria') + '): ' + s.resposta + '</p>' : '');
+            if (s.status === 'Aguardando Desenvolvedor') {
+                html += '<p class="detalhe-solicitacao">Aguardando confirmação final do Desenvolvedor.</p>';
+            } else if (podeReabrir) {
+                html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
+            }
         }
 
         card.innerHTML = html;
@@ -122,33 +151,8 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     });
 });
 
-// Captura de eventos de clique com fallback seguro de ID
-document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
-    var refazer = evento.target.closest('.btn-refazer-solicitacao');
-    var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
-    var recusar = evento.target.closest('.btn-recusar-solicitacao');
-
-    if (refazer) {
-        var idRefazer = refazer.getAttribute('data-id');
-        reabrirSolicitacao(idRefazer);
-        return;
-    }
-
-    if (aprovar || recusar) {
-        var botao = aprovar || recusar;
-        var id = botao.getAttribute('data-id');
-        var novoStatus = aprovar ? 'Aprovado' : 'Recusado';
-        
-        var card = botao.closest('.card-solicitacao');
-        var campoTexto = card.querySelector('.campo-resposta');
-        var resposta = campoTexto ? campoTexto.value.trim() : '';
-
-        responderSolicitacao(id, novoStatus, resposta);
-    }
-});
-
-
-// Ações nos botões
+// Ações nos botões (Aprovar envia pra confirmação do Desenvolvedor; Recusar
+// é decisão final da própria Diretoria; Refazer reabre uma recusa dela)
 document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
     var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
     var recusar = evento.target.closest('.btn-recusar-solicitacao');
@@ -163,13 +167,15 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
 
     var botao = aprovar || recusar;
     var id = botao.dataset.id;
-    var novoStatus = aprovar ? 'Aprovado' : 'Recusado';
-    
     var card = botao.closest('.card-solicitacao');
     var campoTexto = card.querySelector('.campo-resposta');
     var resposta = campoTexto ? campoTexto.value.trim() : '';
 
-    responderSolicitacao(id, novoStatus, resposta);
+    if (aprovar) {
+        aprovarComoDiretoria(id, resposta);
+    } else {
+        recusarComoDiretoria(id, resposta);
+    }
 });
 </script>
 

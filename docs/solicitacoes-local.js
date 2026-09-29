@@ -1,7 +1,20 @@
 // ==========================================================================
-// SOLICITAÇÕES DE PARTICIPAÇÃO — com Histórico e Reavaliação
+// SOLICITAÇÕES DE PARTICIPAÇÃO — sem backend, guardadas no localStorage.
+//
+// ⚠️ LIMITAÇÃO IMPORTANTE: como não existe mais nenhum servidor (nem
+// Firebase, nem Apps Script), essas solicitações só ficam salvas NO MESMO
+// NAVEGADOR/COMPUTADOR que criou ou respondeu a elas. Se o professor usa um
+// computador e a Diretoria usa outro, cada um vê uma lista diferente — a
+// solicitação de um NÃO aparece pro outro. Só funciona de verdade se todo
+// mundo acessar do mesmo navegador (ex: um computador/Chromebook único da
+// secretaria) ou pra fins de teste/demonstração.
 // ==========================================================================
 var CHAVE_SOLICITACOES = 'cdm_solicitacoes';
+
+// Quem chamou uma das funções "escutar..." fica registrado aqui. Toda vez
+// que os dados mudam (nesta aba OU em outra), todo mundo é avisado — assim
+// a lista se atualiza sozinha sem precisar recarregar a página.
+var _ouvintes = [];
 
 function _lerSolicitacoes() {
     try {
@@ -13,13 +26,36 @@ function _lerSolicitacoes() {
 
 function _salvarSolicitacoes(lista) {
     localStorage.setItem(CHAVE_SOLICITACOES, JSON.stringify(lista));
+    _ouvintes.forEach(function (atualizar) { atualizar(); });
+}
+
+function _registrarOuvinte(atualizar) {
+    _ouvintes.push(atualizar);
+    atualizar(); // mostra o estado atual assim que a página chama escutarXxx
+    // Cobre o caso de duas abas abertas no MESMO navegador (ex: professor
+    // testando em duas abas). Entre computadores diferentes isso não dispara.
+    window.addEventListener('storage', function (evento) {
+        if (evento.key === CHAVE_SOLICITACOES) atualizar();
+    });
 }
 
 function _gerarId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-// ---- Professor: cria uma nova solicitação ------
+// ---- FLUXO DE APROVAÇÃO EM DUAS ETAPAS -----------------------------------
+// status possíveis de uma solicitação:
+//   'Pendente'              -> professor enviou, aguardando a Diretoria
+//   'Aguardando Desenvolvedor' -> Diretoria já aprovou; falta a confirmação
+//                                 final do Desenvolvedor (ele fica "acima"
+//                                 da Diretoria nessa decisão)
+//   'Aprovado'              -> confirmado pelo Desenvolvedor (final)
+//   'Recusado'              -> recusado (por Diretoria OU Desenvolvedor)
+// O campo "respondidoPor" guarda quem tomou a última decisão ('Diretoria'
+// ou 'Desenvolvedor'), pra ficar registrado quem decidiu de verdade.
+// ---------------------------------------------------------------------------
+
+// ---- Professor: cria uma nova solicitação (sempre nasce "Pendente") ------
 function criarSolicitacao(dados) {
     var lista = _lerSolicitacoes();
     lista.push({
@@ -29,248 +65,134 @@ function criarSolicitacao(dados) {
         turma: dados.turma,
         professor: dados.professor,
         observacao: dados.observacao || '',
-        respostaDiretoria: '',
         status: 'Pendente',
+        resposta: '',
+        respondidoPor: '',
         criadoEm: Date.now()
     });
     _salvarSolicitacoes(lista);
     return Promise.resolve();
 }
 
-// ---- Diretoria: escuta solicitações Pendentes ou Todas ------
-function escutarTodasSolicitacoes(aoAtualizar) {
-    function atualizar() {
-        aoAtualizar(_lerSolicitacoes());
-    }
-    atualizar();
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
+// ---- Diretoria: lista as pendentes, ao vivo dentro do mesmo navegador ----
+function escutarSolicitacoesPendentes(aoAtualizar) {
+    _registrarOuvinte(function () {
+        var pendentes = _lerSolicitacoes().filter(function (s) { return s.status === 'Pendente'; });
+        aoAtualizar(pendentes);
     });
 }
 
-// ---- Diretoria: aprova ou recusa com resposta ao professor --------------------------
-function responderSolicitacao(id, novoStatus, respostaTexto) {
+// ---- Diretoria/Desenvolvedor: lista TODAS as solicitações (qualquer
+// status), mais recentes primeiro.
+function escutarTodasSolicitacoes(aoAtualizar) {
+    _registrarOuvinte(function () {
+        var todas = _lerSolicitacoes().sort(function (a, b) { return b.criadoEm - a.criadoEm; });
+        aoAtualizar(todas);
+    });
+}
+
+// ---- Diretoria/Desenvolvedor: registra uma decisão -----------------------
+// novoStatus  -> o novo status da solicitação (ver lista acima)
+// resposta    -> texto opcional pro professor (motivo/orientação)
+// respondidoPor -> 'Diretoria' ou 'Desenvolvedor', quem decidiu de fato
+function responderSolicitacao(id, novoStatus, resposta, respondidoPor) {
     var lista = _lerSolicitacoes();
     var solicitacao = lista.find(function (s) { return s.id === id; });
     if (solicitacao) {
         solicitacao.status = novoStatus;
-        solicitacao.respostaDiretoria = respostaTexto || '';
-        solicitacao.atualizadoEm = Date.now();
+        solicitacao.resposta = resposta || '';
+        solicitacao.respondidoPor = respondidoPor || '';
     }
     _salvarSolicitacoes(lista);
     return Promise.resolve();
 }
 
-// ---- Diretoria: Permite refazer / reavaliar solicitação já decidida ------------------
+// ---- Diretoria: aprova uma solicitação pendente. Isso NÃO é a aprovação
+// final — só passa a solicitação pra etapa de confirmação do Desenvolvedor.
+function aprovarComoDiretoria(id, resposta) {
+    return responderSolicitacao(id, 'Aguardando Desenvolvedor', resposta, 'Diretoria');
+}
+
+// ---- Diretoria: recusa uma solicitação pendente (decisão final dela) -----
+function recusarComoDiretoria(id, resposta) {
+    return responderSolicitacao(id, 'Recusado', resposta, 'Diretoria');
+}
+
+// ---- Desenvolvedor: confirmação final — aprova ou recusa qualquer
+// solicitação que ainda não esteja com decisão final (Pendente ou
+// Aguardando Desenvolvedor). Como o Desenvolvedor está acima da Diretoria
+// nessa hierarquia, ele também pode agir direto numa "Pendente" sem
+// esperar a Diretoria, se precisar.
+function aprovarComoDesenvolvedor(id, resposta) {
+    return responderSolicitacao(id, 'Aprovado', resposta, 'Desenvolvedor');
+}
+
+function recusarComoDesenvolvedor(id, resposta) {
+    return responderSolicitacao(id, 'Recusado', resposta, 'Desenvolvedor');
+}
+
+// ---- Diretoria: reabre uma solicitação que ELA MESMA recusou, pra
+// reavaliar (volta pra "Pendente" e limpa a resposta anterior). Só faz
+// sentido pra decisões que ainda são dela — uma vez que o Desenvolvedor
+// decide (Aprovado/Recusado por ele), só o próprio Desenvolvedor reabre.
 function reabrirSolicitacao(id) {
     var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return String(s.id) === String(id); });
+    var solicitacao = lista.find(function (s) { return s.id === id; });
     if (solicitacao) {
         solicitacao.status = 'Pendente';
-        solicitacao.respostaDiretoria = ''; // Limpa a resposta anterior
-        solicitacao.atualizadoEm = Date.now();
-        _salvarSolicitacoes(lista);
-        
-        // Dispara um evento personalizado local para atualizar a tela na mesma aba/janela imediatamente
-        window.dispatchEvent(new Event('solicitacoes_atualizadas'));
+        solicitacao.resposta = '';
+        solicitacao.respondidoPor = '';
     }
-    return Promise.resolve();
-}
-
-function responderSolicitacao(id, novoStatus, respostaTexto) {
-    var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return String(s.id) === String(id); });
-    if (solicitacao) {
-        solicitacao.status = novoStatus;
-        solicitacao.respostaDiretoria = respostaTexto || '';
-        solicitacao.atualizadoEm = Date.now();
-        _salvarSolicitacoes(lista);
-        
-        // Dispara o evento de atualização local
-        window.dispatchEvent(new Event('solicitacoes_atualizadas'));
-    }
-    return Promise.resolve();
-}
-
-function escutarTodasSolicitacoes(aoAtualizar) {
-    function atualizar() {
-        aoAtualizar(_lerSolicitacoes());
-    }
-    atualizar();
-    
-    // Escuta atualizações de outras abas
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
-    });
-    
-    // Escuta atualizações na mesma aba
-    window.addEventListener('solicitacoes_atualizadas', function () {
-        atualizar();
-    });
-}
-
-
-// ---- Professor: escuta atualizações e respostas da diretoria pra ele ---------------
-function escutarSolicitacoesProfessor(professorLogin, aoAtualizar) {
-    function atualizar() {
-        var minhas = _lerSolicitacoes().filter(function (s) {
-            return s.professor === professorLogin;
-        });
-        aoAtualizar(minhas);
-    }
-    atualizar();
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
-    });
-}
-
-// ==========================================================================
-// SOLICITAÇÕES DE PARTICIPAÇÃO — com Histórico, Reavaliação e Edição pelo Professor
-// ==========================================================================
-var CHAVE_SOLICITACOES = 'cdm_solicitacoes';
-
-function _lerSolicitacoes() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_SOLICITACOES) || '[]');
-    } catch (e) {
-        return [];
-    }
-}
-
-function _salvarSolicitacoes(lista) {
-    localStorage.setItem(CHAVE_SOLICITACOES, JSON.stringify(lista));
-    window.dispatchEvent(new Event('solicitacoes_atualizadas'));
-}
-
-function _gerarId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
-
-// ---- Professor: cria uma nova solicitação ------
-function criarSolicitacao(dados) {
-    var lista = _lerSolicitacoes();
-    lista.push({
-        id: _gerarId(),
-        ra: String(dados.ra),
-        nomeAluno: dados.nomeAluno,
-        turma: dados.turma,
-        professor: dados.professor,
-        observacao: dados.observacao || '',
-        respostaDiretoria: '',
-        status: 'Pendente',
-        criadoEm: Date.now()
-    });
     _salvarSolicitacoes(lista);
     return Promise.resolve();
 }
 
-// ---- Professor: Reabre/Edita uma solicitação (Volta para Pendente com nova observação) ----
+// ---- Professor: lista TODAS as solicitações que ele mesmo criou (não só
+// as pendentes), pra mostrar em "Minhas Solicitações Enviadas".
+function escutarSolicitacoesProfessor(professorLogin, aoAtualizar) {
+    _registrarOuvinte(function () {
+        var minhas = _lerSolicitacoes()
+            .filter(function (s) { return s.professor === professorLogin; })
+            .sort(function (a, b) { return b.criadoEm - a.criadoEm; });
+        aoAtualizar(minhas);
+    });
+}
+
+// ---- Professor: reabre uma solicitação já respondida (volta pra
+// "Pendente" com uma nova observação, pra Diretoria reavaliar).
 function reavaliarSolicitacaoProfessor(id, novaObservacao) {
     var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return String(s.id) === String(id); });
+    var solicitacao = lista.find(function (s) { return s.id === id; });
     if (solicitacao) {
         solicitacao.status = 'Pendente';
-        solicitacao.observacao = novaObservacao !== undefined ? novaObservacao : solicitacao.observacao;
-        solicitacao.respostaDiretoria = ''; // Limpa resposta antiga da diretoria ao refazer
-        solicitacao.atualizadoEm = Date.now();
-        _salvarSolicitacoes(lista);
+        solicitacao.observacao = novaObservacao || solicitacao.observacao;
+        solicitacao.resposta = '';
+        solicitacao.respondidoPor = '';
+        solicitacao.criadoEm = Date.now(); // volta pro topo da fila da Diretoria
     }
-    return Promise.resolve();
-}
-
-// ---- Professor: Cancela/Exclui uma solicitação enviada ----
-function cancelarSolicitacao(id) {
-    var lista = _lerSolicitacoes().filter(function (s) { return String(s.id) !== String(id); });
     _salvarSolicitacoes(lista);
     return Promise.resolve();
 }
 
-// ---- Diretoria: escuta solicitações Pendentes ou Todas ------
-function escutarTodasSolicitacoes(aoAtualizar) {
-    function atualizar() {
-        aoAtualizar(_lerSolicitacoes());
-    }
-    atualizar();
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
-    });
-    window.addEventListener('solicitacoes_atualizadas', function () {
-        atualizar();
-    });
-}
-
-// ---- Diretoria: aprova ou recusa com resposta ao professor --------------------------
-function responderSolicitacao(id, novoStatus, respostaTexto) {
-    var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return String(s.id) === String(id); });
-    if (solicitacao) {
-        solicitacao.status = novoStatus;
-        solicitacao.respostaDiretoria = respostaTexto || '';
-        solicitacao.atualizadoEm = Date.now();
-        _salvarSolicitacoes(lista);
-    }
+// ---- Professor: cancela (remove) uma solicitação enviada -----------------
+function cancelarSolicitacao(id) {
+    var lista = _lerSolicitacoes().filter(function (s) { return s.id !== id; });
+    _salvarSolicitacoes(lista);
     return Promise.resolve();
 }
 
-// ---- Diretoria: Permite refazer / reavaliar solicitação já decidida ------------------
-function reabrirSolicitacao(id) {
-    var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return String(s.id) === String(id); });
-    if (solicitacao) {
-        solicitacao.status = 'Pendente';
-        solicitacao.respostaDiretoria = '';
-        solicitacao.atualizadoEm = Date.now();
-        _salvarSolicitacoes(lista);
-    }
+// ---- Desenvolvedor: apaga todas as solicitações salvas (uso em testes) ---
+function limparTodasSolicitacoes() {
+    _salvarSolicitacoes([]);
     return Promise.resolve();
 }
 
-// ---- Professor: escuta atualizações e respostas da diretoria pra ele ---------------
-function escutarSolicitacoesProfessor(professorLogin, aoAtualizar) {
-    function atualizar() {
-        var minhas = _lerSolicitacoes().filter(function (s) {
-            return s.professor === professorLogin;
-        });
-        aoAtualizar(minhas);
-    }
-    atualizar();
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
-    });
-    window.addEventListener('solicitacoes_atualizadas', function () {
-        atualizar();
-    });
-}
-
-// ---- Aluno/Responsável: status da solicitação mais recente do próprio RA -------------
+// ---- Aluno/Responsável: status da solicitação mais recente do próprio RA -
 function escutarStatusAluno(ra, aoAtualizar) {
-    function atualizar() {
+    _registrarOuvinte(function () {
         var doAluno = _lerSolicitacoes()
             .filter(function (s) { return String(s.ra) === String(ra); })
-            .sort(function (a, b) { return (b.atualizadoEm || b.criadoEm) - (a.atualizadoEm || a.criadoEm); });
+            .sort(function (a, b) { return b.criadoEm - a.criadoEm; });
         aoAtualizar(doAluno[0] || null);
-    }
-    atualizar();
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
-    });
-    window.addEventListener('solicitacoes_atualizadas', function () {
-        atualizar();
-    });
-}
-
-
-
-// ---- Aluno/Responsável: status da solicitação mais recente do próprio RA -------------
-function escutarStatusAluno(ra, aoAtualizar) {
-    function atualizar() {
-        var doAluno = _lerSolicitacoes()
-            .filter(function (s) { return String(s.ra) === String(ra); })
-            .sort(function (a, b) { return (b.atualizadoEm || b.criadoEm) - (a.atualizadoEm || a.criadoEm); });
-        aoAtualizar(doAluno[0] || null);
-    }
-    atualizar();
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
     });
 }

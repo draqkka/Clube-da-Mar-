@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -92,6 +91,15 @@
 <div id="inicio" class="hero">
     <img src="imagens/Menu inicial/menu.png" alt="Clube da Maré - Vive o momento, escape da rotina">
     <!-- ALT: banner principal de abertura do site -->
+    <!--
+        A logo é o único acesso ao painel do Desenvolvedor: não existe mais
+        opção "Desenvolvedor" na tela de seleção de perfil (login.html) —
+        só quem sabe que precisa clicar aqui chega no login desse perfil.
+    -->
+    <a href="login-formulario.html?perfil=desenvolvedor" aria-label="Acesso do desenvolvedor">
+        <img src="imagens/Menu inicial/logo-clube-da-mare.png" class="hero-logo" alt="Logo do Clube da Maré Beach Club">
+        <!-- ALT: logo do clube sobreposta no canto do banner principal -->
+    </a>
 </div>
 </main>
 
@@ -578,10 +586,10 @@ document.querySelectorAll('.ponto').forEach(function (ponto) {
         var id = ponto.getAttribute('data-local');
         var nome = ponto.querySelector('.tooltip').textContent;
 
-        // CORRIGIDO: antes virava "imageslocal1.png" (sem barras, sem a
-        // pasta Mapa, sem o "../"). Agora segue o mesmo caminho das outras
-        // imagens desta página: ../imagens/Mapa/Local1.png, Local2.png...
-        document.getElementById('modal-imagem').src = '../imagens/Mapa/Local' + id + '.png';
+        // Segue o mesmo caminho das outras imagens desta página (sem "../",
+        // porque a pasta "imagens" fica no mesmo nível do index.html):
+        // imagens/Mapa/Local1.png, Local2.png...
+        document.getElementById('modal-imagem').src = 'imagens/Mapa/Local' + id + '.png';
         document.getElementById('modal-imagem').alt = nome;
         document.getElementById('modal-titulo').textContent = nome;
         document.getElementById('modal-local').classList.add('ativo');
@@ -739,7 +747,7 @@ menuBtn.addEventListener('click', () => {
         <iframe
             class="chat-frame"
             id="chat-frame-iframe"
-            src="SRC_DO_SEU_CHATBOT_AQUI"
+            src="https://character.ai/chat/2SufykdDnFNCL4yqYVlPP1E4BHvpMuUOhRSOeOfcRdE"
             title="Assistente Virtual - Clube da Maré"
             loading="lazy">
         </iframe>

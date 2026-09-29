@@ -23,28 +23,84 @@
 
     <div class="login-saudacao">
         <h1 id="titulo-boas-vindas">Olá, professor(a)!</h1>
-        <p>Suas turmas:</p>
+        <p>Suas turmas (clique pra escolher com qual trabalhar):</p>
         <div id="lista-turmas-chip" class="lista-turmas-chip"></div>
     </div>
 
+    <!--
+        Cada turma agora tem sua PRÓPRIA planilha (arquivo separado) — ver
+        TURMAS_DO_SISTEMA e nomeArquivoPlanilha() em planilha.js. Tudo
+        abaixo (importar, cadastrar aluno, tabela) opera sempre sobre a
+        turma selecionada acima ("turmaAtual").
+    -->
+    <p id="aviso-turma-nova" class="dica-importar" style="display:none; color: var(--cor-dourado);"></p>
+
+    <!-- Importação da planilha completa (RA/Nome/Turma/Nota/Presenca/Comportamento) -->
     <div class="area-importar">
         <button type="button" class="botao-mais-importar" id="botao-importar" aria-label="Importar planilha de notas">
             <i class="fa-solid fa-plus"></i>
         </button>
-        <span>Importar planilha do computador (.xlsx ou .csv)</span>
+        <span>Importar planilha completa da turma (.xlsx ou .csv)</span>
         <input type="file" id="arquivo-planilha" accept=".xlsx,.xls,.csv" style="display:none;">
     </div>
+    <p class="dica-importar">
+        A planilha precisa ter uma linha de cabeçalho com pelo menos <strong>RA</strong> e <strong>Nome</strong>. As outras colunas
+        (<strong>Série, Turma, Nota, Presença, Comportamento</strong> ou qualquer outra) são reconhecidas pelo nome, em qualquer ordem.
+        Só linhas da turma <strong id="turma-atual-dica">-</strong> serão aceitas. Ao importar, os dados são
+        <strong>salvos direto no site</strong> e já aparecem pra todo mundo — não precisa baixar nem enviar arquivo.
+        <a href="#" id="link-baixar-modelo">Baixar modelo em branco</a>
+    </p>
+    <label class="dica-importar" style="display:block;">
+        <input type="checkbox" id="check-substituir">
+        Substituir a turma inteira (remove os alunos que não estiverem na planilha)
+    </label>
+    <div id="status-importacao"></div>
+
+    <!-- Cadastro manual de aluno -->
+    <section class="area-avaliacao-professores" style="margin-top: 24px;">
+        <h2>Adicionar/atualizar aluno manualmente</h2>
+        <p class="dica-importar">
+            RA, Nome e Nota são preenchidos por você aqui. <strong>Presença</strong> vem da importação da
+            planilha de frequência da escola (seção abaixo) — e o <strong>Comportamento</strong> é calculado
+            sozinho a partir da Presença (Bom ≥ 90%, Regular 75–89%, Péssimo abaixo de 75%).
+        </p>
+        <div class="form-manual-aluno">
+            <input type="text" class="form-login-campo" id="campo-manual-ra" placeholder="RA">
+            <input type="text" class="form-login-campo" id="campo-manual-nome" placeholder="Nome completo do aluno">
+            <input type="text" class="form-login-campo" id="campo-manual-serie" placeholder="Série (ex: 3º ano)">
+            <input type="number" class="form-login-campo" id="campo-manual-nota" placeholder="Nota (0 a 10)" min="0" max="10" step="0.1">
+        </div>
+        <button type="button" class="btn-planilha-atalho" id="botao-salvar-manual">Adicionar / atualizar aluno</button>
+        <div id="status-manual" class="dica-importar"></div>
+    </section>
+
+    <!-- Importação da planilha de frequência externa (Mapão da escola) -->
+    <section class="area-avaliacao-professores" style="margin-top: 24px;">
+        <h2>Importar frequência (planilha da escola)</h2>
+        <p class="dica-importar">
+            Importe aqui o Mapão/boletim que a escola exporta (tem uma coluna "ALUNO" e uma coluna "Fre(%)").
+            O sistema atualiza a Presença de cada aluno já cadastrado nesta turma — relacionando pelo nome —
+            e recalcula o Comportamento sozinho.
+        </p>
+        <button type="button" class="btn-planilha-atalho" id="botao-importar-frequencia">Escolher arquivo de frequência</button>
+        <input type="file" id="arquivo-frequencia" accept=".xlsx,.xls" style="display:none;">
+        <div id="status-frequencia" class="dica-importar"></div>
+    </section>
 
     <div id="carregando">Carregando suas turmas...</div>
 
     <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
         <thead>
             <tr>
-                <th>RA</th><th>Nome</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Ação</th>
+                <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Ação</th>
             </tr>
         </thead>
         <tbody id="corpo-tabela-alunos"></tbody>
     </table>
+
+    <div style="margin-top:16px;">
+        <button type="button" class="btn-planilha-atalho" id="botao-baixar-planilha">Baixar cópia de segurança desta turma (.xlsx)</button>
+    </div>
 
     <!-- Formulário de Nova Solicitação -->
     <section class="area-avaliacao-professores" id="area-solicitacao" style="display:none; margin-top: 20px;">
@@ -61,6 +117,21 @@
         <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
     </section>
 
+    <!--
+        Formulário do Professor — troque o link abaixo pelo Google Forms de
+        verdade (mesmo padrão do formulário de confirmação do aluno, em
+        dashboard-aluno.html). Deixei um texto genérico; ajuste conforme o
+        que esse formulário deve coletar (ex: check-in no dia do evento,
+        cadastro de disponibilidade, etc.).
+    -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Formulário do Professor</h2>
+        <p id="texto-formulario-professor">Preencha o Termo de Compromisso do Acompanhante:</p>
+        <a href="https://forms.gle/kPxU4qJXq9vyyPCZ7" target="_blank" class="btn-planilha-atalho">
+            Preencher formulário
+        </a>
+    </section>
+
 </main>
 
 <script>
@@ -70,9 +141,6 @@ if (!sessao || sessao.perfil !== 'professor') {
 }
 
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'professor(a)') + '!';
-document.getElementById('lista-turmas-chip').innerHTML = sessao.turmas
-    .map(function (t) { return '<span class="chip-turma">' + t + '</span>'; })
-    .join('');
 
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
@@ -80,31 +148,215 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-function carregarTurmas() {
-    carregarPlanilha()
+// ---- Seleção de turma ------------------------------------------------------
+// Cada turma agora tem sua própria planilha; "turmaAtual" é a que está
+// sendo exibida/editada agora, e "dadosTurmaAtual" é o objeto (com
+// dados.notas) que carregarPlanilha() devolveu pra ela.
+var turmaAtual = null;
+var dadosTurmaAtual = null;
+
+function renderizarChipsTurma() {
+    var container = document.getElementById('lista-turmas-chip');
+    container.innerHTML = '';
+    sessao.turmas.forEach(function (t) {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaAtual ? ' chip-turma-ativa' : '');
+        chip.textContent = t;
+        chip.dataset.turma = t;
+        container.appendChild(chip);
+    });
+}
+
+document.getElementById('lista-turmas-chip').addEventListener('click', function (evento) {
+    var chip = evento.target.closest('.chip-turma-selecionavel');
+    if (!chip || chip.dataset.turma === turmaAtual) return;
+    selecionarTurma(chip.dataset.turma);
+});
+
+function renderizarTabela(notas) {
+    var corpo = document.getElementById('corpo-tabela-alunos');
+    corpo.innerHTML = '';
+    notas.forEach(function (a) {
+        var linha = document.createElement('tr');
+        linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
+            '</td><td>' + escaparHtml(a.turma) +
+            '</td><td>' + escaparHtml(a.nota) + '</td><td>' + (a.presenca !== '' && a.presenca !== undefined ? escaparHtml(a.presenca) + '%' : '—') +
+            '</td><td>' + escaparHtml(a.comportamento || '—') +
+            '</td><td><button type="button" class="btn-solicitar-participacao" data-ra="' + escaparHtml(a.ra) +
+            '" data-nome="' + escaparHtml(a.nome) + '" data-turma="' + escaparHtml(a.turma) + '">Solicitar participação</button></td>';
+        corpo.appendChild(linha);
+    });
+    document.getElementById('tabela-alunos').style.display = notas.length ? 'table' : 'none';
+}
+
+function selecionarTurma(turma) {
+    turmaAtual = turma;
+    dadosTurmaAtual = null;
+    renderizarChipsTurma();
+
+    document.getElementById('turma-atual-dica').textContent = turma;
+    document.getElementById('status-importacao').textContent = '';
+    document.getElementById('status-frequencia').textContent = '';
+    document.getElementById('status-manual').textContent = '';
+    document.getElementById('aviso-turma-nova').style.display = 'none';
+    document.getElementById('tabela-alunos').style.display = 'none';
+    document.getElementById('carregando').style.display = 'block';
+    document.getElementById('carregando').textContent = 'Carregando turma ' + turma + '...';
+
+    carregarPlanilha(turma)
         .then(function (dados) {
+            dadosTurmaAtual = dados;
             document.getElementById('carregando').style.display = 'none';
 
-            var alunos = dados.notas.filter(function (a) {
-                return sessao.turmas.indexOf(a.turma) !== -1;
-            });
+            if (dados.novaTurma) {
+                document.getElementById('aviso-turma-nova').textContent =
+                    'Essa turma ainda não tem alunos cadastrados — importe uma planilha ou adicione alunos manualmente.';
+                document.getElementById('aviso-turma-nova').style.display = 'block';
+            }
 
-            var corpo = document.getElementById('corpo-tabela-alunos');
-            corpo.innerHTML = '';
-            alunos.forEach(function (a) {
-                var linha = document.createElement('tr');
-                linha.innerHTML = '<td>' + a.ra + '</td><td>' + a.nome + '</td><td>' + a.turma +
-                    '</td><td>' + a.nota + '</td><td>' + a.presenca + '%</td><td>' + a.comportamento +
-                    '</td><td><button type="button" class="btn-solicitar-participacao" data-ra="' + a.ra +
-                    '" data-nome="' + a.nome + '" data-turma="' + a.turma + '">Solicitar participação</button></td>';
-                corpo.appendChild(linha);
-            });
-            document.getElementById('tabela-alunos').style.display = alunos.length ? 'table' : 'none';
+            renderizarTabela(dados.notas);
+        })
+        .catch(function (erro) {
+            document.getElementById('carregando').textContent = 'Erro ao carregar a turma (' + erro.message + ').';
         });
 }
-carregarTurmas();
 
-// Envio de solicitações
+// Seleciona a primeira turma do professor automaticamente ao abrir a página.
+selecionarTurma(sessao.turmas[0]);
+
+// Busca a turma de novo no banco e redesenha a tabela (só se o professor
+// ainda estiver olhando pra mesma turma).
+function recarregarTurmaAtual() {
+    var turma = turmaAtual;
+    return recarregarPlanilha(turma).then(function (dados) {
+        if (turma === turmaAtual) {
+            dadosTurmaAtual = dados;
+            renderizarTabela(dados.notas);
+        }
+        return dados;
+    });
+}
+
+// ---- Adicionar/atualizar aluno manualmente --------------------------------
+document.getElementById('botao-salvar-manual').addEventListener('click', function () {
+    var status = document.getElementById('status-manual');
+    if (!turmaAtual || !dadosTurmaAtual) return;
+
+    var ra = document.getElementById('campo-manual-ra').value.trim();
+    var nome = document.getElementById('campo-manual-nome').value.trim();
+    var serie = document.getElementById('campo-manual-serie').value.trim();
+    var notaTexto = document.getElementById('campo-manual-nota').value.trim();
+
+    if (!ra || !nome || notaTexto === '') {
+        status.textContent = 'Preencha RA, Nome e Nota.';
+        return;
+    }
+    var nota = Number(notaTexto);
+    if (isNaN(nota)) {
+        status.textContent = 'Nota inválida.';
+        return;
+    }
+
+    var existente = dadosTurmaAtual.notas.find(function (n) { return String(n.ra) === String(ra); });
+    var aluno = existente ? Object.assign({}, existente) : { ra: ra, presenca: '', extras: {} };
+    aluno.ra = ra;
+    aluno.nome = nome;
+    if (serie || !existente) aluno.serie = serie;
+    aluno.nota = nota;
+    aluno.turma = turmaAtual;
+    aluno.professor = sessao.login;
+    aluno.comportamento = comportamentoPorPresenca(aluno.presenca);
+
+    status.textContent = 'Salvando...';
+    salvarAlunos(turmaAtual, [aluno], { professor: sessao.login })
+        .then(function (resposta) {
+            if (!resposta.gravados) {
+                status.textContent = 'O RA ' + ra + ' já está cadastrado em outra turma — nada foi salvo.';
+                return;
+            }
+            return recarregarTurmaAtual().then(function () {
+                status.textContent = existente
+                    ? 'Aluno "' + nome + '" (RA ' + ra + ') atualizado.'
+                    : 'Aluno "' + nome + '" (RA ' + ra + ') adicionado — a Presença aparece depois de importar a frequência.';
+                document.getElementById('campo-manual-ra').value = '';
+                document.getElementById('campo-manual-nome').value = '';
+                document.getElementById('campo-manual-serie').value = '';
+                document.getElementById('campo-manual-nota').value = '';
+            });
+        })
+        .catch(function (erro) { status.textContent = 'Erro ao salvar: ' + erro.message; });
+});
+
+// ---- Importar frequência externa (Mapão da escola) ------------------------
+document.getElementById('botao-importar-frequencia').addEventListener('click', function () {
+    document.getElementById('arquivo-frequencia').click();
+});
+
+document.getElementById('arquivo-frequencia').addEventListener('change', function (evento) {
+    var arquivo = evento.target.files[0];
+    if (!arquivo || !dadosTurmaAtual) return;
+
+    var status = document.getElementById('status-frequencia');
+    status.textContent = 'Lendo arquivo...';
+
+    var leitor = new FileReader();
+    leitor.onload = function (e) {
+        var listaFrequencia;
+        try {
+            listaFrequencia = lerFrequenciaExterna(e.target.result);
+        } catch (erro) {
+            status.textContent = 'Erro: ' + erro.message;
+            return;
+        }
+
+        var alterados = [];
+        var naoEncontrados = [];
+
+        dadosTurmaAtual.notas.forEach(function (aluno) {
+            var achado = encontrarFrequenciaPorNome(aluno.nome, listaFrequencia);
+            if (achado) {
+                var copia = Object.assign({}, aluno);
+                copia.presenca = achado.frequencia;
+                copia.comportamento = comportamentoPorPresenca(copia.presenca);
+                alterados.push(copia);
+            } else {
+                naoEncontrados.push(aluno.nome);
+            }
+        });
+
+        evento.target.value = ''; // permite importar o mesmo arquivo de novo depois, se precisar
+        if (!alterados.length) {
+            status.textContent = 'Nenhum aluno desta turma foi encontrado nessa planilha de frequência (confira os nomes).';
+            return;
+        }
+
+        var turmaDaImportacao = turmaAtual;
+        status.textContent = 'Salvando presença de ' + alterados.length + ' aluno(s)...';
+        salvarAlunos(turmaDaImportacao, alterados, { professor: sessao.login })
+            .then(function () { return recarregarTurmaAtual(); })
+            .then(function () {
+                status.textContent = alterados.length + ' aluno(s) com presença atualizada e salva no site.' +
+                    (naoEncontrados.length ? ' Não encontrados nessa planilha de frequência (confira o nome): ' + naoEncontrados.join(', ') + '.' : '');
+            })
+            .catch(function (erro) { status.textContent = 'Erro ao salvar: ' + erro.message; });
+    };
+    leitor.readAsArrayBuffer(arquivo);
+});
+
+// ---- Modelo em branco e cópia de segurança ---------------------------------
+document.getElementById('link-baixar-modelo').addEventListener('click', function (e) {
+    e.preventDefault();
+    baixarModeloPlanilha();
+});
+
+// ---- Baixar cópia de segurança da turma -----------------------------------
+document.getElementById('botao-baixar-planilha').addEventListener('click', function () {
+    if (!turmaAtual) return;
+    baixarPlanilhaTurma(turmaAtual);
+});
+
+// ---- Envio de solicitações --------------------------------------------------
 var alunoSelecionado = null;
 
 document.getElementById('corpo-tabela-alunos').addEventListener('click', function (evento) {
@@ -119,7 +371,7 @@ document.getElementById('corpo-tabela-alunos').addEventListener('click', functio
 
 document.getElementById('botao-enviar-solicitacao').addEventListener('click', function () {
     if (!alunoSelecionado) return;
-    
+
     criarSolicitacao({
         ra: alunoSelecionado.ra,
         nomeAluno: alunoSelecionado.nome,
@@ -133,7 +385,7 @@ document.getElementById('botao-enviar-solicitacao').addEventListener('click', fu
     });
 });
 
-// Renderização das Solicitações e Ações (Refazer / Cancelar)
+// ---- Renderização das Solicitações e Ações (Refazer / Cancelar) -----------
 escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
     var container = document.getElementById('lista-respostas-diretoria');
     container.innerHTML = '';
@@ -149,12 +401,15 @@ escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
         item.style.padding = '12px';
         item.style.marginBottom = '10px';
         item.style.borderRadius = '8px';
-        item.style.borderLeft = '5px solid ' + (s.status === 'Aprovado' ? '#2ecc71' : (s.status === 'Recusado' ? '#ff5c5c' : '#ffd700'));
+        var corBorda = s.status === 'Aprovado' ? '#2ecc71' :
+            (s.status === 'Recusado' ? '#ff5c5c' :
+            (s.status === 'Aguardando Desenvolvedor' ? '#1976d2' : '#ffd700'));
+        item.style.borderLeft = '5px solid ' + corBorda;
         item.style.background = 'rgba(0,0,0,0.2)';
 
         var html = '<strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ') — Status: <strong>' + s.status + '</strong>' +
             (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + s.observacao + '</p>' : '') +
-            (s.respostaDiretoria ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta Diretoria: "' + s.respostaDiretoria + '"</p>' : '') +
+            (s.resposta ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta (' + (s.respondidoPor || '') + '): "' + s.resposta + '"</p>' : '') +
             '<div style="margin-top: 10px;">' +
             '<button type="button" class="btn-refazer-prof" data-id="' + s.id + '" style="margin-right: 8px;">Refazer / Reavaliar</button>' +
             '<button type="button" class="btn-cancelar-prof" data-id="' + s.id + '">Cancelar Solicitação</button>' +
@@ -165,7 +420,6 @@ escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
     });
 });
 
-// Manipulador dos botões de Refazer e Cancelar do Professor
 document.getElementById('lista-respostas-diretoria').addEventListener('click', function (evento) {
     var btnRefazer = evento.target.closest('.btn-refazer-prof');
     var btnCancelar = evento.target.closest('.btn-cancelar-prof');
@@ -182,6 +436,75 @@ document.getElementById('lista-respostas-diretoria').addEventListener('click', f
             cancelarSolicitacao(idCancelar);
         }
     }
+});
+
+// ---- Botão "+": importação da planilha completa (.xlsx/.csv) --------------
+document.getElementById('botao-importar').addEventListener('click', function () {
+    document.getElementById('arquivo-planilha').click();
+});
+
+document.getElementById('arquivo-planilha').addEventListener('change', function (evento) {
+    var arquivo = evento.target.files[0];
+    if (!arquivo || !turmaAtual || !dadosTurmaAtual) return;
+
+    var turmaDaImportacao = turmaAtual;
+    var status = document.getElementById('status-importacao');
+    status.textContent = 'Lendo arquivo...';
+
+    var leitor = new FileReader();
+    leitor.onload = function (e) {
+        evento.target.value = ''; // permite escolher o mesmo arquivo de novo
+
+        var lido;
+        try {
+            lido = lerPlanilhaDeAlunos(e.target.result);
+        } catch (erro) {
+            status.textContent = 'Erro: ' + erro.message;
+            return;
+        }
+
+        // Só aceita alunos da turma selecionada ("3A", "3ºA" e "3° A" contam como a mesma).
+        // Se a planilha nem tem coluna Turma, todos entram na turma selecionada.
+        var aceitos = [];
+        var recusados = [];
+        lido.alunos.forEach(function (a) {
+            if (!lido.temColunaTurma || _slugTurma(a.turma) === _slugTurma(turmaDaImportacao)) {
+                a.turma = turmaDaImportacao;
+                a.professor = sessao.login;
+                aceitos.push(a);
+            } else {
+                recusados.push(a.nome || a.ra);
+            }
+        });
+
+        if (!aceitos.length) {
+            status.textContent = 'Nenhuma linha aceita — verifique se a coluna "Turma" é "' + turmaDaImportacao + '".';
+            return;
+        }
+
+        var substituir = document.getElementById('check-substituir').checked;
+        if (substituir && !confirm('Isso vai REMOVER da turma ' + turmaDaImportacao +
+            ' todos os alunos que não estão nesta planilha. Continuar?')) {
+            status.textContent = 'Importação cancelada.';
+            return;
+        }
+
+        status.textContent = 'Salvando ' + aceitos.length + ' aluno(s)...';
+        salvarAlunos(turmaDaImportacao, aceitos, { professor: sessao.login, substituir: substituir })
+            .then(function (resposta) {
+                return recarregarTurmaAtual().then(function () {
+                    var msg = resposta.gravados + ' aluno(s) salvo(s) no site — já aparecem pra todo mundo.';
+                    if (resposta.ignorados) msg += ' ' + resposta.ignorados + ' ignorado(s): RA já cadastrado em outra turma.';
+                    if (resposta.removidos) msg += ' ' + resposta.removidos + ' removido(s) da turma.';
+                    if (recusados.length) msg += ' Recusados (turma diferente da selecionada): ' + recusados.join(', ') + '.';
+                    if (lido.avisos.length) msg += ' Atenção: ' + lido.avisos.slice(0, 5).join(' ') +
+                        (lido.avisos.length > 5 ? ' (e mais ' + (lido.avisos.length - 5) + ' aviso(s))' : '');
+                    status.textContent = msg;
+                });
+            })
+            .catch(function (erro) { status.textContent = 'Erro ao salvar: ' + erro.message; });
+    };
+    leitor.readAsArrayBuffer(arquivo);
 });
 </script>
 

@@ -30,10 +30,12 @@
     Diretoria e Professor. O <script> no fim da página lê "?perfil=" na URL
     (definido pelos links em login.html) e decide:
       1) o título mostrado ("Estudante", "Diretoria", etc.);
-      2) quais campos aparecem — RA/Dígito/UF para Estudante e Responsável,
-         E-mail institucional para Diretoria e Professor;
+      2) qual campo de login aparece:
+         - Estudante              -> E-mail institucional
+         - Responsável            -> CPF
+         - Diretoria/Professor    -> E-mail institucional
       3) pra onde o botão "Acessar" manda depois de clicado:
-         - Estudante/Responsável  -> index.html?acesso=negado (sem acesso à planilha)
+         - Estudante/Responsável  -> dashboard-aluno.html
          - Diretoria/Professor    -> a planilha no AppSheet
 
     IMPORTANTE: como o site é só front-end (sem servidor), este formulário
@@ -56,23 +58,24 @@
 
     <form class="form-login-card" id="form-acesso">
 
-        <!--
-            Campo de Estudante/Responsável — genérico (aceita RA numérico ou
-            e-mail institucional, o que estiver cadastrado em usuarios.js).
-            Antes eram 3 campos (RA/Dígito/UF), mas como no cadastro real às
-            vezes o login é um e-mail longo, ficou mais simples e menos
-            confuso ter só um campo de texto livre.
-        -->
-        <div id="campos-ra">
+        <!-- Campo de Estudante (e-mail institucional) -->
+        <div id="campos-estudante">
             <div class="form-login-linha">
-                <input type="text" class="form-login-campo" id="campo-login-ra" placeholder="RA ou e-mail institucional">
+                <input type="email" class="form-login-campo" id="campo-login-estudante" placeholder="E-mail institucional">
             </div>
         </div>
 
-        <!-- Campo de Diretoria/Professor (e-mail institucional) -->
+        <!-- Campo de Responsável (CPF) -->
+        <div id="campos-responsavel">
+            <div class="form-login-linha">
+                <input type="text" class="form-login-campo" id="campo-login-cpf" placeholder="CPF" inputmode="numeric" maxlength="14">
+            </div>
+        </div>
+
+        <!-- Campo de Diretoria/Professor/Desenvolvedor (e-mail institucional) -->
         <div id="campos-email">
             <div class="form-login-linha">
-                <input type="email" class="form-login-campo" placeholder="E-mail institucional">
+                <input type="email" class="form-login-campo" id="campo-login-email" placeholder="E-mail institucional">
             </div>
         </div>
 
@@ -101,18 +104,43 @@
 var parametros = new URLSearchParams(window.location.search);
 var perfil = parametros.get('perfil') || 'estudante';
 
+// "campo" define qual dos 3 blocos de input aparece:
+//   'estudante'  -> #campos-estudante (e-mail institucional)
+//   'cpf'        -> #campos-responsavel (CPF)
+//   'email'      -> #campos-email (e-mail institucional, Diretoria/Professor)
 var config = {
-    estudante:   { titulo: 'Estudante',   camposRA: true,  destino: 'dashboard-aluno.html' },
-    responsavel: { titulo: 'Responsável', camposRA: true,  destino: 'dashboard-aluno.html' },
-    diretoria:   { titulo: 'Diretoria',   camposRA: false, destino: 'dashboard-diretoria.html' },
-    professor:   { titulo: 'Professor',   camposRA: false, destino: 'dashboard-professor.html' }
+    estudante:     { titulo: 'Estudante',     campo: 'estudante', destino: 'dashboard-aluno.html' },
+    responsavel:   { titulo: 'Responsável',   campo: 'cpf',       destino: 'dashboard-aluno.html' },
+    diretoria:     { titulo: 'Diretoria',     campo: 'email',     destino: 'dashboard-diretoria.html' },
+    professor:     { titulo: 'Professor',     campo: 'email',     destino: 'dashboard-professor.html' },
+    desenvolvedor: { titulo: 'Desenvolvedor', campo: 'email',     destino: 'dashboard-desenvolvedor.html' }
 };
 
 var dadosPerfil = config[perfil] || config.estudante;
 
+var camposPorTipo = {
+    estudante: 'campos-estudante',
+    cpf: 'campos-responsavel',
+    email: 'campos-email'
+};
+
 document.getElementById('form-titulo').textContent = dadosPerfil.titulo;
-document.getElementById('campos-ra').style.display = dadosPerfil.camposRA ? 'block' : 'none';
-document.getElementById('campos-email').style.display = dadosPerfil.camposRA ? 'none' : 'block';
+
+// Esconde os 3 blocos e mostra só o que corresponde ao perfil atual
+Object.keys(camposPorTipo).forEach(function (tipo) {
+    document.getElementById(camposPorTipo[tipo]).style.display = 'none';
+});
+document.getElementById(camposPorTipo[dadosPerfil.campo]).style.display = 'block';
+
+// Máscara simples de CPF (000.000.000-00) enquanto a pessoa digita
+var campoCpf = document.getElementById('campo-login-cpf');
+campoCpf.addEventListener('input', function (e) {
+    var valor = e.target.value.replace(/\D/g, '').slice(0, 11);
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    e.target.value = valor;
+});
 
 // Mostrar/esconder a senha ao clicar no ícone do olho
 document.getElementById('botao-olho').addEventListener('click', function () {
@@ -139,14 +167,14 @@ document.getElementById('form-acesso').addEventListener('submit', function (even
     evento.preventDefault();
     avisoErro.style.display = 'none';
 
+    // Pega o valor do campo certo, de acordo com o perfil (estudante/cpf/email)
     var login;
-    if (dadosPerfil.camposRA) {
-        // Compara direto com o campo "login" de usuarios.js — pode ser
-        // um RA numérico, CPF ou e-mail institucional, dependendo do que
-        // foi cadastrado ali para aquela pessoa.
-        login = document.getElementById('campo-login-ra').value.trim();
+    if (dadosPerfil.campo === 'estudante') {
+        login = document.getElementById('campo-login-estudante').value.trim();
+    } else if (dadosPerfil.campo === 'cpf') {
+        login = document.getElementById('campo-login-cpf').value.trim();
     } else {
-        login = document.querySelector('#campos-email .form-login-campo').value.trim();
+        login = document.getElementById('campo-login-email').value.trim();
     }
     var senha = document.getElementById('campo-senha').value.trim();
 

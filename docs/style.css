@@ -281,9 +281,36 @@ html {
 
 
 /* Imagens das Seções Padrão (Menu 1, 2 e 3) */
+.hero {
+    position: relative;
+}
+
 .hero img {
     width: 100%;
     display: block;
+}
+
+/* Logo sobreposta no canto do banner principal (a imagem em si tem fundo
+   transparente — o preto do arquivo original foi removido). Ajuste "width"
+   e "top/left" abaixo se quiser a logo maior/menor ou em outro canto. */
+.hero-logo {
+    position: absolute;
+    top: 110px;
+    left: 3%;
+    width: 22%;
+    max-width: 260px;
+    min-width: 110px;
+    height: auto;
+    z-index: 2;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .hero-logo {
+        width: 34%;
+        top: 90px;
+        left: 4%;
+    }
 }
 
 
@@ -2437,26 +2464,65 @@ body{
    ========================================================================= */
 .painel-dashboard{
     max-width: 1100px;
-    margin: 40px auto;
-    padding: 0 20px;
+    margin: 0 auto 40px;
+    padding: 130px 20px 0;   /* empurra o conteúdo pra baixo do menu fixo (antes 40px, não bastava) */
+    position: relative;
+}
+
+/* Fundo com um leve gradiente colorido atrás do conteúdo (em vez de preto
+   chapado) — dá profundidade sem brigar com o tema escuro do site. */
+.painel-dashboard::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(ellipse 900px 500px at 15% 0%, rgba(11, 60, 121, .35), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 100% 20%, rgba(109, 52, 187, .25), transparent 60%),
+        var(--cor-preto);
+}
+
+/* A ".login-saudacao" foi feita pro fundo CLARO da tela de login — aqui,
+   nos painéis de fundo preto, precisa de cores claras/vivas, senão o texto
+   fica praticamente invisível (era o "sem cor" do título). */
+.painel-dashboard .login-saudacao{
+    text-align: left;
+    color: var(--cor-cinza-claro);
+    border-left: 4px solid var(--cor-dourado);
+    padding-left: 16px;
+}
+.painel-dashboard .login-saudacao h1{
+    font-size: 2rem;
+    background: linear-gradient(90deg, var(--cor-dourado), var(--cor-laranja));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.painel-dashboard .login-saudacao p{
+    color: var(--cor-cinza);
+    margin-top: 6px;
 }
 
 .lista-turmas-chip{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 20px; }
 .chip-turma{
-    background: var(--cor-azul-escuro);
+    background: linear-gradient(135deg, var(--cor-azul-escuro), var(--cor-roxo));
     color: var(--cor-branco);
-    padding: 4px 14px;
+    padding: 5px 16px;
     border-radius: 20px;
     font-size: .9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
 
 .area-importar{ display:flex; align-items:center; gap:14px; margin: 20px 0 6px; }
 .botao-mais-importar{
     width: 46px; height: 46px; border-radius: 50%;
-    background: var(--cor-laranja); color: var(--cor-branco);
+    background: linear-gradient(135deg, var(--cor-laranja), var(--cor-dourado));
+    color: var(--cor-branco);
     border: none; font-size: 1.2rem; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(230, 126, 34, .45);
+    transition: transform .2s, box-shadow .2s;
 }
-.botao-mais-importar:hover{ background: var(--cor-dourado); color: var(--cor-preto); }
+.botao-mais-importar:hover{ transform: scale(1.08); box-shadow: 0 6px 18px rgba(255, 215, 0, .5); }
 .dica-importar{ font-size:.85rem; color: var(--cor-cinza); margin-bottom: 14px; }
 #status-importacao{ margin: 6px 0 20px; color: var(--cor-verde-claro); font-size:.9rem; }
 
@@ -2466,51 +2532,81 @@ body{
     background: var(--cor-creme);
     color: var(--cor-texto-escuro);
     margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
 .tabela-alunos th, .tabela-alunos td{
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--cor-cinza-claro);
     text-align: left;
     font-size: .9rem;
 }
-.tabela-alunos th{ background: var(--cor-azul-escuro); color: var(--cor-branco); }
+.tabela-alunos th{
+    background: linear-gradient(90deg, var(--cor-azul-escuro), var(--cor-verde-agua));
+    color: var(--cor-branco);
+}
+.tabela-alunos tbody tr:hover{ background: #ece4d0; }
 
 .grid-status{ display:flex; gap:16px; flex-wrap:wrap; margin: 20px 0; }
 .card-status{
     background: var(--cor-creme); color: var(--cor-texto-escuro);
     border-radius: 12px; padding: 18px 24px; min-width: 140px; text-align:center;
+    border-top: 4px solid var(--cor-azul-escuro);
+    box-shadow: 0 6px 18px rgba(0,0,0,.3);
 }
+.card-status:nth-child(2){ border-top-color: var(--cor-verde-agua); }
+.card-status:nth-child(3){ border-top-color: var(--cor-roxo); }
 .card-status-rotulo{ display:block; font-size:.8rem; color: var(--cor-texto-medio); }
 .card-status-valor{ display:block; font-family: var(--fonte-titulos); font-size:1.6rem; }
 
-.caixa-mensagem-resultado{ border-radius: 12px; padding: 18px 22px; margin: 20px 0; font-family: var(--fonte-titulos); }
-.caixa-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
-.caixa-reprovado{ background: #4a1010; color: var(--cor-branco); border: 1px solid #a33; }
+.caixa-mensagem-resultado{ border-radius: 12px; padding: 18px 22px; margin: 20px 0; font-family: var(--fonte-titulos); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+.caixa-aprovado{ background: linear-gradient(135deg, var(--cor-verde-claro), #17a86b); color: var(--cor-preto); }
+.caixa-reprovado{ background: linear-gradient(135deg, #4a1010, #6e1a1a); color: var(--cor-branco); border: 1px solid #a33; }
 
-.caixa-status-solicitacao{ border-radius: 10px; padding: 14px 18px; margin: 10px 0 20px; font-size: .95rem; }
+.caixa-status-solicitacao{ border-radius: 10px; padding: 14px 18px; margin: 10px 0 20px; font-size: .95rem; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
 .status-pendente{ background: #4a3d10; color: var(--cor-branco); border: 1px solid var(--cor-dourado); }
 .status-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
 .status-recusado{ background: #4a1010; color: var(--cor-branco); border: 1px solid #a33; }
+/* Aprovado pela Diretoria, mas ainda falta a confirmação final do
+   Desenvolvedor — status intermediário do fluxo em duas etapas. */
+.status-aguardando-dev{ background: #0f2d4a; color: var(--cor-branco); border: 1px solid var(--cor-evento-azul); }
 
-.area-avaliacao-professores{ margin-top: 40px; background: var(--cor-creme); color: var(--cor-texto-escuro); border-radius: 12px; padding: 20px; }
+.area-avaliacao-professores{
+    margin-top: 40px; background: var(--cor-creme); color: var(--cor-texto-escuro);
+    border-radius: 12px; padding: 20px;
+    border-top: 4px solid var(--cor-dourado);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.area-avaliacao-professores h2{ color: var(--cor-azul-escuro); }
 
 .btn-solicitar-participacao{
-    background: var(--cor-azul-escuro); color: var(--cor-branco);
+    background: linear-gradient(135deg, var(--cor-azul-escuro), var(--cor-verde-agua));
+    color: var(--cor-branco);
     border: none; border-radius: 6px; padding: 6px 10px; font-size: .8rem; cursor: pointer;
+    transition: transform .15s;
 }
-.btn-solicitar-participacao:hover{ background: var(--cor-verde-agua); }
+.btn-solicitar-participacao:hover{ transform: translateY(-2px); }
 
 .card-solicitacao{
     background: var(--cor-branco); border: 1px solid var(--cor-cinza-claro);
+    border-left: 4px solid var(--cor-dourado);
     border-radius: 10px; padding: 14px 16px; margin: 12px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
 }
 .detalhe-solicitacao{ font-size: .85rem; color: var(--cor-texto-medio); margin: 2px 0; }
 .botoes-solicitacao{ display: flex; gap: 10px; margin-top: 10px; }
 .btn-aprovar-solicitacao, .btn-recusar-solicitacao{
     border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-family: var(--fonte-titulos);
+    transition: transform .15s, box-shadow .15s;
 }
-.btn-aprovar-solicitacao{ background: var(--cor-verde-claro); color: var(--cor-preto); }
-.btn-recusar-solicitacao{ background: #a33; color: var(--cor-branco); }
+.btn-aprovar-solicitacao{ background: linear-gradient(135deg, var(--cor-verde-claro), #17a86b); color: var(--cor-preto); }
+.btn-recusar-solicitacao{ background: linear-gradient(135deg, #c0392b, #a33); color: var(--cor-branco); }
+.btn-aprovar-solicitacao:hover, .btn-recusar-solicitacao:hover{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+
+@media (max-width: 600px){
+    .painel-dashboard{ padding-top: 110px; }
+}
 
 /* =========================================================================
    FOOTER — passo 3

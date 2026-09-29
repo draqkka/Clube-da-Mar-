@@ -17,7 +17,7 @@
 
 <header>
 <nav class="topnav">
-    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Voltar ao site</a>
+    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
 </nav>
 </header>
 
@@ -35,6 +35,7 @@
     <div class="login-saudacao">
         <h1 id="titulo-boas-vindas">Olá!</h1>
         <p>Confira abaixo sua situação para a excursão ao Clube da Maré.</p>
+        <p id="info-aluno"></p>
     </div>
 
     <div id="carregando">Carregando seus dados...</div>
@@ -70,12 +71,12 @@
             <p id="texto-solicitacao"></p>
         </div>
 
-        <!-- Só aparece quando o aluno está aprovado (ver critério no JS) -->
+        <!-- Só aparece quando o aluno está aprovado (ver critério no JS).
+             O texto/link mudam conforme o perfil (ver JS: FORMULARIOS). -->
         <div id="area-formulario" style="display:none;">
-            <h2>Para finalizarmos, responda o formulário abaixo para garantir seu ingresso:</h2>
-            <!-- Troque o link abaixo pelo link do seu Google Forms -->
-            <a href="https://forms.gle/yfcxrVVv4meHmBEG9" target="_blank" class="btn-planilha-atalho">
-                Preencher formulário de confirmação
+            <h2 id="titulo-area-formulario">Para finalizarmos, responda o formulário abaixo para garantir seu ingresso:</h2>
+            <a id="link-formulario" href="#" target="_blank" class="btn-planilha-atalho">
+                Preencher formulário
             </a>
         </div>
     </div>
@@ -90,12 +91,34 @@
 // Critério de aprovação — ajuste os números aqui se a regra da escola mudar
 var PRESENCA_MINIMA = 85;   // em %
 var NOTA_MINIMA = 6;        // considerando nota de 0 a 10
-var COMPORTAMENTOS_RUINS = ['ruim', 'regular'];
+// Comportamento agora é calculado automaticamente a partir da Presença
+// (ver comportamentoPorPresenca em planilha.js: Bom/Regular/Péssimo) — só
+// "Péssimo" reprova por comportamento aqui, já que "Regular" é uma faixa
+// intermediária normal, e a Presença em si já é conferida separadamente
+// acima (PRESENCA_MINIMA).
+var COMPORTAMENTOS_RUINS = ['péssimo'];
 
 var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
 if (!sessao || (sessao.perfil !== 'estudante' && sessao.perfil !== 'responsavel')) {
     window.location.href = 'login.html';
 }
+
+// Estudante preenche a ficha de confirmação + saúde (alergias, contato de
+// emergência etc.); o responsável assina a autorização de participação —
+// são dois formulários diferentes. Troque os dois links abaixo pelos links
+// reais do Google Forms depois de criá-los.
+var FORMULARIOS = {
+    estudante: {
+        titulo: 'Para finalizarmos, responda a ficha de confirmação e saúde abaixo para garantir seu ingresso:',
+        texto: 'Preencher ficha de confirmação e saúde',
+        link: 'https://forms.gle/fm6CKFcbhz9hsJQb8'
+    },
+    responsavel: {
+        titulo: 'Para finalizarmos, preencha a autorização abaixo pra liberar a participação do seu filho(a):',
+        texto: 'Preencher formulário de autorização',
+        link: 'https://forms.gle/3HZ7pGnp4afpmNub9'
+    }
+};
 
 // Saudação inicial (provisória pro responsável — vira "responsável de
 // [nome do aluno]" assim que os dados do aluno chegarem, logo abaixo).
@@ -107,7 +130,11 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-carregarPlanilha()
+// A planilha agora é uma por turma — o aluno/responsável só tem uma turma
+// (guardada na sessão, vinda de usuarios.js), então já sabemos qual carregar.
+var turmaDoAluno = sessao.turmas && sessao.turmas[0];
+
+(turmaDoAluno ? carregarPlanilha(turmaDoAluno) : Promise.reject(new Error('Sua conta não tem turma cadastrada.')))
 .then(function (dados) {
     document.getElementById('carregando').style.display = 'none';
 
@@ -125,9 +152,14 @@ carregarPlanilha()
     }
 
     document.getElementById('conteudo-status').style.display = 'block';
-    document.getElementById('valor-nota').textContent = aluno.nota;
-    document.getElementById('valor-presenca').textContent = aluno.presenca + '%';
-    document.getElementById('valor-comportamento').textContent = aluno.comportamento;
+    document.getElementById('info-aluno').textContent =
+        (aluno.serie ? 'Série: ' + aluno.serie + ' · ' : '') + 'Turma: ' + aluno.turma;
+
+    var semNota = aluno.nota === '' || aluno.nota === null || aluno.nota === undefined;
+    var semPresenca = aluno.presenca === '' || aluno.presenca === null || aluno.presenca === undefined;
+    document.getElementById('valor-nota').textContent = semNota ? '—' : aluno.nota;
+    document.getElementById('valor-presenca').textContent = semPresenca ? '—' : aluno.presenca + '%';
+    document.getElementById('valor-comportamento').textContent = aluno.comportamento || '—';
 
     var presencaOk = Number(aluno.presenca) >= PRESENCA_MINIMA;
     var notaOk = Number(aluno.nota) >= NOTA_MINIMA;
@@ -140,6 +172,13 @@ carregarPlanilha()
     if (aprovado) {
         caixa.classList.add('caixa-aprovado');
         texto.textContent = 'Parabéns! Gosto assim, se superando, continue assim! :)';
+
+        var formulario = FORMULARIOS[sessao.perfil] || FORMULARIOS.estudante;
+        document.getElementById('titulo-area-formulario').textContent = formulario.titulo;
+        var linkFormulario = document.getElementById('link-formulario');
+        linkFormulario.href = formulario.link;
+        linkFormulario.textContent = formulario.texto;
+
         document.getElementById('area-formulario').style.display = 'block';
     } else {
         caixa.classList.add('caixa-reprovado');

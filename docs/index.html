@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8C%B4%3C/text%3E%3C/svg%3E">
 <title>Clube da Maré</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -731,154 +732,8 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     <p class="rodape-linha">&copy; 2026 Clube da Maré Beach Club. Todos os direitos reservados.</p>
 </footer>
 
-<!--
-    ÍCONE FLUTUANTE DO ASSISTENTE VIRTUAL
-    Troque "SEU-ICONE-AQUI.png" pelo caminho da imagem do ícone (a mesma
-    pasta de imagens que você organiza sozinho). Ao clicar, abre o modal do
-    chatbot centralizado na tela (não sai da página). O estilo já está
-    pronto no style.css, na classe "botao-assistente-flutuante".
--->
-<button type="button"
-        class="botao-assistente-flutuante-wrapper"
-        id="botao-abrir-chatbot"
-        aria-haspopup="dialog"
-        aria-controls="modal-chatbot"
-        aria-label="Abrir assistente virtual">
-    <img src="imagens/Chatbot/chatbot.png"
-         class="botao-assistente-flutuante"
-         alt="">
-</button>
-
-<!--
-    MODAL DO CHATBOT
-    Fica escondido (display:none) até clicar no ícone acima. Este é um chat
-    PRÓPRIO (não é mais um iframe de terceiro): manda a pergunta pra
-    "/api/chat" (função serverless em api/chat.js) que chama a API da
-    Claude e devolve a resposta. Precisa da variável de ambiente
-    ANTHROPIC_API_KEY configurada no projeto da Vercel — sem isso, o
-    assistente responde com uma mensagem de erro explicando o que falta.
--->
-<div class="modal-chatbot-fundo" id="modal-chatbot-fundo">
-    <div class="modal-chatbot" id="modal-chatbot" role="dialog" aria-modal="true" aria-label="Assistente Virtual - Clube da Maré">
-
-        <div class="chat-frame-bar">
-            <span class="dot"></span>
-            Marézinho — Clube da Maré
-            <button type="button" class="modal-chatbot-fechar" id="botao-fechar-chatbot" aria-label="Fechar assistente virtual">&times;</button>
-        </div>
-
-        <div class="chat-mensagens" id="chat-mensagens"></div>
-
-        <form class="chat-formulario" id="chat-formulario">
-            <input type="text" class="chat-input" id="chat-input" placeholder="Digite sua pergunta..." autocomplete="off" maxlength="500">
-            <button type="submit" class="chat-botao-enviar" id="chat-botao-enviar" aria-label="Enviar mensagem">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </form>
-
-        <noscript>
-            <p class="chat-fallback">Ative o JavaScript pra conversar com o assistente virtual.</p>
-        </noscript>
-    </div>
-</div>
-
-<script>
-(function () {
-    var botaoAbrir = document.getElementById('botao-abrir-chatbot');
-    var botaoFechar = document.getElementById('botao-fechar-chatbot');
-    var fundo = document.getElementById('modal-chatbot-fundo');
-    var caixaMensagens = document.getElementById('chat-mensagens');
-    var formulario = document.getElementById('chat-formulario');
-    var campoInput = document.getElementById('chat-input');
-    var botaoEnviar = document.getElementById('chat-botao-enviar');
-
-    // Histórico enviado pra API a cada pergunta (só texto e quem falou —
-    // a mensagem de boas-vindas abaixo é só visual, não entra aqui).
-    var historico = [];
-    var jaAbriuUmaVez = false;
-
-    function criarBolha(texto, tipo) {
-        var bolha = document.createElement('div');
-        bolha.className = 'chat-bolha chat-bolha-' + tipo;
-        bolha.textContent = texto;
-        caixaMensagens.appendChild(bolha);
-        caixaMensagens.scrollTop = caixaMensagens.scrollHeight;
-        return bolha;
-    }
-
-    function abrirModal() {
-        fundo.classList.add('aberto');
-        document.body.style.overflow = 'hidden'; // trava o scroll do site atrás do modal
-
-        if (!jaAbriuUmaVez) {
-            jaAbriuUmaVez = true;
-            criarBolha('Olá! Seja muito bem-vindo(a) ao Clube da Maré Beach Club! ☀️🏖️🌴 Sou o Marézinho, o Assistente Virtual Oficial — posso ajudar com dúvidas sobre a excursão, ingressos, programação, atividades, segurança e funcionamento do evento. Como posso ajudar você hoje?', 'assistente');
-        }
-        campoInput.focus();
-    }
-
-    function fecharModal() {
-        fundo.classList.remove('aberto');
-        document.body.style.overflow = '';
-    }
-
-    botaoAbrir.addEventListener('click', abrirModal);
-    botaoFechar.addEventListener('click', fecharModal);
-
-    fundo.addEventListener('click', function (evento) {
-        if (evento.target === fundo) fecharModal();
-    });
-
-    document.addEventListener('keydown', function (evento) {
-        if (evento.key === 'Escape') fecharModal();
-    });
-
-    formulario.addEventListener('submit', function (evento) {
-        evento.preventDefault();
-
-        var pergunta = campoInput.value.trim();
-        if (!pergunta) return;
-
-        criarBolha(pergunta, 'usuario');
-        historico.push({ papel: 'usuario', texto: pergunta });
-
-        campoInput.value = '';
-        campoInput.disabled = true;
-        botaoEnviar.disabled = true;
-
-        var indicador = document.createElement('p');
-        indicador.className = 'chat-digitando';
-        indicador.textContent = 'Digitando...';
-        caixaMensagens.appendChild(indicador);
-        caixaMensagens.scrollTop = caixaMensagens.scrollHeight;
-
-        fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ mensagens: historico })
-        })
-            .then(function (resposta) { return resposta.json().then(function (dados) { return { ok: resposta.ok, dados: dados }; }); })
-            .then(function (resultado) {
-                indicador.remove();
-                if (!resultado.ok) {
-                    criarBolha(resultado.dados.erro || 'Não consegui responder agora.', 'erro');
-                    return;
-                }
-                criarBolha(resultado.dados.resposta, 'assistente');
-                historico.push({ papel: 'assistente', texto: resultado.dados.resposta });
-            })
-            .catch(function () {
-                indicador.remove();
-                criarBolha('Não consegui falar com o assistente agora — confira sua conexão e tente de novo.', 'erro');
-            })
-            .finally(function () {
-                campoInput.disabled = false;
-                botaoEnviar.disabled = false;
-                campoInput.focus();
-            });
-    });
-})();
-</script>
+<!-- Chat ao vivo (Dealism) -->
+<script src="https://d1svrfmyhkyg8q.cloudfront.net/livechat/prod/livechat.js" data-site-key="lc_site_HFffd5NFIJyhPji297bnGmJV2GRbZBZ8dg-aT_AuM9I" async></script>
 
 </main>
 </body>

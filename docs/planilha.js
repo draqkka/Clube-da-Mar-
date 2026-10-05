@@ -334,7 +334,7 @@ function baixarPlanilhaTurma(turma) {
 //    ou pelo nome da aba. Cada turma é salva à parte: importar a 3ºA nunca
 //    mexe nos alunos da 2ºA.
 //  • As colunas são achadas PELO NOME do cabeçalho (qualquer ordem):
-//    Aluno/Nome, RA, Frequência (Fre%), Nota/Média, Situação, Curso.
+//    Aluno/Nome, Frequência (Fre%), Média (M), Situação, Curso (RA é opcional).
 //  • Situação "Ativo" = aluno da sala. Remanejado, transferido etc. = não
 //    pertence mais à sala e NÃO aparece pro professor.
 //  • Aprovado = Ativo + frequência >= 85% + nota >= 7 (ajuste abaixo).
@@ -342,15 +342,21 @@ function baixarPlanilhaTurma(turma) {
 
 var TITULO_PLANILHA_OFICIAL = 'Registro e controle do rendimento escolar';
 var CRITERIO_PRESENCA_MINIMA = 85;   // em %
-var CRITERIO_NOTA_MINIMA = 7;        // nota de 0 a 10 (>= 7 aprova)
+var CRITERIO_NOTA_MINIMA = 7;        // média de 0 a 10 (>= 7 aprova)
 var EXTRA_SITUACAO = 'Situação';     // onde a situação fica guardada (extras)
 var EXTRA_CURSO = 'Curso';           // onde o curso fica guardado (extras)
+
+var EXTRA_DIRETORIA = 'Diretoria';   // Diretoria de Ensino (ex: "Leste 1") — vem do topo de cada aba
+var EXTRA_ESCOLA = 'Escola';         // nome da escola — vem do topo de cada aba
+var EXTRA_DIRETOR = 'Diretor';       // diretor(a) — vem do topo de cada aba
+var EXTRA_BIMESTRE = 'Bimestre';     // ex: "2º Bimestre" — vem do título da planilha
 
 var _CHAVES_NOME = ['aluno', 'nome', 'nomedoaluno', 'nomecompleto', 'nomealuno'];
 var _CHAVES_RA = ['ra', 'registroaluno', 'registrodoaluno', 'nrra', 'numerora'];
 var _CHAVES_DIG = ['dig', 'digito', 'digra', 'dv', 'digitora'];
 var _CHAVES_UF = ['uf', 'ufra'];
-var _CHAVES_NOTA = ['mediafinal', 'notafinal', 'mediageral', 'media', 'nota', 'mf', 'notas'];
+// Média: "Média", "Média Final", "M", "(M)", "Média (M)"... (também aceita "Nota").
+var _CHAVES_NOTA = ['mediafinal', 'notafinal', 'mediageral', 'media', 'mediaoum', 'mediam', 'm', 'nota', 'mf', 'notas'];
 var _CHAVES_SITUACAO = ['situacao', 'situacaodoaluno', 'situacaoaluno', 'sit', 'status'];
 var _CHAVES_TURMA = ['turma', 'classe'];
 var _CHAVES_CURSO = ['curso', 'cursohabilitacao'];
@@ -470,6 +476,102 @@ function _presencaNormalizada(v) {
     return n;
 }
 
+// ---- Dados do topo da planilha: Diretoria, Escola, Diretor e Bimestre ------
+// Cada ABA (turma) é lida separadamente, então 2ºA e 3ºA guardam cada uma os
+// seus próprios dados. Só olha as linhas ACIMA do cabeçalho "Aluno".
+
+var _PARADAS_META = ['DIRETORIA', 'ESCOLA', 'UNIDADE', 'DIRETOR', 'DIRETORA', 'BIMESTRE', 'TURMA', 'CURSO', 'SERIE', 'PERIODO', 'TURNO', 'DISCIPLINA'];
+
+// Procura "ROTULO: valor" nas linhas do topo (ou o valor na célula ao lado).
+// Os rótulos são testados na ordem e só valem como palavra inteira — assim
+// "DIRETOR" não confunde com "DIRETORIA". "limpar" arruma o texto achado.
+function _valorMeta(linhas, limite, rotulos, paradas, limpar) {
+    var regexParada = new RegExp('\\b(' + paradas.join('|') + ')\\b');
+    for (var r = 0; r < rotulos.length; r++) {
+        var regexRotulo = new RegExp('\\b' + rotulos[r] + '\\b');
+        for (var i = 0; i < Math.min(linhas.length, limite); i++) {
+            for (var c = 0; c < linhas[i].length; c++) {
+                var original = _textoCelula(linhas[i][c]);
+                if (!original) continue;
+                var base = _semAcento(original).toUpperCase();
+                var m = regexRotulo.exec(base);
+                if (!m) continue;
+
+                var inicio = m.index + m[0].length;
+                var restoBase = base.slice(inicio);
+                var ini = restoBase.match(/^\s*[:\-\u2013]?\s*/)[0].length;
+                var resto = original.slice(inicio + ini);
+                restoBase = restoBase.slice(ini);
+
+                var fim = restoBase.length;
+                var kParada = restoBase.search(regexParada);
+                if (kParada > 0 && kParada < fim) fim = kParada;
+                var kEspacos = restoBase.search(/\s{3,}|\t/);
+                if (kEspacos > 0 && kEspacos < fim) fim = kEspacos;
+
+                var valor = limpar(resto.slice(0, fim).replace(/[-\u2013|;,]\s*$/, '').trim());
+                if (valor) return valor;
+
+                // Rótulo sozinho na célula: o valor está na próxima célula preenchida.
+                for (var d = c + 1; d < linhas[i].length; d++) {
+                    var vizinho = _textoCelula(linhas[i][d]);
+                    if (vizinho) { valor = limpar(vizinho); if (valor) return valor; break; }
+                }
+            }
+        }
+    }
+    return '';
+}
+
+// "DE ENSINO - REGIÃO LESTE 1" / "REGIÃO LESTE 1" / "LESTE 1" -> "Leste 1"
+function _limparDiretoria(v) {
+    var t = _textoCelula(v)
+        .replace(/^(DE\s+)?ENSINO\b\s*[:\-\u2013]?\s*/i, '')
+        .replace(/^REGI[AÃ]O\s*(DE\s+)?[:\-\u2013]?\s*/i, '')
+        .replace(/[_\s]+$/, '');
+    return _formatarCurso(t);
+}
+
+// "(A): MARIA SILVA" / "/A: Maria Silva" -> "Maria Silva". Linha de
+// assinatura em branco ("________") vira vazio.
+function _limparDiretor(v) {
+    var t = _textoCelula(v).replace(/^(\(\s*[aAoO]\s*\)|\/\s*[aAoO]\b)\s*[:\-\u2013]?\s*/, '').replace(/[_\s]+$/, '').trim();
+    if (/^[_.\-\s]*$/.test(t)) return '';
+    return _formatarCurso(t);
+}
+
+// "Escola Estadual X" escrito sem ":" depois do rótulo mantém o "Escola".
+function _limparEscola(v) {
+    var t = _textoCelula(v).replace(/[_\s]+$/, '');
+    if (/^[_.\-\s]*$/.test(t)) return '';
+    return /^(ESTADUAL|MUNICIPAL|PARTICULAR)\b/i.test(t) ? 'Escola ' + _formatarCurso(t) : t;
+}
+
+// Bimestre pelo título da planilha (linhas do topo). Se não achar ali, tenta
+// o nome da aba e depois o nome do arquivo. Entende "2º Bimestre", "2 BIM",
+// "Bimestre: 2", "II Bimestre" e "Segundo Bimestre".
+function _bimestreDaPlanilha(linhas, limite, nomeAba, nomeArquivo) {
+    var textos = [];
+    for (var i = 0; i < Math.min(linhas.length, limite); i++) {
+        textos.push(linhas[i].map(_textoCelula).join(' '));
+    }
+    textos.push(nomeAba || '', nomeArquivo || '');
+
+    var palavras = { PRIMEIRO: 1, SEGUNDO: 2, TERCEIRO: 3, QUARTO: 4 };
+    var romanos = { I: 1, II: 2, III: 3, IV: 4 };
+    for (var k = 0; k < textos.length; k++) {
+        var t = _semAcento(textos[k]).toUpperCase().replace(/\s+/g, ' ');
+        var m = t.match(/(?:^|[^0-9])([1-4])\s*[\u00BA\u00B0\u00AAO]?\s*[._\-]?\s*BIM/) ||
+                t.match(/BIM[A-Z]*\s*[:\-\u2013_]?\s*([1-4])(?![0-9])/);
+        if (m) return m[1] + '\u00BA Bimestre';
+        m = t.match(/\b(PRIMEIRO|SEGUNDO|TERCEIRO|QUARTO)\s+BIM/);
+        if (m) return palavras[m[1]] + '\u00BA Bimestre';
+        m = t.match(/\b(IV|III|II|I)\s*[\u00BA\u00B0]?\s*BIM/);
+        if (m) return romanos[m[1]] + '\u00BA Bimestre';
+    }
+    return '';
+}
+
 // Lê UMA aba (já convertida em linhas) e acrescenta o resultado em "res".
 // Separada da leitura do arquivo pra poder ser testada sem o SheetJS.
 function _processarAba(nomeAba, linhas, res) {
@@ -508,9 +610,8 @@ function _processarAba(nomeAba, linhas, res) {
     var colFreq = colsFreq.length ? colsFreq[0] : -1;
 
     var faltando = [];
-    if (colRa === -1) faltando.push('RA');
     if (colFreq === -1) faltando.push('Frequência (ex: "Fre(%)")');
-    if (colNota === -1) faltando.push('Nota ou Média');
+    if (colNota === -1) faltando.push('Média ("Média" ou "M")');
     if (faltando.length) {
         var vistas = [];
         banda.forEach(function (b) { if (vistas.indexOf(b.texto) === -1 && vistas.length < 25) vistas.push(b.texto); });
@@ -524,6 +625,10 @@ function _processarAba(nomeAba, linhas, res) {
     if (colsFreq.length > 1) {
         res.avisos.push('Aba "' + nomeAba + '": achei ' + colsFreq.length + ' colunas de frequência; usei a primeira. Se estiver errada, avise o desenvolvedor.');
     }
+    if (colRa === -1) {
+        res.avisos.push('Aba "' + nomeAba + '": a planilha não tem coluna RA — os alunos foram identificados pelo nome. ' +
+            'O aluno só consegue ver o próprio status no painel dele se o RA estiver na planilha.');
+    }
     if (colSit === -1) {
         res.avisos.push('Aba "' + nomeAba + '": não achei a coluna "Situação" — considerei todos os alunos como Ativos.');
     }
@@ -536,6 +641,22 @@ function _processarAba(nomeAba, linhas, res) {
 
     var cursoAba = _formatarCurso(_valorRotulo(linhas, cab.linha, 'CURSO', ['TURMA', 'SERIE', 'PERIODO', 'TURNO', 'ANO', 'ESCOLA', 'BIMESTRE', 'DISCIPLINA']));
 
+    // Diretoria, Escola, Diretor e Bimestre desta aba (cada turma tem os seus).
+    var meta = {
+        diretoria: _valorMeta(linhas, cab.linha, ['DIRETORIA\\s+DE\\s+ENSINO', 'DIRETORIA'], _PARADAS_META, _limparDiretoria),
+        escola: _valorMeta(linhas, cab.linha, ['UNIDADE\\s+ESCOLAR', 'ESCOLA'], _PARADAS_META, _limparEscola),
+        diretor: _valorMeta(linhas, cab.linha, ['DIRETOR', 'DIRETORA'], _PARADAS_META, _limparDiretor),
+        bimestre: _bimestreDaPlanilha(linhas, cab.linha, nomeAba, res.nomeArquivo)
+    };
+    var naoAchou = [];
+    if (!meta.diretoria) naoAchou.push('Diretoria');
+    if (!meta.escola) naoAchou.push('Escola');
+    if (!meta.diretor) naoAchou.push('Diretor');
+    if (!meta.bimestre) naoAchou.push('Bimestre');
+    if (naoAchou.length) {
+        res.avisos.push('Aba "' + nomeAba + '": não encontrei no topo da planilha: ' + naoAchou.join(', ') + '.');
+    }
+
     var grupos = {};
     var semTurma = 0;
     for (var l = cab.linha + 1; l < linhas.length; l++) {
@@ -543,9 +664,10 @@ function _processarAba(nomeAba, linhas, res) {
         var nome = _textoCelula(linha[colNome]);
         if (!nome || _CHAVES_NOME.indexOf(_chaveColuna(nome)) !== -1) continue;
 
-        var ra = _textoCelula(linha[colRa]);
-        if (colDig !== -1) ra += _textoCelula(linha[colDig]);
-        if (colUf !== -1) ra += _textoCelula(linha[colUf]);
+        var ra = colRa === -1 ? '' : _textoCelula(linha[colRa]);
+        if (colRa !== -1 && colDig !== -1) ra += _textoCelula(linha[colDig]);
+        if (colRa !== -1 && colUf !== -1) ra += _textoCelula(linha[colUf]);
+        if (colRa === -1) ra = 'NOME' + _chaveColuna(nome).toUpperCase(); // sem RA: usa o nome como identificador
         if (!raCanonico(ra)) continue; // linha de total/anotação, não é aluno
 
         var turma = turmaAba;
@@ -577,8 +699,12 @@ function _processarAba(nomeAba, linhas, res) {
         var situacao = colSit !== -1 ? _textoCelula(linha[colSit]) : '';
         if (situacao) extras[EXTRA_SITUACAO] = situacao;
         if (curso) extras[EXTRA_CURSO] = curso;
+        if (meta.diretoria) extras[EXTRA_DIRETORIA] = meta.diretoria;
+        if (meta.escola) extras[EXTRA_ESCOLA] = meta.escola;
+        if (meta.diretor) extras[EXTRA_DIRETOR] = meta.diretor;
+        if (meta.bimestre) extras[EXTRA_BIMESTRE] = meta.bimestre;
 
-        if (!grupos[turma]) grupos[turma] = { turma: turma, curso: curso, aba: nomeAba, alunos: [] };
+        if (!grupos[turma]) grupos[turma] = { turma: turma, curso: curso, aba: nomeAba, meta: meta, alunos: [] };
         if (!grupos[turma].curso && curso) grupos[turma].curso = curso;
         grupos[turma].alunos.push({
             ra: ra,
@@ -617,9 +743,9 @@ function _processarAba(nomeAba, linhas, res) {
 // Lê o arquivo inteiro. Devolve { turmas: [{turma, curso, aba, alunos}],
 // avisos: [...], ignoradas: [{aba, motivo}] }. Lança erro se o arquivo não
 // for a planilha oficial.
-function lerRegistroRendimento(arrayBuffer) {
+function lerRegistroRendimento(arrayBuffer, nomeArquivo) {
     var pasta = _lerPasta(arrayBuffer);
-    var res = { turmas: [], avisos: [], ignoradas: [], abasComTitulo: 0 };
+    var res = { turmas: [], avisos: [], ignoradas: [], abasComTitulo: 0, nomeArquivo: String(nomeArquivo || '') };
 
     pasta.SheetNames.forEach(function (nomeAba) {
         var linhas = XLSX.utils.sheet_to_json(pasta.Sheets[nomeAba], { header: 1, defval: '' });
@@ -654,6 +780,20 @@ function cursoDoAluno(a) {
     return _textoCelula((a.extras || {})[EXTRA_CURSO]);
 }
 
+// Diretoria, escola, diretor e bimestre de uma turma (cada turma/aba tem os
+// seus). Pega o primeiro valor preenchido entre os alunos da lista.
+function dadosDaEscola(notas) {
+    var r = { diretoria: '', escola: '', diretor: '', bimestre: '' };
+    (notas || []).forEach(function (a) {
+        var e = a.extras || {};
+        if (!r.diretoria) r.diretoria = _textoCelula(e[EXTRA_DIRETORIA]);
+        if (!r.escola) r.escola = _textoCelula(e[EXTRA_ESCOLA]);
+        if (!r.diretor) r.diretor = _textoCelula(e[EXTRA_DIRETOR]);
+        if (!r.bimestre) r.bimestre = _textoCelula(e[EXTRA_BIMESTRE]);
+    });
+    return r;
+}
+
 function _temValor(v) { return v !== '' && v !== null && v !== undefined && !isNaN(Number(v)); }
 
 // { ativo, presencaOk, notaOk, aprovado, motivos: [...] }
@@ -665,8 +805,8 @@ function avaliarAluno(a) {
     if (!ativo) motivos.push('situação: ' + situacaoDoAluno(a));
     if (!_temValor(a.presenca)) motivos.push('sem frequência');
     else if (!presencaOk) motivos.push('frequência ' + a.presenca + '% (mínimo ' + CRITERIO_PRESENCA_MINIMA + '%)');
-    if (!_temValor(a.nota)) motivos.push('sem nota');
-    else if (!notaOk) motivos.push('nota ' + a.nota + ' (mínimo ' + CRITERIO_NOTA_MINIMA + ')');
+    if (!_temValor(a.nota)) motivos.push('sem média');
+    else if (!notaOk) motivos.push('média ' + a.nota + ' (mínimo ' + CRITERIO_NOTA_MINIMA + ')');
     return { ativo: ativo, presencaOk: presencaOk, notaOk: notaOk, aprovado: ativo && presencaOk && notaOk, motivos: motivos };
 }
 

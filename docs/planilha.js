@@ -53,9 +53,10 @@ function turmaCanonica(t) {
 function mesmaTurma(a, b) { return turmaCanonica(a) === turmaCanonica(b); }
 
 // RA sem pontos/traços/espaços, maiúsculo e sem zeros à esquerda (igual ao
-// servidor): "000108327708-X/SP" e "108327708xsp" são o mesmo RA.
+// servidor): "000108327708-X/SP", "108327708xsp" e "108327708X" são o mesmo RA
+// (o "SP" do final é só a sigla do estado e é ignorado).
 function raCanonico(r) {
-    return _normalizarTexto(r).replace(/[^A-Z0-9]/g, '').replace(/^0+/, '');
+    return _normalizarTexto(r).replace(/[^A-Z0-9]/g, '').replace(/^0+/, '').replace(/SP$/, '');
 }
 function mesmoRa(a, b) {
     var ra = raCanonico(a);
@@ -299,18 +300,7 @@ function lerPlanilhaDeAlunos(arrayBuffer) {
     return { alunos: alunos, avisos: avisos, temColunaTurma: mapa.turma !== undefined };
 }
 
-// ---- Arquivos .xlsx para baixar --------------------------------------------
-
-// Planilha em branco só com o cabeçalho, pro professor preencher.
-function baixarModeloPlanilha() {
-    var pasta = XLSX.utils.book_new();
-    var aba = XLSX.utils.aoa_to_sheet([
-        ['RA', 'Nome', 'Série', 'Turma', 'Nota', 'Presença', 'Comportamento']
-    ]);
-    aba['!cols'] = [{ wch: 16 }, { wch: 34 }, { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 10 }, { wch: 16 }];
-    XLSX.utils.book_append_sheet(pasta, aba, 'Notas');
-    XLSX.writeFile(pasta, 'modelo-planilha-turma.xlsx');
-}
+// ---- Arquivo .xlsx para baixar ---------------------------------------------
 
 // Cópia de segurança da turma (o que está salvo no site agora).
 function baixarPlanilhaTurma(turma) {
@@ -331,6 +321,353 @@ function baixarPlanilhaTurma(turma) {
     var pasta = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(pasta, XLSX.utils.aoa_to_sheet([cabecalho].concat(linhas)), 'Notas');
     XLSX.writeFile(pasta, dados.arquivo);
+}
+
+// ==========================================================================
+// PLANILHA OFICIAL — "REGISTRO E CONTROLE DO RENDIMENTO ESCOLAR"
+//
+// É a planilha que a escola exporta. O site só aceita arquivos que tenham
+// esse título escrito dentro (nas primeiras linhas de cada aba).
+//
+//  • Cada ABA é lida separadamente e vira UMA turma — o site descobre a
+//    turma pela coluna "Turma", por uma linha "Turma: 3ºA" no topo da aba
+//    ou pelo nome da aba. Cada turma é salva à parte: importar a 3ºA nunca
+//    mexe nos alunos da 2ºA.
+//  • As colunas são achadas PELO NOME do cabeçalho (qualquer ordem):
+//    Aluno/Nome, RA, Frequência (Fre%), Nota/Média, Situação, Curso.
+//  • Situação "Ativo" = aluno da sala. Remanejado, transferido etc. = não
+//    pertence mais à sala e NÃO aparece pro professor.
+//  • Aprovado = Ativo + frequência >= 85% + nota >= 7 (ajuste abaixo).
+// ==========================================================================
+
+var TITULO_PLANILHA_OFICIAL = 'Registro e controle do rendimento escolar';
+var CRITERIO_PRESENCA_MINIMA = 85;   // em %
+var CRITERIO_NOTA_MINIMA = 7;        // nota de 0 a 10 (>= 7 aprova)
+var EXTRA_SITUACAO = 'Situação';     // onde a situação fica guardada (extras)
+var EXTRA_CURSO = 'Curso';           // onde o curso fica guardado (extras)
+
+var _CHAVES_NOME = ['aluno', 'nome', 'nomedoaluno', 'nomecompleto', 'nomealuno'];
+var _CHAVES_RA = ['ra', 'registroaluno', 'registrodoaluno', 'nrra', 'numerora'];
+var _CHAVES_DIG = ['dig', 'digito', 'digra', 'dv', 'digitora'];
+var _CHAVES_UF = ['uf', 'ufra'];
+var _CHAVES_NOTA = ['mediafinal', 'notafinal', 'mediageral', 'media', 'nota', 'mf', 'notas'];
+var _CHAVES_SITUACAO = ['situacao', 'situacaodoaluno', 'situacaoaluno', 'sit', 'status'];
+var _CHAVES_TURMA = ['turma', 'classe'];
+var _CHAVES_CURSO = ['curso', 'cursohabilitacao'];
+var _CHAVES_SERIE = ['serie', 'ano', 'anoserie'];
+
+function _semAcento(s) {
+    return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function _textoCelula(v) {
+    return String(v == null ? '' : v).trim();
+}
+
+function _turmaValida(t) {
+    return /^\d+\u00BA[A-Z]+$/.test(String(t));
+}
+
+// O título pode estar numa célula só ou espalhado em células vizinhas.
+function _contemTitulo(linhas) {
+    var alvo = _chaveColuna(TITULO_PLANILHA_OFICIAL);
+    for (var i = 0; i < Math.min(linhas.length, 20); i++) {
+        var junto = linhas[i].map(function (c) { return _chaveColuna(c); }).join('');
+        if (junto.indexOf(alvo) !== -1) return true;
+    }
+    return false;
+}
+
+// Linha/coluna do cabeçalho "Aluno"/"Nome".
+function _acharCabecalho(linhas) {
+    for (var i = 0; i < Math.min(linhas.length, 60); i++) {
+        for (var c = 0; c < linhas[i].length; c++) {
+            if (_CHAVES_NOME.indexOf(_chaveColuna(linhas[i][c])) !== -1) return { linha: i, coluna: c };
+        }
+    }
+    return null;
+}
+
+// Primeira coluna da "banda" de cabeçalho cuja chave bate, respeitando a
+// ordem de prioridade da lista de chaves. -1 se não achar.
+function _colunaPorChaves(banda, chaves) {
+    for (var k = 0; k < chaves.length; k++) {
+        for (var i = 0; i < banda.length; i++) {
+            if (banda[i].chave === chaves[k]) return banda[i].coluna;
+        }
+    }
+    return -1;
+}
+
+// Colunas de frequência: "Fre(%)", "Frequência", "% Freq"... Ignora a
+// frequência ANUAL ("Fre An(%)"). Prefere a que tem "%".
+function _colunasFrequencia(banda) {
+    var comPercentual = [], outras = [];
+    banda.forEach(function (cel) {
+        var t = _normalizarTexto(cel.texto);
+        if (!/FRE|PRESEN/.test(t)) return;
+        if (/ANU|\bAN\b|AN\(|FALTA|AUS/.test(t)) return;
+        (t.indexOf('%') !== -1 ? comPercentual : outras).push(cel.coluna);
+    });
+    var lista = comPercentual.length ? comPercentual : outras;
+    return lista.filter(function (c, i) { return lista.indexOf(c) === i; });
+}
+
+// Procura "ROTULO: valor" nas linhas de cima da aba (ou o valor na célula
+// ao lado). Devolve o texto original (com acento) ou ''.
+function _valorRotulo(linhas, limite, rotulo, paradas) {
+    var rotuloU = rotulo.toUpperCase();
+    var regexParada = new RegExp('\\b(' + paradas.join('|') + ')\\b');
+    for (var i = 0; i < Math.min(linhas.length, limite); i++) {
+        for (var c = 0; c < linhas[i].length; c++) {
+            var original = _textoCelula(linhas[i][c]);
+            if (!original) continue;
+            var base = _semAcento(original).toUpperCase();
+            var pos = base.indexOf(rotuloU);
+            if (pos === -1) continue;
+
+            var resto = original.slice(pos + rotuloU.length);
+            var restoBase = base.slice(pos + rotuloU.length);
+            var ini = restoBase.match(/^\s*[:\-\u2013]?\s*/)[0].length;
+            resto = resto.slice(ini);
+            restoBase = restoBase.slice(ini);
+
+            var fim = restoBase.length;
+            var kParada = restoBase.search(regexParada);
+            if (kParada > 0 && kParada < fim) fim = kParada;
+            var kEspacos = restoBase.search(/\s{3,}|\t/);
+            if (kEspacos > 0 && kEspacos < fim) fim = kEspacos;
+
+            var valor = resto.slice(0, fim).trim().replace(/[-\u2013|;,]\s*$/, '').trim();
+            if (valor) return valor;
+
+            for (var d = c + 1; d < linhas[i].length; d++) {
+                var vizinho = _textoCelula(linhas[i][d]);
+                if (vizinho) return vizinho;
+            }
+        }
+    }
+    return '';
+}
+
+// "DESENVOLVIMENTO DE SISTEMAS" -> "Desenvolvimento de Sistemas"
+function _formatarCurso(texto) {
+    var t = _textoCelula(texto).replace(/\s+/g, ' ');
+    if (!t) return '';
+    if (t !== t.toUpperCase()) return t; // já veio com maiúscula/minúscula normal
+    var minusculas = ['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'a', 'o'];
+    return t.toLowerCase().split(' ').map(function (p, i) {
+        if (i > 0 && minusculas.indexOf(p) !== -1) return p;
+        return p.charAt(0).toUpperCase() + p.slice(1);
+    }).join(' ');
+}
+
+// Frequência: aceita "92", "92%", "92,5" e também 0,92 (formato % do Excel).
+function _presencaNormalizada(v) {
+    var n = _numeroOuVazio(v);
+    if (n === '' || (typeof n === 'number' && isNaN(n))) return n;
+    if (n > 0 && n <= 1 && String(v).indexOf('%') === -1) n = n * 100;
+    return n;
+}
+
+// Lê UMA aba (já convertida em linhas) e acrescenta o resultado em "res".
+// Separada da leitura do arquivo pra poder ser testada sem o SheetJS.
+function _processarAba(nomeAba, linhas, res) {
+    if (!_contemTitulo(linhas)) {
+        res.ignoradas.push({ aba: nomeAba, motivo: 'não tem o título "' + TITULO_PLANILHA_OFICIAL + '"' });
+        return;
+    }
+    res.abasComTitulo++;
+
+    var cab = _acharCabecalho(linhas);
+    if (!cab) {
+        res.ignoradas.push({ aba: nomeAba, motivo: 'não achei a coluna "Aluno" (ou "Nome")' });
+        return;
+    }
+
+    // "Banda" de cabeçalho: a linha do Aluno + 1 acima e 2 abaixo (o
+    // cabeçalho da escola costuma ocupar duas linhas).
+    var banda = [];
+    for (var i = Math.max(0, cab.linha - 1); i <= Math.min(linhas.length - 1, cab.linha + 2); i++) {
+        linhas[i].forEach(function (cel, col) {
+            var t = _textoCelula(cel);
+            if (t) banda.push({ linha: i, coluna: col, texto: t, chave: _chaveColuna(t) });
+        });
+    }
+
+    var colNome = cab.coluna;
+    var colRa = _colunaPorChaves(banda, _CHAVES_RA);
+    var colDig = _colunaPorChaves(banda, _CHAVES_DIG);
+    var colUf = _colunaPorChaves(banda, _CHAVES_UF);
+    var colsFreq = _colunasFrequencia(banda);
+    var colNota = _colunaPorChaves(banda, _CHAVES_NOTA);
+    var colSit = _colunaPorChaves(banda, _CHAVES_SITUACAO);
+    var colTurma = _colunaPorChaves(banda, _CHAVES_TURMA);
+    var colCurso = _colunaPorChaves(banda, _CHAVES_CURSO);
+    var colSerie = _colunaPorChaves(banda, _CHAVES_SERIE);
+    var colFreq = colsFreq.length ? colsFreq[0] : -1;
+
+    var faltando = [];
+    if (colRa === -1) faltando.push('RA');
+    if (colFreq === -1) faltando.push('Frequência (ex: "Fre(%)")');
+    if (colNota === -1) faltando.push('Nota ou Média');
+    if (faltando.length) {
+        var vistas = [];
+        banda.forEach(function (b) { if (vistas.indexOf(b.texto) === -1 && vistas.length < 25) vistas.push(b.texto); });
+        res.ignoradas.push({
+            aba: nomeAba,
+            motivo: 'faltou a coluna ' + faltando.join(', ') + '. Colunas que encontrei: ' + vistas.join(' | ')
+        });
+        return;
+    }
+
+    if (colsFreq.length > 1) {
+        res.avisos.push('Aba "' + nomeAba + '": achei ' + colsFreq.length + ' colunas de frequência; usei a primeira. Se estiver errada, avise o desenvolvedor.');
+    }
+    if (colSit === -1) {
+        res.avisos.push('Aba "' + nomeAba + '": não achei a coluna "Situação" — considerei todos os alunos como Ativos.');
+    }
+
+    // Turma e curso "da aba": linhas de cima (antes do cabeçalho) ou nome da aba.
+    var turmaAba = '';
+    var turmaMeta = _valorRotulo(linhas, cab.linha, 'TURMA', ['CURSO', 'SERIE', 'PERIODO', 'TURNO', 'ANO', 'ESCOLA', 'BIMESTRE', 'DISCIPLINA']);
+    if (turmaMeta && _turmaValida(turmaCanonica(turmaMeta))) turmaAba = turmaCanonica(turmaMeta);
+    if (!turmaAba && _turmaValida(turmaCanonica(nomeAba))) turmaAba = turmaCanonica(nomeAba);
+
+    var cursoAba = _formatarCurso(_valorRotulo(linhas, cab.linha, 'CURSO', ['TURMA', 'SERIE', 'PERIODO', 'TURNO', 'ANO', 'ESCOLA', 'BIMESTRE', 'DISCIPLINA']));
+
+    var grupos = {};
+    var semTurma = 0;
+    for (var l = cab.linha + 1; l < linhas.length; l++) {
+        var linha = linhas[l];
+        var nome = _textoCelula(linha[colNome]);
+        if (!nome || _CHAVES_NOME.indexOf(_chaveColuna(nome)) !== -1) continue;
+
+        var ra = _textoCelula(linha[colRa]);
+        if (colDig !== -1) ra += _textoCelula(linha[colDig]);
+        if (colUf !== -1) ra += _textoCelula(linha[colUf]);
+        if (!raCanonico(ra)) continue; // linha de total/anotação, não é aluno
+
+        var turma = turmaAba;
+        if (colTurma !== -1) {
+            var t = turmaCanonica(_textoCelula(linha[colTurma]));
+            if (_turmaValida(t)) turma = t;
+        }
+        if (!turma) { semTurma++; continue; }
+
+        var curso = colCurso !== -1 ? _formatarCurso(linha[colCurso]) : '';
+        curso = curso || cursoAba;
+
+        var nota = _numeroOuVazio(linha[colNota]);
+        var presenca = _presencaNormalizada(linha[colFreq]);
+        if (typeof nota === 'number' && isNaN(nota)) { nota = ''; }
+        if (typeof presenca === 'number' && isNaN(presenca)) { presenca = ''; }
+        if (typeof nota === 'number' && (nota < 0 || nota > 10)) {
+            res.avisos.push('Aba "' + nomeAba + '", ' + nome + ': nota ' + nota + ' fora de 0 a 10 — ficou em branco.');
+            nota = '';
+        }
+        if (typeof presenca === 'number' && (presenca < 0 || presenca > 100)) {
+            res.avisos.push('Aba "' + nomeAba + '", ' + nome + ': frequência ' + presenca + ' fora de 0 a 100 — ficou em branco.');
+            presenca = '';
+        }
+        // Math.floor: 84,9% NÃO pode virar 85% e aprovar sem ter chegado lá.
+        if (typeof presenca === 'number') presenca = Math.floor(presenca);
+
+        var extras = {};
+        var situacao = colSit !== -1 ? _textoCelula(linha[colSit]) : '';
+        if (situacao) extras[EXTRA_SITUACAO] = situacao;
+        if (curso) extras[EXTRA_CURSO] = curso;
+
+        if (!grupos[turma]) grupos[turma] = { turma: turma, curso: curso, aba: nomeAba, alunos: [] };
+        if (!grupos[turma].curso && curso) grupos[turma].curso = curso;
+        grupos[turma].alunos.push({
+            ra: ra,
+            nome: nome,
+            serie: colSerie !== -1 ? _textoCelula(linha[colSerie]) : '',
+            turma: turma,
+            nota: nota,
+            presenca: presenca,
+            comportamento: comportamentoPorPresenca(presenca),
+            extras: extras
+        });
+    }
+
+    var turmasAchadas = Object.keys(grupos);
+    if (!turmasAchadas.length) {
+        res.ignoradas.push({
+            aba: nomeAba,
+            motivo: semTurma
+                ? 'não consegui identificar a turma (coloque uma linha "Turma: 3ºA" no topo da aba, uma coluna "Turma" ou dê à aba o nome da turma, ex: "3ºA")'
+                : 'nenhum aluno encontrado abaixo do cabeçalho'
+        });
+        return;
+    }
+
+    turmasAchadas.forEach(function (t) {
+        if (res.turmas.some(function (g) { return g.turma === t; })) {
+            var anterior = res.turmas.filter(function (g) { return g.turma === t; })[0];
+            res.avisos.push('As abas "' + anterior.aba + '" e "' + nomeAba + '" apontam para a mesma turma (' + t +
+                '). Usei só a primeira ("' + anterior.aba + '") pra uma não sobrepor a outra.');
+        } else {
+            res.turmas.push(grupos[t]);
+        }
+    });
+}
+
+// Lê o arquivo inteiro. Devolve { turmas: [{turma, curso, aba, alunos}],
+// avisos: [...], ignoradas: [{aba, motivo}] }. Lança erro se o arquivo não
+// for a planilha oficial.
+function lerRegistroRendimento(arrayBuffer) {
+    var pasta = _lerPasta(arrayBuffer);
+    var res = { turmas: [], avisos: [], ignoradas: [], abasComTitulo: 0 };
+
+    pasta.SheetNames.forEach(function (nomeAba) {
+        var linhas = XLSX.utils.sheet_to_json(pasta.Sheets[nomeAba], { header: 1, defval: '' });
+        _processarAba(nomeAba, linhas, res);
+    });
+
+    if (!res.abasComTitulo) {
+        throw new Error('Essa não é a planilha oficial: o título "' + TITULO_PLANILHA_OFICIAL +
+            '" não aparece dentro do arquivo. Adicione a planilha "Registro e controle do rendimento escolar" exportada pela escola.');
+    }
+    if (!res.turmas.length) {
+        throw new Error('A planilha tem o título certo, mas não consegui ler nenhuma turma. ' +
+            res.ignoradas.map(function (g) { return 'Aba "' + g.aba + '": ' + g.motivo + '.'; }).join(' '));
+    }
+    return res;
+}
+
+// ---- Critério de aprovação (usado no painel do professor e do aluno) ------
+
+// Situação do aluno na sala. Sem informação = considera Ativo.
+function situacaoDoAluno(a) {
+    var s = _textoCelula((a.extras || {})[EXTRA_SITUACAO]);
+    return s || 'Ativo';
+}
+
+// Só "Ativo" pertence à sala; Remanejado, Transferido etc. não.
+function alunoAtivo(a) {
+    return /^ATIV/.test(_normalizarTexto(situacaoDoAluno(a)));
+}
+
+function cursoDoAluno(a) {
+    return _textoCelula((a.extras || {})[EXTRA_CURSO]);
+}
+
+function _temValor(v) { return v !== '' && v !== null && v !== undefined && !isNaN(Number(v)); }
+
+// { ativo, presencaOk, notaOk, aprovado, motivos: [...] }
+function avaliarAluno(a) {
+    var ativo = alunoAtivo(a);
+    var presencaOk = _temValor(a.presenca) && Number(a.presenca) >= CRITERIO_PRESENCA_MINIMA;
+    var notaOk = _temValor(a.nota) && Number(a.nota) >= CRITERIO_NOTA_MINIMA;
+    var motivos = [];
+    if (!ativo) motivos.push('situação: ' + situacaoDoAluno(a));
+    if (!_temValor(a.presenca)) motivos.push('sem frequência');
+    else if (!presencaOk) motivos.push('frequência ' + a.presenca + '% (mínimo ' + CRITERIO_PRESENCA_MINIMA + '%)');
+    if (!_temValor(a.nota)) motivos.push('sem nota');
+    else if (!notaOk) motivos.push('nota ' + a.nota + ' (mínimo ' + CRITERIO_NOTA_MINIMA + ')');
+    return { ativo: ativo, presencaOk: presencaOk, notaOk: notaOk, aprovado: ativo && presencaOk && notaOk, motivos: motivos };
 }
 
 // ==========================================================================

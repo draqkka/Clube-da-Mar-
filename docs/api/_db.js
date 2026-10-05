@@ -21,10 +21,11 @@ function turmaCanonica(t) {
 }
 
 // RA sem pontos/traços/espaços, em maiúsculo e sem zeros à esquerda:
-// "000108327708-X/SP" e "108327708xsp" viram o mesmo RA.
+// "000108327708-X/SP", "108327708xsp" e "108327708X" viram o mesmo RA
+// (o "SP" do final é só a sigla do estado e é ignorado).
 function raCanonico(r) {
     return String(r == null ? '' : r).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^0+/, '');
+        .toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^0+/, '').replace(/SP$/, '');
 }
 
 async function db() {
@@ -61,7 +62,7 @@ async function db() {
             }
             await sql`
                 UPDATE alunos a SET ra = c.canon
-                FROM (SELECT ra, ltrim(upper(regexp_replace(ra, '[^A-Za-z0-9]', '', 'g')), '0') AS canon FROM alunos) c
+                FROM (SELECT ra, ltrim(regexp_replace(upper(regexp_replace(ra, '[^A-Za-z0-9]', '', 'g')), 'SP$', ''), '0') AS canon FROM alunos) c
                 WHERE a.ra = c.ra AND c.ra <> c.canon AND c.canon <> ''
                   AND NOT EXISTS (SELECT 1 FROM alunos b WHERE b.ra = c.canon)`;
         } catch (e) {

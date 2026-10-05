@@ -43,7 +43,7 @@ function _registrarOuvinte(atualizar) {
 // (o RA do login pode vir escrito diferente do RA da planilha).
 function _raChave(r) {
     return String(r == null ? '' : r).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^0+/, '');
+        .toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^0+/, '').replace(/SP$/, '');
 }
 
 function _gerarId() {

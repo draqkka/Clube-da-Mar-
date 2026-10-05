@@ -735,6 +735,55 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 <!-- Chat ao vivo (Dealism) -->
 <script src="https://d1svrfmyhkyg8q.cloudfront.net/livechat/prod/livechat.js" data-site-key="lc_site_HFffd5NFIJyhPji297bnGmJV2GRbZBZ8dg-aT_AuM9I" async></script>
 
+<!--
+    ÍCONE PERSONALIZADO POR CIMA DO BOTÃO DA DEALISM
+    A imagem fica ACIMA do botão do robô, mas com pointer-events:none —
+    o clique "atravessa" a imagem e cai no botão original da Dealism, então
+    o chat continua abrindo e funcionando normal. A imagem só aparece depois
+    que o botão da Dealism carrega, e some quando o chat está aberto (pra
+    não esconder o botão de fechar). Se o botão da Dealism não for achado,
+    a imagem fica escondida e o robô original continua aparecendo.
+-->
+<style>
+#cdm-chat-icone {
+    position: fixed;
+    right: 22px;   /* botão da Dealism: 24px da borda; a imagem é 4px maior pra cobrir o verde */
+    bottom: 22px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #fff;
+    pointer-events: none;      /* NÃO bloqueia o clique no botão da Dealism */
+    z-index: 2147483647;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+#cdm-chat-icone.visivel { opacity: 1; }
+@media (max-width: 768px) {
+    #cdm-chat-icone { width: 54px; height: 54px; }
+}
+</style>
+<img id="cdm-chat-icone" src="imagens/Chatbot/chatbot.png" alt="" aria-hidden="true">
+<script>
+(function () {
+    var icone = document.getElementById('cdm-chat-icone');
+    var seletorBotao = 'button[aria-label^="Open chat"], button[aria-label^="Chat on"]';
+    var seletorAberto = 'button[aria-label^="Close chat"]';
+    function atualizar() {
+        try {
+            var botao = document.querySelector(seletorBotao);
+            var aberto = document.querySelector(seletorAberto);
+            icone.classList.toggle('visivel', !!botao && !aberto);
+        } catch (e) {}
+    }
+    new MutationObserver(atualizar).observe(document.documentElement, {
+        childList: true, subtree: true, attributes: true, attributeFilter: ['aria-label']
+    });
+    atualizar();
+})();
+</script>
+
 </main>
 </body>
 </html>

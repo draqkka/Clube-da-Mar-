@@ -88,15 +88,9 @@
 </main>
 
 <script>
-// Critério de aprovação — ajuste os números aqui se a regra da escola mudar
-var PRESENCA_MINIMA = 85;   // em %
-var NOTA_MINIMA = 6;        // considerando nota de 0 a 10
-// Comportamento agora é calculado automaticamente a partir da Presença
-// (ver comportamentoPorPresenca em planilha.js: Bom/Regular/Péssimo) — só
-// "Péssimo" reprova por comportamento aqui, já que "Regular" é uma faixa
-// intermediária normal, e a Presença em si já é conferida separadamente
-// acima (PRESENCA_MINIMA).
-var COMPORTAMENTOS_RUINS = ['péssimo'];
+// Critério de aprovação: vem de planilha.js (avaliarAluno) — frequência de
+// 85% ou mais, nota 7 ou mais e situação "Ativo". Pra mudar a regra, edite
+// CRITERIO_PRESENCA_MINIMA / CRITERIO_NOTA_MINIMA lá, num lugar só.
 
 var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
 if (!sessao || (sessao.perfil !== 'estudante' && sessao.perfil !== 'responsavel')) {
@@ -158,10 +152,8 @@ carregarAlunoPorRa(sessao.ra)
     document.getElementById('valor-presenca').textContent = semPresenca ? '—' : aluno.presenca + '%';
     document.getElementById('valor-comportamento').textContent = aluno.comportamento || '—';
 
-    var presencaOk = Number(aluno.presenca) >= PRESENCA_MINIMA;
-    var notaOk = Number(aluno.nota) >= NOTA_MINIMA;
-    var comportamentoOk = COMPORTAMENTOS_RUINS.indexOf(String(aluno.comportamento).toLowerCase()) === -1;
-    var aprovado = presencaOk && notaOk && comportamentoOk;
+    var avaliacao = avaliarAluno(aluno);
+    var aprovado = avaliacao.aprovado;
 
     var caixa = document.getElementById('caixa-mensagem');
     var texto = document.getElementById('texto-mensagem');
@@ -179,7 +171,9 @@ carregarAlunoPorRa(sessao.ra)
         document.getElementById('area-formulario').style.display = 'block';
     } else {
         caixa.classList.add('caixa-reprovado');
-        texto.textContent = 'A partir de agora espero que tenha mais compromisso com os estudos. Não desista, se esforce — a recompensa estará em suas mãos.';
+        texto.textContent = !avaliacao.ativo
+            ? 'Sua situação nesta turma consta como "' + situacaoDoAluno(aluno) + '". Fale com a secretaria da escola.'
+            : 'A partir de agora espero que tenha mais compromisso com os estudos. Não desista, se esforce — a recompensa estará em suas mãos.';
     }
 })
 .catch(function (erro) {

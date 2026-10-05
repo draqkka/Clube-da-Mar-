@@ -46,7 +46,7 @@
     <p class="dica-importar">
         A planilha precisa ter uma linha de cabeçalho com pelo menos <strong>RA</strong> e <strong>Nome</strong>. As outras colunas
         (<strong>Série, Turma, Nota, Presença, Comportamento</strong> ou qualquer outra) são reconhecidas pelo nome, em qualquer ordem.
-        Só linhas da turma <strong id="turma-atual-dica">-</strong> serão aceitas. Ao importar, os dados são
+        Só linhas da turma <strong id="turma-atual-dica">-</strong> serão aceitas ("3A", "3ºA" e "3° A" contam como a mesma). Ao importar, os dados são
         <strong>salvos direto no site</strong> e já aparecem pra todo mundo — não precisa baixar nem enviar arquivo.
         <a href="#" id="link-baixar-modelo">Baixar modelo em branco</a>
     </p>
@@ -258,7 +258,7 @@ document.getElementById('botao-salvar-manual').addEventListener('click', functio
         return;
     }
 
-    var existente = dadosTurmaAtual.notas.find(function (n) { return String(n.ra) === String(ra); });
+    var existente = dadosTurmaAtual.notas.find(function (n) { return mesmoRa(n.ra, ra); });
     var aluno = existente ? Object.assign({}, existente) : { ra: ra, presenca: '', extras: {} };
     aluno.ra = ra;
     aluno.nome = nome;
@@ -468,7 +468,7 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
         var aceitos = [];
         var recusados = [];
         lido.alunos.forEach(function (a) {
-            if (!lido.temColunaTurma || _slugTurma(a.turma) === _slugTurma(turmaDaImportacao)) {
+            if (!lido.temColunaTurma || mesmaTurma(a.turma, turmaDaImportacao)) {
                 a.turma = turmaDaImportacao;
                 a.professor = sessao.login;
                 aceitos.push(a);

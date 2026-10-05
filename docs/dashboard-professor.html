@@ -65,8 +65,8 @@
             <li>O site confere se o título <strong>"Registro e controle do rendimento escolar"</strong> está escrito <em>dentro</em> do arquivo. Sem ele, a planilha é recusada.</li>
             <li><strong>Cada aba é uma turma</strong> e é salva separadamente — adicionar a planilha da 3ºA nunca altera os alunos da 2ºA. Só entram abas das suas turmas.</li>
             <li>Aparecem só alunos <strong>Ativos</strong> (remanejados, transferidos etc. não pertencem mais à sala e ficam de fora).</li>
-            <li><strong>Aprovado</strong> = Ativo + frequência de <strong>85%</strong> ou mais + nota <strong>7</strong> ou mais.</li>
-            <li>O curso (ex: Desenvolvimento de Sistemas) e a turma (ex: 3ºA) vêm da própria planilha.</li>
+            <li><strong>Aprovado</strong> = Ativo + frequência de <strong>85%</strong> ou mais + média (<strong>M</strong>) <strong>7</strong> ou mais.</li>
+            <li>O curso (ex: Desenvolvimento de Sistemas) e a turma (ex: 3ºA) vêm da própria planilha. A <strong>Diretoria</strong> (ex: Leste 1), a <strong>Escola</strong>, o <strong>Diretor</strong> e o <strong>Bimestre</strong> também são lidos do topo de cada aba.</li>
         </ul>
         <div id="status-importacao" class="dica-importar" aria-live="polite"></div>
     </section>
@@ -77,6 +77,7 @@
     <!-- ===== RESULTADO DA TURMA SELECIONADA ===== -->
     <section id="area-turma" style="display:none;">
         <h2 id="titulo-turma">Turma</h2>
+        <p id="info-escola" class="dica-importar" style="display:none;"></p>
 
         <div class="cards-resumo">
             <div class="card-status"><span class="card-status-rotulo">Alunos ativos</span><span class="card-status-valor" id="res-ativos">-</span></div>
@@ -85,7 +86,7 @@
             <div class="card-status"><span class="card-status-rotulo">Fora da sala</span><span class="card-status-valor" id="res-inativos">-</span></div>
         </div>
 
-        <h3>Alunos aprovados (frequência ≥ 85% e nota ≥ 7)</h3>
+        <h3>Alunos aprovados (frequência ≥ 85% e média ≥ 7)</h3>
         <div class="legenda-cores">
             <span>🟢 Diretoria aprovou</span>
             <span>🔴 Diretoria reprovou</span>
@@ -96,7 +97,7 @@
         <table class="tabela-alunos" id="tabela-aprovados" style="display:none;">
             <thead>
                 <tr>
-                    <th>RA</th><th>Nome</th><th>Curso · Turma</th><th>Nota</th><th>Frequência</th><th>Situação</th><th>Solicitação</th><th>Ação</th>
+                    <th>Nome</th><th>Curso · Turma</th><th>Média</th><th>Frequência</th><th>Situação</th><th>Solicitação</th><th>Ação</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-aprovados"></tbody>
@@ -106,7 +107,7 @@
         <details id="detalhe-nao-aprovados" style="margin-top:20px; display:none;">
             <summary id="resumo-nao-aprovados" style="cursor:pointer;">Alunos ativos que não atingiram os critérios</summary>
             <table class="tabela-alunos" style="margin-top:10px;">
-                <thead><tr><th>RA</th><th>Nome</th><th>Nota</th><th>Frequência</th><th>Motivo</th></tr></thead>
+                <thead><tr><th>Nome</th><th>Média</th><th>Frequência</th><th>Motivo</th></tr></thead>
                 <tbody id="corpo-tabela-nao-aprovados"></tbody>
             </table>
         </details>
@@ -235,6 +236,17 @@ function renderizarTurma() {
 
     document.getElementById('area-turma').style.display = todos.length ? 'block' : 'none';
     document.getElementById('titulo-turma').textContent = rotuloTurma(turmaAtual);
+
+    // Escola, Diretoria, Diretor e Bimestre — lidos do topo da planilha desta turma
+    var d = dadosDaEscola(todos);
+    var partesEscola = [];
+    if (d.escola) partesEscola.push('<strong>Escola:</strong> ' + escaparHtml(d.escola));
+    if (d.diretoria) partesEscola.push('<strong>Diretoria:</strong> ' + escaparHtml(d.diretoria));
+    if (d.diretor) partesEscola.push('<strong>Diretor:</strong> ' + escaparHtml(d.diretor));
+    if (d.bimestre) partesEscola.push('<strong>Bimestre:</strong> ' + escaparHtml(d.bimestre));
+    var infoEscola = document.getElementById('info-escola');
+    infoEscola.innerHTML = partesEscola.join(' · ');
+    infoEscola.style.display = partesEscola.length ? 'block' : 'none';
     document.getElementById('res-ativos').textContent = ativos.length;
     document.getElementById('res-aprovados').textContent = aprovados.length;
     document.getElementById('res-nao-aprovados').textContent = naoAprovados.length;
@@ -258,7 +270,7 @@ function renderizarTurma() {
 
         var linha = document.createElement('tr');
         linha.className = info.classe;
-        linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) +
+        linha.innerHTML = '<td>' + escaparHtml(a.nome) +
             '</td><td>' + escaparHtml(cursoDoAluno(a) ? cursoDoAluno(a) + ' · ' + a.turma : a.turma) +
             '</td><td>' + escaparHtml(a.nota) + '</td><td>' + escaparHtml(a.presenca) + '%' +
             '</td><td>' + escaparHtml(situacaoDoAluno(a)) + '</td><td>' + escaparHtml(info.texto) + '</td><td>' + botao + '</td>';
@@ -284,7 +296,7 @@ function renderizarTurma() {
     corpoNao.innerHTML = '';
     naoAprovados.forEach(function (a) {
         var linha = document.createElement('tr');
-        linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) +
+        linha.innerHTML = '<td>' + escaparHtml(a.nome) +
             '</td><td>' + escaparHtml(a.nota === '' ? '—' : a.nota) + '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
             '</td><td>' + escaparHtml(avaliarAluno(a).motivos.join('; ')) + '</td>';
         corpoNao.appendChild(linha);
@@ -348,8 +360,8 @@ function abrirModal(aluno) {
     alunoSelecionado = aluno;
     document.getElementById('modal-solic-resumo').innerHTML =
         '<strong>' + escaparHtml(aluno.nome) + '</strong><br>' +
-        'RA ' + escaparHtml(aluno.ra) + ' · ' + escaparHtml(cursoDoAluno(aluno) ? cursoDoAluno(aluno) + ' · ' : '') + escaparHtml(aluno.turma) + '<br>' +
-        'Nota ' + escaparHtml(aluno.nota) + ' · Frequência ' + escaparHtml(aluno.presenca) + '% · ' + escaparHtml(situacaoDoAluno(aluno));
+        escaparHtml(cursoDoAluno(aluno) ? cursoDoAluno(aluno) + ' · ' : '') + escaparHtml(aluno.turma) + '<br>' +
+        'Média ' + escaparHtml(aluno.nota) + ' · Frequência ' + escaparHtml(aluno.presenca) + '% · ' + escaparHtml(situacaoDoAluno(aluno));
     document.getElementById('observacao-solicitacao').value = '';
     document.getElementById('modal-solic-status').textContent = '';
     document.getElementById('botao-enviar-solicitacao').disabled = false;
@@ -422,7 +434,7 @@ escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
         item.style.borderLeft = '5px solid ' + corBorda;
         item.style.background = 'rgba(0,0,0,0.2)';
 
-        item.innerHTML = '<strong>' + escaparHtml(s.nomeAluno) + '</strong> (RA ' + escaparHtml(s.ra) + ', ' + escaparHtml(s.turma) + ') — ' +
+        item.innerHTML = '<strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ') — ' +
             escaparHtml(infoSolicitacao(s).texto) +
             (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + escaparHtml(s.observacao) + '</p>' : '') +
             (s.resposta ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta (' + escaparHtml(s.respondidoPor || '') + '): "' + escaparHtml(s.resposta) + '"</p>' : '') +
@@ -464,7 +476,7 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
 
         var lido;
         try {
-            lido = lerRegistroRendimento(e.target.result);
+            lido = lerRegistroRendimento(e.target.result, arquivo.name);
         } catch (erro) {
             status.textContent = '⚠️ ' + erro.message;
             return;
@@ -490,7 +502,7 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                 return salvarAlunos(g.turma, g.alunos, { professor: sessao.login }).then(function (resp) {
                     var ativos = g.alunos.filter(alunoAtivo);
                     var aprovados = ativos.filter(function (a) { return avaliarAluno(a).aprovado; });
-                    var txt = '<strong>' + escaparHtml(rotuloTurma2(g)) + '</strong> (aba "' + escaparHtml(g.aba) + '"): ' +
+                    var txt = '<strong>' + escaparHtml(rotuloTurma2(g)) + '</strong>' + (g.meta && g.meta.bimestre ? ' — ' + escaparHtml(g.meta.bimestre) : '') + ' (aba "' + escaparHtml(g.aba) + '"): ' +
                         g.alunos.length + ' aluno(s) lido(s) — ' + ativos.length + ' ativo(s), ' + aprovados.length + ' aprovado(s).';
                     if (resp.ignorados) txt += ' ' + resp.ignorados + ' ignorado(s): RA já cadastrado em outra turma.';
                     linhas.push(txt);

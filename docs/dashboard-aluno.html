@@ -130,15 +130,12 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-// A planilha agora é uma por turma — o aluno/responsável só tem uma turma
-// (guardada na sessão, vinda de usuarios.js), então já sabemos qual carregar.
-var turmaDoAluno = sessao.turmas && sessao.turmas[0];
-
-(turmaDoAluno ? carregarPlanilha(turmaDoAluno) : Promise.reject(new Error('Sua conta não tem turma cadastrada.')))
-.then(function (dados) {
+// Busca direto pelo RA (qualquer formato) — não depende mais de a turma da
+// conta bater exatamente com a turma gravada na planilha, e o aluno só
+// recebe os próprios dados.
+carregarAlunoPorRa(sessao.ra)
+.then(function (aluno) {
     document.getElementById('carregando').style.display = 'none';
-
-    var aluno = dados.notas.find(function (n) { return String(n.ra) === String(sessao.ra); });
 
     if (!aluno) {
         document.getElementById('erro-sem-dados').style.display = 'block';

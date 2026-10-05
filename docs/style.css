@@ -366,8 +366,8 @@ html {
 
 .quemsomos-texto p {
     font-size: 15px;
-    line-height: 1.1;
-    margin-bottom: 16px;
+    line-height: 1.8;      /* mais espaço entre as linhas (antes 1.1) */
+    margin-bottom: 24px;   /* mais espaço entre os parágrafos (antes 16px) */
     color: #f0f0f0;
 }
 
@@ -392,6 +392,8 @@ html {
     }
     .quemsomos-texto p {
         font-size: 14px;
+        line-height: 1.75;
+        margin-bottom: 20px;
     }
 }
 

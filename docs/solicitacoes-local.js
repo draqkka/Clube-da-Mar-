@@ -39,6 +39,13 @@ function _registrarOuvinte(atualizar) {
     });
 }
 
+// Compara RA ignorando maiúscula/minúscula, pontuação e zeros à esquerda
+// (o RA do login pode vir escrito diferente do RA da planilha).
+function _raChave(r) {
+    return String(r == null ? '' : r).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^0+/, '');
+}
+
 function _gerarId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
@@ -191,7 +198,7 @@ function limparTodasSolicitacoes() {
 function escutarStatusAluno(ra, aoAtualizar) {
     _registrarOuvinte(function () {
         var doAluno = _lerSolicitacoes()
-            .filter(function (s) { return String(s.ra) === String(ra); })
+            .filter(function (s) { return _raChave(s.ra) === _raChave(ra); })
             .sort(function (a, b) { return b.criadoEm - a.criadoEm; });
         aoAtualizar(doAluno[0] || null);
     });

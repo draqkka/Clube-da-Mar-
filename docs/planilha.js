@@ -42,6 +42,26 @@ function _slugTurma(turma) {
     return _normalizarTexto(turma).replace(/[^A-Z0-9]/g, '');
 }
 
+// "3ºA", "3°A", "3A", "3 A", "3º ano A" -> sempre "3ºA" (igual ao servidor).
+function turmaCanonica(t) {
+    var bruto = String(t == null ? '' : t).trim();
+    var s = _normalizarTexto(bruto).replace(/\b(ANO|SERIE|TURMA)\b/g, ' ')
+        .replace(/(\d)\s*O(?=\s*[A-Z])/, '$1'); // "3o A" (o no lugar do º)
+    var m = s.match(/(\d+)[^\dA-Z]*([A-Z]+)/);
+    return m ? m[1] + '\u00BA' + m[2] : bruto;
+}
+function mesmaTurma(a, b) { return turmaCanonica(a) === turmaCanonica(b); }
+
+// RA sem pontos/traços/espaços, maiúsculo e sem zeros à esquerda (igual ao
+// servidor): "000108327708-X/SP" e "108327708xsp" são o mesmo RA.
+function raCanonico(r) {
+    return _normalizarTexto(r).replace(/[^A-Z0-9]/g, '').replace(/^0+/, '');
+}
+function mesmoRa(a, b) {
+    var ra = raCanonico(a);
+    return ra !== '' && ra === raCanonico(b);
+}
+
 function nomeArquivoPlanilha(turma) {
     return 'planilha-' + _slugTurma(turma) + '.xlsx';
 }
@@ -79,6 +99,7 @@ function escaparHtml(valor) {
 // novaTurma = true quando a turma ainda não tem nenhum aluno cadastrado.
 function carregarPlanilha(turma) {
     if (!turma) return Promise.reject(new Error('Informe a turma pra carregar a planilha.'));
+    turma = turmaCanonica(turma);
     if (_planilhaCachePorTurma[turma]) return Promise.resolve(_planilhaCachePorTurma[turma]);
 
     return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
@@ -97,12 +118,22 @@ function carregarPlanilha(turma) {
 
 // Esquece o que estava em memória e busca de novo no banco.
 function recarregarPlanilha(turma) {
+    turma = turmaCanonica(turma);
     delete _planilhaCachePorTurma[turma];
     return carregarPlanilha(turma);
 }
 
 function atualizarCacheNotas(turma, novasNotas) {
     if (_planilhaCachePorTurma[turma]) _planilhaCachePorTurma[turma].notas = novasNotas;
+}
+
+// Busca UM aluno pelo RA (qualquer formato: maiúsculo/minúsculo, com ou sem
+// zeros à esquerda, pontos ou traços). Devolve o aluno ou null.
+function carregarAlunoPorRa(ra) {
+    if (!raCanonico(ra)) return Promise.resolve(null);
+    return _requisicaoApi('/api/alunos?ra=' + encodeURIComponent(ra)).then(function (corpo) {
+        return (corpo.alunos && corpo.alunos[0]) || null;
+    });
 }
 
 // Grava alunos no banco (novos entram, existentes são atualizados pelo RA).
@@ -129,19 +160,41 @@ function salvarAlunos(turma, alunos, opcoes) {
 function carregarTodasAsTurmas() {
     return _requisicaoApi('/api/alunos').then(function (corpo) {
         var todas = corpo.alunos || [];
-        var nomesTurmas = TURMAS_DO_SISTEMA.slice();
+        var nomesTurmas = TURMAS_DO_SISTEMA.map(turmaCanonica);
         todas.forEach(function (a) {
-            if (nomesTurmas.indexOf(a.turma) === -1) nomesTurmas.push(a.turma);
+            var t = turmaCanonica(a.turma);
+            if (nomesTurmas.indexOf(t) === -1) nomesTurmas.push(t);
         });
 
         var resultados = nomesTurmas.map(function (turma) {
-            var notas = todas.filter(function (a) { return a.turma === turma; });
+            var notas = todas.filter(function (a) { return turmaCanonica(a.turma) === turma; });
             var dados = { pasta: null, arquivo: nomeArquivoPlanilha(turma), turma: turma, novaTurma: notas.length === 0, notas: notas };
             _planilhaCachePorTurma[turma] = dados;
             return dados;
         });
         return { porTurma: resultados, notas: todas };
     });
+}
+
+// Lê o arquivo escolhido: .xlsx/.xls (binário) ou .csv (texto). CSV pode vir
+// em UTF-8 ou Windows-1252 (Excel brasileiro) e com ";" como separador —
+// sem tratar isso, "Série" virava "SÃ©rie" e a coluna não era reconhecida.
+function _lerPasta(arrayBuffer) {
+    var bytes = new Uint8Array(arrayBuffer);
+    var ehZip = bytes[0] === 0x50 && bytes[1] === 0x4B;   // .xlsx
+    var ehOle = bytes[0] === 0xD0 && bytes[1] === 0xCF;   // .xls
+    if (ehZip || ehOle) return XLSX.read(bytes, { type: 'array' });
+
+    var texto;
+    try { texto = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+    catch (e) { texto = new TextDecoder('windows-1252').decode(bytes); }
+    texto = texto.replace(/^\uFEFF/, '');
+
+    var primeira = texto.split(/\r?\n/)[0] || '';
+    var separador = (primeira.split(';').length > primeira.split(',').length) ? ';'
+        : (primeira.split('\t').length > primeira.split(',').length ? '\t' : ',');
+    // raw:true mantém o texto como está (não transforma RA em número).
+    return XLSX.read(texto, { type: 'string', raw: true, FS: separador });
 }
 
 // ---- Leitura da planilha que o professor escolhe no computador -------------
@@ -181,7 +234,7 @@ function _numeroOuVazio(valor) {
 
 // Devolve { alunos, avisos, temColunaTurma }. Lança erro se não achar RA e Nome.
 function lerPlanilhaDeAlunos(arrayBuffer) {
-    var pasta = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+    var pasta = _lerPasta(arrayBuffer);
     var aba = pasta.Sheets[pasta.SheetNames[0]];
     var linhas = XLSX.utils.sheet_to_json(aba, { header: 1, defval: '' });
 
@@ -290,7 +343,7 @@ function baixarPlanilhaTurma(turma) {
 // Lê o arquivo (ArrayBuffer) e devolve uma lista [{nome, nomeNormalizado,
 // frequencia}, ...]. Lança erro se não achar as colunas esperadas.
 function lerFrequenciaExterna(arrayBuffer) {
-    var pasta = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+    var pasta = _lerPasta(arrayBuffer);
     var aba = pasta.Sheets[pasta.SheetNames[0]];
     var linhas = XLSX.utils.sheet_to_json(aba, { header: 1, defval: '' });
 

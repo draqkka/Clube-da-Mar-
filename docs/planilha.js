@@ -121,7 +121,10 @@ function _salvarOcultos(ocultos) {
 
 function _filtrarOcultos(lista) {
     var ocultos = _lerOcultos();
-    return (lista || []).filter(function (a) { return !ocultos[raCanonico(a.ra)]; });
+    return (lista || []).filter(function (a) {
+        // nome precisa ter letras (barra lixo tipo 1100", 51004")
+        return !ocultos[raCanonico(a.ra)] && /[A-Za-z\u00C0-\u00FF].*[A-Za-z\u00C0-\u00FF]/.test(String(a.nome || ''));
+    });
 }
 
 // Carrega os alunos de UMA turma (nome exato, ex: "3ºA"). Devolve o mesmo
@@ -193,13 +196,24 @@ function salvarAlunos(turma, alunos, opcoes) {
 // sem precisar de rota nova na API. Devolve { removidos }.
 function removerTurma(turma) {
     turma = turmaCanonica(turma);
-    return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
-        var ocultos = _lerOcultos();
-        var alunos = _filtrarOcultos(corpo.alunos);
-        alunos.forEach(function (a) { ocultos[raCanonico(a.ra)] = true; });
-        _salvarOcultos(ocultos);
+    // 1) Tenta apagar DE VERDADE no banco (some pra todo mundo, em qualquer navegador).
+    return _requisicaoApi('/api/remover-turma', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turma: turma })
+    }).then(function (resp) {
         delete _planilhaCachePorTurma[turma];
-        return { removidos: alunos.length };
+        return { removidos: resp && resp.removidos != null ? resp.removidos : 0 };
+    }).catch(function () {
+        // 2) Se a rota não estiver publicada, esconde só neste navegador.
+        return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
+            var ocultos = _lerOcultos();
+            var alunos = _filtrarOcultos(corpo.alunos);
+            alunos.forEach(function (a) { ocultos[raCanonico(a.ra)] = true; });
+            _salvarOcultos(ocultos);
+            delete _planilhaCachePorTurma[turma];
+            return { removidos: alunos.length };
+        });
     });
 }
 
@@ -759,6 +773,7 @@ function _processarAba(nomeAba, linhas, res) {
         var linha = linhas[l];
         var nome = _textoCelula(linha[colNome]);
         if (!nome || _CHAVES_NOME.indexOf(_chaveColuna(nome)) !== -1) continue;
+        if (!/[A-Za-z\u00C0-\u00FF].*[A-Za-z\u00C0-\u00FF]/.test(nome)) continue; // código/lixo, não é nome de aluno
 
         // Legenda no fim da planilha ("Legenda", "AC - Ausência Compensada",
         // "M - Menção ...") não é aluno.

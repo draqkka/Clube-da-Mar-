@@ -476,6 +476,21 @@ function _presencaNormalizada(v) {
     return n;
 }
 
+// "6082 - DESENVOLVIMENTO DE SISTEMAS - 3ª SERIE A MANHA ANUAL" -> "3ºA".
+// Se não tiver o formato "N ª série X", cai no jeito antigo ("3ºA", "3A"...).
+function _turmaDoTexto(txt) {
+    var s = _semAcento(txt).toUpperCase();
+    var m = s.match(/(\d+)\s*[\u00AA\u00BA\u00B0.]?\s*(?:ANO|SERIE)\s+([A-Z])\b/);
+    if (m) return m[1] + '\u00BA' + m[2];
+    return turmaCanonica(txt);
+}
+
+// Mesmo texto -> "Desenvolvimento de Sistemas" (o que fica entre o código e a série).
+function _cursoDoTextoTurma(txt) {
+    var m = String(txt || '').match(/^\s*\d+\s*[-\u2013]\s*(.+?)\s*[-\u2013]\s*\d+\s*[\u00AA\u00BA\u00B0.]?\s*(?:ANO|S[\u00C9E]RIE)\b/i);
+    return m ? _formatarCurso(m[1]) : '';
+}
+
 // ---- Dados do topo da planilha: Diretoria, Escola, Diretor e Bimestre ------
 // Cada ABA (turma) é lida separadamente, então 2ºA e 3ºA guardam cada uma os
 // seus próprios dados. Só olha as linhas ACIMA do cabeçalho "Aluno".
@@ -485,7 +500,7 @@ var _PARADAS_META = ['DIRETORIA', 'ESCOLA', 'UNIDADE', 'DIRETOR', 'DIRETORA', 'B
 // Procura "ROTULO: valor" nas linhas do topo (ou o valor na célula ao lado).
 // Os rótulos são testados na ordem e só valem como palavra inteira — assim
 // "DIRETOR" não confunde com "DIRETORIA". "limpar" arruma o texto achado.
-function _valorMeta(linhas, limite, rotulos, paradas, limpar) {
+function _valorMeta(linhas, limite, rotulos, paradas, limpar, preferirAcima) {
     var regexParada = new RegExp('\\b(' + paradas.join('|') + ')\\b');
     for (var r = 0; r < rotulos.length; r++) {
         var regexRotulo = new RegExp('\\b' + rotulos[r] + '\\b');
@@ -511,6 +526,13 @@ function _valorMeta(linhas, limite, rotulos, paradas, limpar) {
 
                 var valor = limpar(resto.slice(0, fim).replace(/[-\u2013|;,]\s*$/, '').trim());
                 if (valor) return valor;
+
+                // Rótulo sozinho: às vezes o valor fica na célula de CIMA (nome do
+                // diretor escrito acima da palavra "Diretor").
+                if (preferirAcima && i > 0) {
+                    var acima = _textoCelula(linhas[i - 1][c]);
+                    if (acima && !/:\s*$/.test(acima)) { valor = limpar(acima); if (valor) return valor; }
+                }
 
                 // Rótulo sozinho na célula: o valor está na próxima célula preenchida.
                 for (var d = c + 1; d < linhas[i].length; d++) {
@@ -572,6 +594,17 @@ function _bimestreDaPlanilha(linhas, limite, nomeAba, nomeArquivo) {
     return '';
 }
 
+// Média das colunas "M" de todas as matérias. "-" e células vazias não contam.
+// Corta (não arredonda) na 1ª casa: 6,96 fica 6,9 e não aprova por engano.
+function _mediaDasColunas(linha, colunas) {
+    var soma = 0, qtd = 0;
+    colunas.forEach(function (c) {
+        var n = _numeroOuVazio(linha[c]);
+        if (typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 10) { soma += n; qtd++; }
+    });
+    return qtd ? Math.floor(soma / qtd * 10) / 10 : '';
+}
+
 // Lê UMA aba (já convertida em linhas) e acrescenta o resultado em "res".
 // Separada da leitura do arquivo pra poder ser testada sem o SheetJS.
 function _processarAba(nomeAba, linhas, res) {
@@ -603,6 +636,17 @@ function _processarAba(nomeAba, linhas, res) {
     var colUf = _colunaPorChaves(banda, _CHAVES_UF);
     var colsFreq = _colunasFrequencia(banda);
     var colNota = _colunaPorChaves(banda, _CHAVES_NOTA);
+
+    // Se a planilha não tem uma coluna de média geral, mas tem uma coluna "M"
+    // (menção) por matéria, a média do aluno é a média de TODAS essas colunas.
+    var colsMedia = [];
+    var colNotaGeral = _colunaPorChaves(banda, ['mediafinal', 'notafinal', 'mediageral', 'media', 'mediaoum', 'mediam', 'mf']);
+    if (colNotaGeral === -1) {
+        banda.forEach(function (b) {
+            if (b.chave === 'm' && colsMedia.indexOf(b.coluna) === -1) colsMedia.push(b.coluna);
+        });
+        if (colsMedia.length < 2) colsMedia = [];
+    }
     var colSit = _colunaPorChaves(banda, _CHAVES_SITUACAO);
     var colTurma = _colunaPorChaves(banda, _CHAVES_TURMA);
     var colCurso = _colunaPorChaves(banda, _CHAVES_CURSO);
@@ -636,16 +680,18 @@ function _processarAba(nomeAba, linhas, res) {
     // Turma e curso "da aba": linhas de cima (antes do cabeçalho) ou nome da aba.
     var turmaAba = '';
     var turmaMeta = _valorRotulo(linhas, cab.linha, 'TURMA', ['CURSO', 'SERIE', 'PERIODO', 'TURNO', 'ANO', 'ESCOLA', 'BIMESTRE', 'DISCIPLINA']);
-    if (turmaMeta && _turmaValida(turmaCanonica(turmaMeta))) turmaAba = turmaCanonica(turmaMeta);
+    if (turmaMeta && _turmaValida(_turmaDoTexto(turmaMeta))) turmaAba = _turmaDoTexto(turmaMeta);
     if (!turmaAba && _turmaValida(turmaCanonica(nomeAba))) turmaAba = turmaCanonica(nomeAba);
 
     var cursoAba = _formatarCurso(_valorRotulo(linhas, cab.linha, 'CURSO', ['TURMA', 'SERIE', 'PERIODO', 'TURNO', 'ANO', 'ESCOLA', 'BIMESTRE', 'DISCIPLINA']));
+
+    if (!cursoAba) cursoAba = _cursoDoTextoTurma(turmaMeta);
 
     // Diretoria, Escola, Diretor e Bimestre desta aba (cada turma tem os seus).
     var meta = {
         diretoria: _valorMeta(linhas, cab.linha, ['DIRETORIA\\s+DE\\s+ENSINO', 'DIRETORIA'], _PARADAS_META, _limparDiretoria),
         escola: _valorMeta(linhas, cab.linha, ['UNIDADE\\s+ESCOLAR', 'ESCOLA'], _PARADAS_META, _limparEscola),
-        diretor: _valorMeta(linhas, cab.linha, ['DIRETOR', 'DIRETORA'], _PARADAS_META, _limparDiretor),
+        diretor: _valorMeta(linhas, cab.linha, ['DIRETOR', 'DIRETORA'], _PARADAS_META, _limparDiretor, true),
         bimestre: _bimestreDaPlanilha(linhas, cab.linha, nomeAba, res.nomeArquivo)
     };
     var naoAchou = [];
@@ -687,7 +733,7 @@ function _processarAba(nomeAba, linhas, res) {
         var curso = colCurso !== -1 ? _formatarCurso(linha[colCurso]) : '';
         curso = curso || cursoAba;
 
-        var nota = _numeroOuVazio(linha[colNota]);
+        var nota = colsMedia.length ? _mediaDasColunas(linha, colsMedia) : _numeroOuVazio(linha[colNota]);
         var presenca = _presencaNormalizada(linha[colFreq]);
         if (typeof nota === 'number' && isNaN(nota)) { nota = ''; }
         if (typeof presenca === 'number' && isNaN(presenca)) { presenca = ''; }

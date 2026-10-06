@@ -154,6 +154,15 @@ function salvarAlunos(turma, alunos, opcoes) {
     });
 }
 
+// Apaga TODOS os alunos de uma turma (usa /api/remover-turma). Devolve { removidos }.
+function removerTurma(turma) {
+    return _requisicaoApi('/api/remover-turma', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turma: turmaCanonica(turma) })
+    });
+}
+
 // Carrega TODAS as turmas de uma vez (Diretoria e Desenvolvedor). Uma
 // única chamada ao banco. Turmas de TURMAS_DO_SISTEMA sem alunos entram
 // com lista vazia; turmas que existem no banco mas não estão na lista

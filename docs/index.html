@@ -117,6 +117,27 @@
 </div>
 </main>
 
+<!-- RESUMO DO ALUNO — aparece depois do "Sair" do painel do aluno/responsável.
+     Dados guardados por dashboard-aluno.html (ver status-aluno.js). -->
+<section id="resumo-aluno" class="resumo-aluno" style="display:none;" aria-live="polite">
+    <button type="button" class="resumo-aluno-fechar" id="resumo-aluno-fechar" aria-label="Ocultar resumo">&times;</button>
+    <h2 id="resumo-aluno-nome">Aluno</h2>
+    <div class="grid-status">
+        <div class="card-status">
+            <span class="card-status-rotulo">Média</span>
+            <span class="card-status-valor" id="resumo-aluno-media">—</span>
+        </div>
+        <div class="card-status">
+            <span class="card-status-rotulo">Frequência</span>
+            <span class="card-status-valor" id="resumo-aluno-frequencia">—</span>
+        </div>
+        <div class="card-status card-status-diretoria" id="resumo-aluno-card">
+            <span class="card-status-rotulo">Diretoria</span>
+            <span class="card-status-valor" id="resumo-aluno-status">—</span>
+        </div>
+    </div>
+    <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
+</section>
 
 
 <main class="conteudo-pagina">
@@ -726,6 +747,39 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     </div>
     <p class="rodape-linha">&copy; 2026 Clube da Maré Beach Club. Todos os direitos reservados.</p>
 </footer>
+
+
+<script src="solicitacoes-local.js"></script>
+<script src="status-aluno.js"></script>
+<script>
+(function () {
+    var resumo = lerResumoAluno();
+    if (!resumo || !resumo.nome) return;
+
+    var secao = document.getElementById('resumo-aluno');
+    var card = document.getElementById('resumo-aluno-card');
+    var classes = ['status-pendente', 'status-aprovado', 'status-recusado'];
+
+    document.getElementById('resumo-aluno-nome').textContent = resumo.nome;
+    document.getElementById('resumo-aluno-media').textContent = formatarMedia(resumo.nota);
+    document.getElementById('resumo-aluno-frequencia').textContent = formatarFrequencia(resumo.presenca);
+    secao.style.display = 'block';
+
+    document.getElementById('resumo-aluno-fechar').addEventListener('click', function () {
+        apagarResumoAluno();
+        secao.style.display = 'none';
+    });
+
+    // Status da Diretoria ao vivo (atualiza se ela decidir com a página aberta).
+    escutarStatusAluno(resumo.ra, function (solicitacao) {
+        var info = statusDiretoria(solicitacao);
+        classes.forEach(function (c) { card.classList.remove(c); });
+        card.classList.add(info.classe);
+        document.getElementById('resumo-aluno-status').textContent = info.rotulo;
+        document.getElementById('resumo-aluno-texto').textContent = info.texto;
+    });
+})();
+</script>
 
 <!-- Chat ao vivo (Dealism) -->
 <script src="https://d1svrfmyhkyg8q.cloudfront.net/livechat/prod/livechat.js" data-site-key="lc_site_HFffd5NFIJyhPji297bnGmJV2GRbZBZ8dg-aT_AuM9I" async></script>

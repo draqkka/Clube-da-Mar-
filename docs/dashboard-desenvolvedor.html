@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <!-- Lista de usuários — só é carregada nesta página pra exibir a tabela de
@@ -78,6 +79,7 @@
         <p class="dica-importar">Mostra tudo que está salvo no banco, de todos os professores: aprovados, quem não atingiu os critérios (com o motivo), quem está fora da sala e o status da solicitação de cada um.</p>
         <div id="info-turmas"></div>
         <div id="carregando-alunos">Carregando planilha...</div>
+        <div id="legenda-comportamento"></div>
         <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
             <thead>
                 <tr>
@@ -253,7 +255,7 @@ function renderizarAlunos() {
             '</td><td>' + escaparHtml(e.diretor || '—') + '</td><td>' + escaparHtml(e.bimestre || '—') +
             '</td><td>' + escaparHtml(situacaoDoAluno(a)) + '</td><td>' + escaparHtml(a.nota === '' || a.nota == null ? '—' : a.nota) +
             '</td><td>' + (a.presenca === '' || a.presenca == null ? '—' : escaparHtml(a.presenca) + '%') +
-            '</td><td>' + escaparHtml(a.comportamento || '—') + '</td><td>' + resultado +
+            '</td><td>' + htmlComportamento(a) + '</td><td>' + resultado +
             '</td><td>' + escaparHtml(av.aprovado ? '' : av.motivos.join('; ')) +
             '</td><td>' + escaparHtml(textoSolicitacaoDev(solicitacaoDoAlunoDev(a))) +
             '</td><td>' + escaparHtml(a.professor || '') + '</td><td>' + (outras || '—') + '</td>';

@@ -47,6 +47,14 @@
             <span class="card-status-valor" id="resumo-alunos">-</span>
         </div>
         <div class="card-status">
+            <span class="card-status-rotulo">Turmas com alunos</span>
+            <span class="card-status-valor" id="resumo-turmas">-</span>
+        </div>
+        <div class="card-status">
+            <span class="card-status-rotulo">Alunos aprovados</span>
+            <span class="card-status-valor" id="resumo-aprovados">-</span>
+        </div>
+        <div class="card-status">
             <span class="card-status-rotulo">Usuários cadastrados</span>
             <span class="card-status-valor" id="resumo-usuarios">-</span>
         </div>
@@ -67,12 +75,13 @@
     <!-- Todos os alunos, de todas as turmas -->
     <section class="area-avaliacao-professores">
         <h2>Todos os Alunos (todas as turmas)</h2>
+        <p class="dica-importar">Mostra tudo que está salvo no banco, de todos os professores: aprovados, quem não atingiu os critérios (com o motivo), quem está fora da sala e o status da solicitação de cada um.</p>
         <div id="info-turmas"></div>
         <div id="carregando-alunos">Carregando planilha...</div>
         <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
             <thead>
                 <tr>
-                    <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th><th>Outras informações</th>
+                    <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Curso</th><th>Escola</th><th>Diretoria</th><th>Diretor</th><th>Bimestre</th><th>Situação</th><th>Média</th><th>Presença</th><th>Comportamento</th><th>Resultado</th><th>Motivo</th><th>Solicitação</th><th>Professor</th><th>Outras informações</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-alunos"></tbody>
@@ -112,6 +121,9 @@
         <h3 style="margin-top:16px;">Solicitações (localStorage)</h3>
         <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
         <button type="button" class="btn-planilha-atalho" id="botao-limpar-solicitacoes">Apagar todas as solicitações (teste)</button>
+
+        <h3 style="margin-top:24px;">Alunos (banco de dados — /api/alunos)</h3>
+        <pre id="json-alunos" class="caixa-dados-brutos"></pre>
 
         <h3 style="margin-top:24px;">Sessão atual (sessionStorage)</h3>
         <pre id="json-sessao" class="caixa-dados-brutos"></pre>
@@ -161,50 +173,127 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-// ---- Alunos (planilha) — todas as turmas juntas (um arquivo por turma) --
-carregarTodasAsTurmas()
-    .then(function (dados) {
-        document.getElementById('carregando-alunos').style.display = 'none';
-        var corpo = document.getElementById('corpo-tabela-alunos');
-        dados.notas.forEach(function (a) {
-            var linha = document.createElement('tr');
-            // Colunas extras da planilha (ex: Turno) aparecem juntas em "Outras informações".
-            var outras = Object.keys(a.extras || {}).filter(function (k) {
-                return [EXTRA_DIRETORIA, EXTRA_ESCOLA, EXTRA_DIRETOR, EXTRA_BIMESTRE].indexOf(k) === -1;
-            }).map(function (k) {
-                return escaparHtml(k) + ': ' + escaparHtml(a.extras[k]);
-            }).join(' · ');
-            linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
-                '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(a.nota === '' ? '—' : a.nota) +
-                '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
-                '</td><td>' + escaparHtml(a.comportamento || '—') + '</td><td>' + escaparHtml(a.professor || '') +
-                '</td><td>' + (outras || '—') + '</td>';
-            corpo.appendChild(linha);
-        });
-        document.getElementById('tabela-alunos').style.display = dados.notas.length ? 'table' : 'none';
+// ---- Alunos (banco) — todas as turmas, com resultado, motivo e solicitação --
+var dadosAlunos = null;        // { porTurma, notas } vindo do banco
+var todasSolicitacoes = [];    // vem do localStorage (mais recentes primeiro)
+var EXTRAS_JA_MOSTRADOS = [EXTRA_DIRETORIA, EXTRA_ESCOLA, EXTRA_DIRETOR, EXTRA_BIMESTRE, EXTRA_SITUACAO, EXTRA_CURSO];
 
-        // Escola, Diretoria, Diretor e Bimestre de cada turma (vêm do topo da planilha)
-        var infoTurmas = document.getElementById('info-turmas');
-        infoTurmas.innerHTML = '';
-        dados.porTurma.forEach(function (t) {
-            if (!t.notas.length) return;
-            var d = dadosDaEscola(t.notas);
-            var partes = [];
-            if (d.escola) partes.push('<strong>Escola:</strong> ' + escaparHtml(d.escola));
-            if (d.diretoria) partes.push('<strong>Diretoria:</strong> ' + escaparHtml(d.diretoria));
-            if (d.diretor) partes.push('<strong>Diretor:</strong> ' + escaparHtml(d.diretor));
-            if (d.bimestre) partes.push('<strong>Bimestre:</strong> ' + escaparHtml(d.bimestre));
-            if (!partes.length) return;
-            var p = document.createElement('p');
-            p.className = 'dica-importar';
-            p.innerHTML = '<strong>' + escaparHtml(t.turma) + '</strong> — ' + partes.join(' · ');
+function solicitacaoDoAlunoDev(a) {
+    for (var i = 0; i < todasSolicitacoes.length; i++) {
+        if (mesmoRa(todasSolicitacoes[i].ra, a.ra) && mesmaTurma(todasSolicitacoes[i].turma, a.turma)) return todasSolicitacoes[i];
+    }
+    return null;
+}
+
+function textoSolicitacaoDev(s) {
+    if (!s) return '—';
+    if (s.status === 'Aprovado') return '🟢 Aprovada (final)';
+    if (s.status === 'Recusado') return '🔴 Recusada' + (s.respondidoPor ? ' (' + s.respondidoPor + ')' : '');
+    if (s.status === 'Aguardando Desenvolvedor') return '🔵 Aguardando sua confirmação';
+    return '🟡 Aguardando Diretoria';
+}
+
+function renderizarAlunos() {
+    if (!dadosAlunos) return;
+    var todos = dadosAlunos.notas;
+
+    // Resumo por turma (escola, diretoria, diretor, bimestre e contagens)
+    var infoTurmas = document.getElementById('info-turmas');
+    infoTurmas.innerHTML = '';
+    var turmasComAlunos = 0, totalAprovados = 0;
+    dadosAlunos.porTurma.forEach(function (t) {
+        var p = document.createElement('p');
+        p.className = 'dica-importar';
+        if (!t.notas.length) {
+            p.innerHTML = '<strong>' + escaparHtml(t.turma) + '</strong> — sem alunos salvos.';
             infoTurmas.appendChild(p);
-        });
-        document.getElementById('resumo-alunos').textContent = dados.notas.length;
-    })
-    .catch(function (erro) {
-        document.getElementById('carregando-alunos').textContent = 'Erro ao ler planilha (' + erro.message + ').';
+            return;
+        }
+        turmasComAlunos++;
+        var ativos = t.notas.filter(alunoAtivo);
+        var aprovados = ativos.filter(function (a) { return avaliarAluno(a).aprovado; });
+        totalAprovados += aprovados.length;
+        var comCurso = t.notas.filter(function (a) { return cursoDoAluno(a); })[0];
+        var d = dadosDaEscola(t.notas);
+        var semDados = !d.escola && !d.diretoria && !d.diretor && !d.bimestre;
+        var partes = [
+            '<strong>Escola:</strong> ' + escaparHtml(d.escola || '—'),
+            '<strong>Diretoria:</strong> ' + escaparHtml(d.diretoria || '—'),
+            '<strong>Diretor:</strong> ' + escaparHtml(d.diretor || '—'),
+            '<strong>Bimestre:</strong> ' + escaparHtml(d.bimestre || '—')
+        ];
+        if (semDados) partes.push('<em>(estes dados só aparecem depois de adicionar a planilha de novo no painel do professor)</em>');
+        p.innerHTML = '<strong>' + escaparHtml(comCurso ? cursoDoAluno(comCurso) + ' · ' + t.turma : t.turma) + '</strong> — ' +
+            t.notas.length + ' aluno(s): ' + ativos.length + ' ativos · ' + aprovados.length + ' aprovados · ' +
+            (ativos.length - aprovados.length) + ' não atingiram · ' + (t.notas.length - ativos.length) + ' fora da sala' +
+            (partes.length ? '<br>' + partes.join(' · ') : '') +
+            ' <button type="button" class="btn-remover-turma" data-turma="' + escaparHtml(t.turma) + '" style="margin-left:8px;">Remover alunos desta turma</button>';
+        infoTurmas.appendChild(p);
     });
+
+    // Tabela com todos os alunos (por turma, depois por nome)
+    var ordenados = todos.slice().sort(function (a, b) {
+        return String(a.turma).localeCompare(String(b.turma), 'pt-BR') || String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+    });
+    var corpo = document.getElementById('corpo-tabela-alunos');
+    corpo.innerHTML = '';
+    ordenados.forEach(function (a) {
+        var av = avaliarAluno(a);
+        var resultado = !av.ativo ? 'Fora da sala' : (av.aprovado ? '✅ Aprovado' : '❌ Não atingiu');
+        var outras = Object.keys(a.extras || {}).filter(function (k) {
+            return EXTRAS_JA_MOSTRADOS.indexOf(k) === -1;
+        }).map(function (k) {
+            return escaparHtml(k) + ': ' + escaparHtml(a.extras[k]);
+        }).join(' · ');
+        var e = dadosDaEscola([a]);
+        var linha = document.createElement('tr');
+        linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
+            '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') +
+            '</td><td>' + escaparHtml(e.escola || '—') + '</td><td>' + escaparHtml(e.diretoria || '—') +
+            '</td><td>' + escaparHtml(e.diretor || '—') + '</td><td>' + escaparHtml(e.bimestre || '—') +
+            '</td><td>' + escaparHtml(situacaoDoAluno(a)) + '</td><td>' + escaparHtml(a.nota === '' || a.nota == null ? '—' : a.nota) +
+            '</td><td>' + (a.presenca === '' || a.presenca == null ? '—' : escaparHtml(a.presenca) + '%') +
+            '</td><td>' + escaparHtml(a.comportamento || '—') + '</td><td>' + resultado +
+            '</td><td>' + escaparHtml(av.aprovado ? '' : av.motivos.join('; ')) +
+            '</td><td>' + escaparHtml(textoSolicitacaoDev(solicitacaoDoAlunoDev(a))) +
+            '</td><td>' + escaparHtml(a.professor || '') + '</td><td>' + (outras || '—') + '</td>';
+        corpo.appendChild(linha);
+    });
+    document.getElementById('tabela-alunos').style.display = todos.length ? 'table' : 'none';
+    document.getElementById('resumo-alunos').textContent = todos.length;
+    document.getElementById('resumo-turmas').textContent = turmasComAlunos;
+    document.getElementById('resumo-aprovados').textContent = totalAprovados;
+    document.getElementById('json-alunos').textContent = JSON.stringify(todos, null, 2);
+}
+
+function carregarAlunosDev() {
+    return carregarTodasAsTurmas()
+        .then(function (dados) {
+            document.getElementById('carregando-alunos').style.display = 'none';
+            dadosAlunos = dados;
+            renderizarAlunos();
+        })
+        .catch(function (erro) {
+            document.getElementById('carregando-alunos').style.display = 'block';
+            document.getElementById('carregando-alunos').textContent = 'Erro ao ler os alunos do banco (' + erro.message + ').';
+        });
+}
+carregarAlunosDev();
+
+// Esvazia uma turma (ex: alunos salvos na turma errada). Não mexe nas solicitações.
+document.getElementById('info-turmas').addEventListener('click', function (evento) {
+    var botao = evento.target.closest('.btn-remover-turma');
+    if (!botao) return;
+    var turma = botao.dataset.turma;
+    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' (as solicitações não são afetadas). Confirma?')) return;
+    botao.disabled = true;
+    salvarAlunos(turma, [], { professor: sessao.login || '', substituir: true })
+        .then(carregarAlunosDev)
+        .catch(function (erro) {
+            botao.disabled = false;
+            alert('Não consegui remover a turma ' + turma + ': ' + erro.message);
+        });
+});
 
 // ---- Usuários cadastrados (usuarios.js) ----------------------------------
 var corpoUsuarios = document.getElementById('corpo-tabela-usuarios');
@@ -230,6 +319,8 @@ corpoUsuarios.addEventListener('click', function (evento) {
 
 // ---- Todas as solicitações ------------------------------------------------
 escutarTodasSolicitacoes(function (solicitacoes) {
+    todasSolicitacoes = solicitacoes;
+    renderizarAlunos(); // atualiza a coluna "Solicitação" dos alunos
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
 

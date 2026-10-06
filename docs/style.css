@@ -2873,3 +2873,34 @@ body{
 }
 .resumo-aluno-fechar:hover{ color: var(--cor-branco); }
 @media (max-width: 768px){ .resumo-aluno{ margin: 20px 12px; padding: 20px; } }
+
+/* ---- Resumo do aluno: logo abaixo do menu, no alto da tela inicial ---- */
+.resumo-aluno.resumo-topo{
+    margin: 76px auto 16px;   /* 76px = altura do menu fixo + respiro */
+    padding: 16px 24px;
+}
+.resumo-aluno.resumo-topo h2{ font-size: 1.5rem; }
+.resumo-aluno.resumo-topo .grid-status{ margin: 12px 0; }
+@media (max-width: 768px){ .resumo-aluno.resumo-topo{ margin: 70px 12px 12px; padding: 14px 16px; } }
+
+/* ---- Comportamento automático: emoji amarelo + legenda ---- */
+.comp-selo{
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 10px 2px 4px; border-radius: 999px;
+    font-family: var(--fonte-textos); font-size: .85rem; font-weight: 700;
+    white-space: nowrap; vertical-align: middle;
+}
+.comp-emoji{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #ffd21f; font-size: 1.05rem; line-height: 1;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+}
+.comp-bom{ background: #d6f5dc; color: #14532d; }
+.comp-regular{ background: #fff3c4; color: #7a5b00; }
+.comp-ruim{ background: #fcd9d9; color: #7f1d1d; }
+.card-status-valor .comp-selo{ font-size: 1rem; }
+.comp-legenda-geral{
+    margin: 10px 0; padding: 8px 12px; border-radius: 8px;
+    background: rgba(255,210,31,.12); font-size: .85rem; line-height: 2;
+}

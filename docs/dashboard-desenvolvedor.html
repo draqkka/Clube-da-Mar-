@@ -287,7 +287,7 @@ document.getElementById('info-turmas').addEventListener('click', function (event
     var turma = botao.dataset.turma;
     if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' (as solicitações não são afetadas). Confirma?')) return;
     botao.disabled = true;
-    salvarAlunos(turma, [], { professor: sessao.login || '', substituir: true })
+    removerTurma(turma)
         .then(carregarAlunosDev)
         .catch(function (erro) {
             botao.disabled = false;

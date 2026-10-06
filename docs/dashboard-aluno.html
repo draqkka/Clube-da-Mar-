@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
 <!-- SheetJS: lê o arquivo .xlsx da planilha local (notas, presença, comportamento) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <!-- Solicitações de participação, salvas no localStorage (sem backend) -->
 <script src="solicitacoes-local.js"></script>
@@ -61,6 +62,8 @@
                 <span class="card-status-valor" id="valor-diretoria">—</span>
             </div>
         </div>
+
+        <div id="legenda-comportamento"></div>
 
         <div id="caixa-mensagem" class="caixa-mensagem-resultado">
             <p id="texto-mensagem"></p>
@@ -170,12 +173,12 @@ carregarAlunoPorRa(sessao.ra)
     var semPresenca = aluno.presenca === '' || aluno.presenca === null || aluno.presenca === undefined;
     document.getElementById('valor-nota').textContent = formatarMedia(semNota ? '' : aluno.nota);
     document.getElementById('valor-presenca').textContent = formatarFrequencia(semPresenca ? '' : aluno.presenca);
-    document.getElementById('valor-comportamento').textContent = aluno.comportamento || '—';
+    document.getElementById('valor-comportamento').innerHTML = htmlComportamento(aluno);
 
     resumo.nome = (sessao.perfil === 'responsavel') ? aluno.nome : (aluno.nome || resumo.nome);
     resumo.nota = semNota ? '' : aluno.nota;
     resumo.presenca = semPresenca ? '' : aluno.presenca;
-    resumo.comportamento = aluno.comportamento || '';
+    resumo.comportamento = comportamentoDoAluno(aluno).chave;
     guardarResumo();
 
     var avaliacao = avaliarAluno(aluno);

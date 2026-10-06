@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 </head>
@@ -30,6 +31,7 @@
 
     <div id="info-turmas"></div>
 
+    <div id="legenda-comportamento"></div>
     <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
         <thead>
             <tr>
@@ -93,7 +95,7 @@ carregarTodasAsTurmas()
             linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
                 '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(a.nota === '' ? '—' : a.nota) +
                 '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
-                '</td><td>' + escaparHtml(a.comportamento || '—') + '</td><td>' + escaparHtml(a.professor || '') +
+                '</td><td>' + htmlComportamento(a) + '</td><td>' + escaparHtml(a.professor || '') +
                 '</td><td>' + (outras || '—') + '</td>';
             corpo.appendChild(linha);
         });

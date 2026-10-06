@@ -114,6 +114,7 @@
 
         <div style="margin-top:16px;">
             <button type="button" class="btn-planilha-atalho" id="botao-baixar-planilha">Baixar cópia de segurança desta turma (.xlsx)</button>
+            <button type="button" class="btn-planilha-atalho" id="botao-remover-turma" style="margin-left:8px; background:#8b2c2c;">Remover todos os alunos desta turma</button>
         </div>
     </section>
 
@@ -353,6 +354,29 @@ document.getElementById('botao-baixar-planilha').addEventListener('click', funct
     if (turmaAtual) baixarPlanilhaTurma(turmaAtual);
 });
 
+// Apaga os alunos salvos nesta turma (ex: alunos de outra turma que foram
+// salvos aqui por engano). Não mexe nas solicitações já enviadas.
+document.getElementById('botao-remover-turma').addEventListener('click', function () {
+    if (!turmaAtual || !dadosTurmaAtual) return;
+    var turma = turmaAtual;
+    var total = dadosTurmaAtual.notas.length;
+    if (!confirm('Isso remove TODOS os ' + total + ' aluno(s) salvos na turma ' + turma + ' (as solicitações já enviadas não são afetadas). ' +
+        'Depois você pode adicionar a planilha certa de novo. Confirma?')) return;
+
+    var status = document.getElementById('status-importacao');
+    status.textContent = 'Removendo os alunos da turma ' + turma + '...';
+    // Planilha vazia + "substituir" = a turma fica sem nenhum aluno.
+    salvarAlunos(turma, [], { professor: sessao.login, substituir: true })
+        .then(function (resp) {
+            status.textContent = '✅ Turma ' + turma + ' esvaziada' + (resp && resp.removidos != null ? ' (' + resp.removidos + ' removido(s))' : '') + '.';
+            return recarregarPlanilha(turma);
+        })
+        .then(function () { return selecionarTurma(turma); })
+        .catch(function (erro) {
+            status.textContent = '⚠️ Não consegui remover os alunos da turma ' + turma + ': ' + erro.message;
+        });
+});
+
 // ---- Pop-up de solicitação -------------------------------------------------
 var modal = document.getElementById('modal-solicitacao');
 
@@ -525,7 +549,7 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                     var txt = '<strong>' + escaparHtml(rotuloTurma2(g)) + '</strong>' + (g.meta && g.meta.bimestre ? ' — ' + escaparHtml(g.meta.bimestre) : '') + ' (aba "' + escaparHtml(g.aba) + '"): ' +
                         g.alunos.length + ' aluno(s) lido(s) — ' + ativos.length + ' ativo(s), ' + aprovados.length + ' aprovado(s).';
                     if (resp.removidos) txt += ' ' + resp.removidos + ' registro(s) antigo(s) que não estavam mais na planilha foram removidos.';
-                    if (resp.ignorados) txt += ' ' + resp.ignorados + ' ignorado(s): RA já cadastrado em outra turma.';
+                    if (resp.ignorados) txt += ' ' + resp.ignorados + ' ignorado(s): já estão salvos em OUTRA turma (provavelmente de uma importação antiga na turma errada). Abra essa outra turma, use "Remover todos os alunos desta turma" e adicione a planilha de novo.';
                     linhas.push(txt);
                     if (g.curso) cursoPorTurma[g.turma] = g.curso;
                     return recarregarPlanilha(g.turma);

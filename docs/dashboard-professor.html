@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 </head>
@@ -94,10 +95,12 @@
         </div>
         <p id="progresso-diretoria" class="progresso-diretoria"></p>
 
+        <div id="legenda-comportamento"></div>
+
         <table class="tabela-alunos" id="tabela-aprovados" style="display:none;">
             <thead>
                 <tr>
-                    <th>Nome</th><th>Curso · Turma</th><th>Média</th><th>Frequência</th><th>Situação</th><th>Solicitação</th><th>Ação</th>
+                    <th>Nome</th><th>Curso · Turma</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Situação</th><th>Solicitação</th><th>Ação</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-aprovados"></tbody>
@@ -107,7 +110,7 @@
         <details id="detalhe-nao-aprovados" style="margin-top:20px; display:none;">
             <summary id="resumo-nao-aprovados" style="cursor:pointer;">Alunos ativos que não atingiram os critérios</summary>
             <table class="tabela-alunos" style="margin-top:10px;">
-                <thead><tr><th>Nome</th><th>Média</th><th>Frequência</th><th>Motivo</th></tr></thead>
+                <thead><tr><th>Nome</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Motivo</th></tr></thead>
                 <tbody id="corpo-tabela-nao-aprovados"></tbody>
             </table>
         </details>
@@ -283,7 +286,7 @@ function renderizarTurma() {
         linha.innerHTML = '<td>' + escaparHtml(a.nome) +
             '</td><td>' + escaparHtml(cursoDoAluno(a) ? cursoDoAluno(a) + ' · ' + a.turma : a.turma) +
             '</td><td>' + escaparHtml(a.nota) + '</td><td>' + escaparHtml(a.presenca) + '%' +
-            '</td><td>' + escaparHtml(situacaoDoAluno(a)) + '</td><td>' + escaparHtml(info.texto) + '</td><td>' + botao + '</td>';
+            '</td><td>' + htmlComportamento(a) + '</td><td>' + escaparHtml(situacaoDoAluno(a)) + '</td><td>' + escaparHtml(info.texto) + '</td><td>' + botao + '</td>';
         corpo.appendChild(linha);
     });
 
@@ -308,7 +311,7 @@ function renderizarTurma() {
         var linha = document.createElement('tr');
         linha.innerHTML = '<td>' + escaparHtml(a.nome) +
             '</td><td>' + escaparHtml(a.nota === '' ? '—' : a.nota) + '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
-            '</td><td>' + escaparHtml(avaliarAluno(a).motivos.join('; ')) + '</td>';
+            '</td><td>' + htmlComportamento(a) + '</td><td>' + escaparHtml(avaliarAluno(a).motivos.join('; ')) + '</td>';
         corpoNao.appendChild(linha);
     });
     document.getElementById('detalhe-nao-aprovados').style.display = naoAprovados.length ? 'block' : 'none';

@@ -180,6 +180,15 @@ var turmaAtual = null;
 var dadosTurmaAtual = null;
 var cursoPorTurma = {};      // "3ºA" -> "Desenvolvimento de Sistemas"
 var solicitacoes = [];       // solicitações enviadas por este professor (mais recentes primeiro)
+
+// Os dados das turmas só aparecem depois que o professor adiciona a planilha
+// pelo botão + (nesta sessão de login). Ao entrar, nada é puxado do banco.
+var importadasNaSessao = (sessao && sessao.importadas) ? sessao.importadas.slice() : [];
+function marcarImportada(turma) {
+    if (importadasNaSessao.indexOf(turma) === -1) importadasNaSessao.push(turma);
+    sessao.importadas = importadasNaSessao;
+    sessionStorage.setItem('cdm_sessao', JSON.stringify(sessao));
+}
 var alunoSelecionado = null;
 
 function rotuloTurma(t) {
@@ -312,6 +321,15 @@ function selecionarTurma(turma) {
     dadosTurmaAtual = null;
     renderizarChipsTurma();
 
+    // Turma que o professor ainda não adicionou nesta sessão: não mostra nada.
+    if (importadasNaSessao.indexOf(turma) === -1) {
+        document.getElementById('aviso-turma-nova').style.display = 'none';
+        document.getElementById('area-turma').style.display = 'none';
+        document.getElementById('carregando').style.display = 'block';
+        document.getElementById('carregando').textContent = 'Adicione a planilha pelo botão + para ver os dados da turma ' + turma + '.';
+        return Promise.resolve();
+    }
+
     document.getElementById('aviso-turma-nova').style.display = 'none';
     document.getElementById('area-turma').style.display = 'none';
     document.getElementById('carregando').style.display = 'block';
@@ -338,17 +356,23 @@ function selecionarTurma(turma) {
         });
 }
 
-// Descobre o curso de cada turma (pra aparecer nos botões) e abre a primeira.
+// Ao entrar não puxa nenhuma planilha. Só reabre as turmas que o professor já
+// adicionou nesta sessão (ex: se ele atualizar a página).
 renderizarChipsTurma();
-Promise.all(minhasTurmas.map(function (t) {
-    return carregarPlanilha(t).then(function (d) {
-        var comCurso = d.notas.filter(function (a) { return cursoDoAluno(a); })[0];
-        if (comCurso) cursoPorTurma[t] = cursoDoAluno(comCurso);
-    }).catch(function () {});
-})).then(function () {
-    if (minhasTurmas.length) selecionarTurma(minhasTurmas[0]);
-    else document.getElementById('carregando').textContent = 'Sua conta não tem turmas cadastradas.';
-});
+if (!minhasTurmas.length) {
+    document.getElementById('carregando').textContent = 'Sua conta não tem turmas cadastradas.';
+} else if (!importadasNaSessao.length) {
+    document.getElementById('carregando').textContent = 'Adicione a planilha pelo botão + para ver os dados das suas turmas.';
+} else {
+    Promise.all(importadasNaSessao.map(function (t) {
+        return carregarPlanilha(t).then(function (d) {
+            var comCurso = d.notas.filter(function (a) { return cursoDoAluno(a); })[0];
+            if (comCurso) cursoPorTurma[t] = cursoDoAluno(comCurso);
+        }).catch(function () {});
+    })).then(function () {
+        selecionarTurma(importadasNaSessao[0]);
+    });
+}
 
 document.getElementById('botao-baixar-planilha').addEventListener('click', function () {
     if (turmaAtual) baixarPlanilhaTurma(turmaAtual);
@@ -565,6 +589,7 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                 (lido.avisos.length > 5 ? ' (e mais ' + (lido.avisos.length - 5) + ')' : '') + '</p>';
             status.innerHTML = html;
 
+            minhas.forEach(function (g) { marcarImportada(g.turma); });
             var alvo = minhas.some(function (g) { return g.turma === turmaAtual; }) ? turmaAtual : minhas[0].turma;
             return selecionarTurma(alvo);
         }).catch(function (erro) {

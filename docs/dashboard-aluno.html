@@ -24,9 +24,8 @@
 </header>
 
 <!--
-    Esta página é a MESMA para Estudante e Responsável — os dois veem os
-    mesmos dados (nota, presença, comportamento) do aluno ligado ao RA que
-    foi usado no login. O JS abaixo:
+    Esta página é do Estudante — ele vê os dados (nota, presença,
+    comportamento) do aluno ligado ao RA que foi usado no login. O JS abaixo:
       1) confere se existe sessão válida (senão, manda de volta pro login);
       2) lê o Excel local e filtra só a linha daquele RA — nunca mostra
          nota de outro aluno nesta tela;
@@ -101,29 +100,21 @@
 // CRITERIO_PRESENCA_MINIMA / CRITERIO_NOTA_MINIMA lá, num lugar só.
 
 var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
-if (!sessao || (sessao.perfil !== 'estudante' && sessao.perfil !== 'responsavel')) {
+if (!sessao || sessao.perfil !== 'estudante') {
     window.location.href = 'login.html';
 }
 
 // Estudante preenche a ficha de confirmação + saúde (alergias, contato de
-// emergência etc.); o responsável assina a autorização de participação —
-// são dois formulários diferentes. Troque os dois links abaixo pelos links
-// reais do Google Forms depois de criá-los.
+// emergência etc.). Troque o link abaixo pelo link real do Google Forms.
 var FORMULARIOS = {
     estudante: {
         titulo: 'Para finalizarmos, responda a ficha de confirmação e saúde abaixo para garantir seu ingresso:',
         texto: 'Preencher ficha de confirmação e saúde',
         link: 'https://forms.gle/fm6CKFcbhz9hsJQb8'
-    },
-    responsavel: {
-        titulo: 'Para finalizarmos, preencha a autorização abaixo pra liberar a participação do seu filho(a):',
-        texto: 'Preencher formulário de autorização',
-        link: 'https://forms.gle/3HZ7pGnp4afpmNub9'
     }
 };
 
-// Saudação inicial (provisória pro responsável — vira "responsável de
-// [nome do aluno]" assim que os dados do aluno chegarem, logo abaixo).
+// Saudação inicial.
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || '') + '!';
 
 // Resumo que também aparece na tela inicial depois do "Sair".
@@ -160,12 +151,6 @@ carregarAlunoPorRa(sessao.ra)
         return;
     }
 
-    // Responsável vê "Olá, responsável de [nome do aluno]"; estudante
-    // continua vendo o próprio nome (já definido acima).
-    if (sessao.perfil === 'responsavel') {
-        document.getElementById('titulo-boas-vindas').textContent = 'Olá, responsável de ' + aluno.nome + '!';
-    }
-
     document.getElementById('info-aluno').textContent =
         (aluno.serie ? 'Série: ' + aluno.serie + ' · ' : '') + 'Turma: ' + aluno.turma;
 
@@ -175,7 +160,7 @@ carregarAlunoPorRa(sessao.ra)
     document.getElementById('valor-presenca').textContent = formatarFrequencia(semPresenca ? '' : aluno.presenca);
     document.getElementById('valor-comportamento').innerHTML = htmlComportamento(aluno);
 
-    resumo.nome = (sessao.perfil === 'responsavel') ? aluno.nome : (aluno.nome || resumo.nome);
+    resumo.nome = aluno.nome || resumo.nome;
     resumo.nota = semNota ? '' : aluno.nota;
     resumo.presenca = semPresenca ? '' : aluno.presenca;
     resumo.comportamento = comportamentoDoAluno(aluno).chave;

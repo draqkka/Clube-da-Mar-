@@ -67,6 +67,15 @@ function nomeArquivoPlanilha(turma) {
     return 'planilha-' + _slugTurma(turma) + '.xlsx';
 }
 
+// RA pra EXIBIR na tela. Quando a planilha não tem coluna de RA, o sistema
+// usa "NOME" + nome do aluno como identificador interno (precisa ser único
+// pra cada aluno). Na tela mostramos só "NOME", porque o nome do aluno já
+// aparece limpo na coluna ao lado. NÃO use isto pra comparar/gravar RA.
+function raParaExibir(ra) {
+    var t = String(ra === null || ra === undefined ? '' : ra);
+    return /^NOME[A-Z0-9]+$/.test(t) ? 'NOME' : t;
+}
+
 // ---- Comportamento automático a partir da Presença -----------------------
 // Ajuste os números abaixo se a escola quiser outra faixa.
 function comportamentoPorPresenca(presenca) {

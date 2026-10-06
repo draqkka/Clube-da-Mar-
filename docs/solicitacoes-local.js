@@ -194,7 +194,7 @@ function limparTodasSolicitacoes() {
     return Promise.resolve();
 }
 
-// ---- Aluno/Responsável: status da solicitação mais recente do próprio RA -
+// ---- Aluno: status da solicitação mais recente do próprio RA -
 function escutarStatusAluno(ra, aoAtualizar) {
     _registrarOuvinte(function () {
         var doAluno = _lerSolicitacoes()

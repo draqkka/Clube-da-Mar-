@@ -65,7 +65,7 @@
             <li>O site confere se o título <strong>"Registro e controle do rendimento escolar"</strong> está escrito <em>dentro</em> do arquivo. Sem ele, a planilha é recusada.</li>
             <li><strong>Cada aba é uma turma</strong> e é salva separadamente — adicionar a planilha da 3ºA nunca altera os alunos da 2ºA. Só entram abas das suas turmas.</li>
             <li>Aparecem só alunos <strong>Ativos</strong> (remanejados, transferidos etc. não pertencem mais à sala e ficam de fora).</li>
-            <li><strong>Aprovado</strong> = Ativo + frequência de <strong>85%</strong> ou mais + média (<strong>M</strong>) <strong>7</strong> ou mais.</li>
+            <li><strong>Aprovado</strong> = Ativo + frequência de <strong>85%</strong> ou mais + média de todas as matérias (colunas <strong>M</strong>) <strong>7</strong> ou mais.</li>
             <li>O curso (ex: Desenvolvimento de Sistemas) e a turma (ex: 3ºA) vêm da própria planilha. A <strong>Diretoria</strong> (ex: Leste 1), a <strong>Escola</strong>, o <strong>Diretor</strong> e o <strong>Bimestre</strong> também são lidos do topo de cada aba.</li>
         </ul>
         <div id="status-importacao" class="dica-importar" aria-live="polite"></div>
@@ -505,11 +505,26 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
         minhas.forEach(function (g) {
             cadeia = cadeia.then(function () {
                 g.alunos.forEach(function (a) { a.professor = sessao.login; });
-                return salvarAlunos(g.turma, g.alunos, { professor: sessao.login }).then(function (resp) {
+                return recarregarPlanilha(g.turma).then(function (atual) {
+                    // Planilha sem coluna RA: se o aluno já está salvo (mesmo nome), reaproveita
+                    // o RA dele — assim não duplica e o aluno continua achando o próprio status.
+                    var raPorNome = {};
+                    atual.notas.forEach(function (n) {
+                        if (!/^NOME/.test(String(n.ra))) raPorNome[_normalizarTexto(n.nome)] = n.ra;
+                    });
+                    g.alunos.forEach(function (a) {
+                        var existente = raPorNome[_normalizarTexto(a.nome)];
+                        if (/^NOME/.test(String(a.ra)) && existente) a.ra = existente;
+                    });
+                    // A planilha oficial é a lista COMPLETA da turma: quem não está nela
+                    // (legenda lida por engano, registros antigos, duplicados) é removido.
+                    return salvarAlunos(g.turma, g.alunos, { professor: sessao.login, substituir: true });
+                }).then(function (resp) {
                     var ativos = g.alunos.filter(alunoAtivo);
                     var aprovados = ativos.filter(function (a) { return avaliarAluno(a).aprovado; });
                     var txt = '<strong>' + escaparHtml(rotuloTurma2(g)) + '</strong>' + (g.meta && g.meta.bimestre ? ' — ' + escaparHtml(g.meta.bimestre) : '') + ' (aba "' + escaparHtml(g.aba) + '"): ' +
                         g.alunos.length + ' aluno(s) lido(s) — ' + ativos.length + ' ativo(s), ' + aprovados.length + ' aprovado(s).';
+                    if (resp.removidos) txt += ' ' + resp.removidos + ' registro(s) antigo(s) que não estavam mais na planilha foram removidos.';
                     if (resp.ignorados) txt += ' ' + resp.ignorados + ' ignorado(s): RA já cadastrado em outra turma.';
                     linhas.push(txt);
                     if (g.curso) cursoPorTurma[g.turma] = g.curso;

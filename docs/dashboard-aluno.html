@@ -12,6 +12,7 @@
 <script src="planilha.js"></script>
 <!-- Solicitações de participação, salvas no localStorage (sem backend) -->
 <script src="solicitacoes-local.js"></script>
+<script src="status-aluno.js"></script>
 </head>
 <body>
 
@@ -40,20 +41,24 @@
 
     <div id="carregando">Carregando seus dados...</div>
 
-    <div id="conteudo-status" style="display:none;">
+    <div id="conteudo-status">
 
         <div class="grid-status">
             <div class="card-status">
-                <span class="card-status-rotulo">Nota</span>
+                <span class="card-status-rotulo">Média</span>
                 <span class="card-status-valor" id="valor-nota">-</span>
             </div>
             <div class="card-status">
-                <span class="card-status-rotulo">Presença</span>
+                <span class="card-status-rotulo">Frequência</span>
                 <span class="card-status-valor" id="valor-presenca">-</span>
             </div>
             <div class="card-status">
                 <span class="card-status-rotulo">Comportamento</span>
                 <span class="card-status-valor" id="valor-comportamento">-</span>
+            </div>
+            <div class="card-status card-status-diretoria" id="card-diretoria">
+                <span class="card-status-rotulo">Diretoria</span>
+                <span class="card-status-valor" id="valor-diretoria">—</span>
             </div>
         </div>
 
@@ -67,8 +72,8 @@
             (Pendente/Aprovado/Recusado). Só aparece se existir alguma
             solicitação registrada pra esse RA.
         -->
-        <div id="caixa-solicitacao" class="caixa-status-solicitacao" style="display:none;">
-            <p id="texto-solicitacao"></p>
+        <div id="caixa-solicitacao" class="caixa-status-solicitacao status-pendente">
+            <p id="texto-solicitacao">Carregando status da Diretoria...</p>
         </div>
 
         <!-- Só aparece quando o aluno está aprovado (ver critério no JS).
@@ -82,7 +87,7 @@
     </div>
 
     <div id="erro-sem-dados" style="display:none;">
-        <p>Não encontramos seus dados na planilha ainda. Fale com a secretaria da escola.</p>
+        <p>Não encontramos sua média e frequência na planilha ainda. Fale com a secretaria da escola.</p>
     </div>
 
 </main>
@@ -118,8 +123,20 @@ var FORMULARIOS = {
 // [nome do aluno]" assim que os dados do aluno chegarem, logo abaixo).
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || '') + '!';
 
+// Resumo que também aparece na tela inicial depois do "Sair".
+var resumo = {
+    perfil: sessao ? sessao.perfil : '',
+    ra: sessao ? sessao.ra : '',
+    nome: sessao ? (sessao.nome || '') : '',
+    nota: '', presenca: '', comportamento: '',
+    statusChave: 'sem-solicitacao'
+};
+function guardarResumo() { salvarResumoAluno(resumo); }
+guardarResumo();
+
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
+    guardarResumo();
     sessionStorage.removeItem('cdm_sessao');
     window.location.href = 'index.html';
 });
@@ -132,7 +149,11 @@ carregarAlunoPorRa(sessao.ra)
     document.getElementById('carregando').style.display = 'none';
 
     if (!aluno) {
+        // Sem dados na planilha: o nome e o status da Diretoria continuam aparecendo.
         document.getElementById('erro-sem-dados').style.display = 'block';
+        document.getElementById('valor-nota').textContent = '—';
+        document.getElementById('valor-presenca').textContent = '—';
+        document.getElementById('valor-comportamento').textContent = '—';
         return;
     }
 
@@ -142,15 +163,20 @@ carregarAlunoPorRa(sessao.ra)
         document.getElementById('titulo-boas-vindas').textContent = 'Olá, responsável de ' + aluno.nome + '!';
     }
 
-    document.getElementById('conteudo-status').style.display = 'block';
     document.getElementById('info-aluno').textContent =
         (aluno.serie ? 'Série: ' + aluno.serie + ' · ' : '') + 'Turma: ' + aluno.turma;
 
     var semNota = aluno.nota === '' || aluno.nota === null || aluno.nota === undefined;
     var semPresenca = aluno.presenca === '' || aluno.presenca === null || aluno.presenca === undefined;
-    document.getElementById('valor-nota').textContent = semNota ? '—' : aluno.nota;
-    document.getElementById('valor-presenca').textContent = semPresenca ? '—' : aluno.presenca + '%';
+    document.getElementById('valor-nota').textContent = formatarMedia(semNota ? '' : aluno.nota);
+    document.getElementById('valor-presenca').textContent = formatarFrequencia(semPresenca ? '' : aluno.presenca);
     document.getElementById('valor-comportamento').textContent = aluno.comportamento || '—';
+
+    resumo.nome = (sessao.perfil === 'responsavel') ? aluno.nome : (aluno.nome || resumo.nome);
+    resumo.nota = semNota ? '' : aluno.nota;
+    resumo.presenca = semPresenca ? '' : aluno.presenca;
+    resumo.comportamento = aluno.comportamento || '';
+    guardarResumo();
 
     var avaliacao = avaliarAluno(aluno);
     var aprovado = avaliacao.aprovado;
@@ -184,25 +210,20 @@ carregarAlunoPorRa(sessao.ra)
 // Vem do Firebase agora, e atualiza sozinho ao vivo (onSnapshot) se a
 // Diretoria aprovar/recusar enquanto o aluno está com a página aberta.
 escutarStatusAluno(sessao.ra, function (solicitacao) {
-    if (!solicitacao) return; // sem solicitação registrada ainda
-
+    var info = statusDiretoria(solicitacao);
     var caixa = document.getElementById('caixa-solicitacao');
-    var texto = document.getElementById('texto-solicitacao');
-    var status = solicitacao.status;
 
     caixa.classList.remove('status-pendente', 'status-aprovado', 'status-recusado');
+    caixa.classList.add(info.classe);
+    document.getElementById('texto-solicitacao').textContent = info.texto;
 
-    if (status === 'Aprovado') {
-        caixa.classList.add('status-aprovado');
-        texto.textContent = 'Sua participação no Beach Club já foi aprovada pela Diretoria! 🎉';
-    } else if (status === 'Recusado') {
-        caixa.classList.add('status-recusado');
-        texto.textContent = 'Sua solicitação de participação foi recusada pela Diretoria.';
-    } else {
-        caixa.classList.add('status-pendente');
-        texto.textContent = 'Sua solicitação de participação está em análise pela Diretoria.';
-    }
-    caixa.style.display = 'block';
+    var card = document.getElementById('card-diretoria');
+    card.classList.remove('status-pendente', 'status-aprovado', 'status-recusado');
+    card.classList.add(info.classe);
+    document.getElementById('valor-diretoria').textContent = info.rotulo;
+
+    resumo.statusChave = info.chave;
+    guardarResumo();
 });
 </script>
 

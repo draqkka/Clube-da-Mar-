@@ -249,7 +249,7 @@ function renderizarAlunos() {
         }).join(' · ');
         var e = dadosDaEscola([a]);
         var linha = document.createElement('tr');
-        linha.innerHTML = '<td>' + escaparHtml(a.ra) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
+        linha.innerHTML = '<td>' + escaparHtml(raParaExibir(a.ra)) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
             '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') +
             '</td><td>' + escaparHtml(e.escola || '—') + '</td><td>' + escaparHtml(e.diretoria || '—') +
             '</td><td>' + escaparHtml(e.diretor || '—') + '</td><td>' + escaparHtml(e.bimestre || '—') +
@@ -354,7 +354,7 @@ escutarTodasSolicitacoes(function (solicitacoes) {
             (s.status === 'Recusado' ? 'status-recusado' :
             (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
 
-        var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + s.ra + ', ' + s.turma + ')</p>' +
+        var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + raParaExibir(s.ra) + ', ' + s.turma + ')</p>' +
             '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
             (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
             '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius: 6px;">Status: <strong>' + statusLabel + '</strong></p>' +

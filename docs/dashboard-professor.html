@@ -365,8 +365,7 @@ document.getElementById('botao-remover-turma').addEventListener('click', functio
 
     var status = document.getElementById('status-importacao');
     status.textContent = 'Removendo os alunos da turma ' + turma + '...';
-    // Planilha vazia + "substituir" = a turma fica sem nenhum aluno.
-    salvarAlunos(turma, [], { professor: sessao.login, substituir: true })
+    removerTurma(turma)
         .then(function (resp) {
             status.textContent = '✅ Turma ' + turma + ' esvaziada' + (resp && resp.removidos != null ? ' (' + resp.removidos + ' removido(s))' : '') + '.';
             return recarregarPlanilha(turma);

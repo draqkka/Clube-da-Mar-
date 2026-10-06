@@ -659,10 +659,17 @@ function _processarAba(nomeAba, linhas, res) {
 
     var grupos = {};
     var semTurma = 0;
+    var repetidos = 0;
     for (var l = cab.linha + 1; l < linhas.length; l++) {
         var linha = linhas[l];
         var nome = _textoCelula(linha[colNome]);
         if (!nome || _CHAVES_NOME.indexOf(_chaveColuna(nome)) !== -1) continue;
+
+        // Legenda no fim da planilha ("Legenda", "AC - Ausência Compensada",
+        // "M - Menção ...") não é aluno.
+        var nomeSemAcento = _semAcento(nome).toUpperCase().trim();
+        if (/^LEGENDA\b/.test(nomeSemAcento)) break;
+        if (/^[A-Z]{1,3}\s+[-\u2013]\s+\S/.test(nomeSemAcento)) continue;
 
         var ra = colRa === -1 ? '' : _textoCelula(linha[colRa]);
         if (colRa !== -1 && colDig !== -1) ra += _textoCelula(linha[colDig]);
@@ -706,7 +713,7 @@ function _processarAba(nomeAba, linhas, res) {
 
         if (!grupos[turma]) grupos[turma] = { turma: turma, curso: curso, aba: nomeAba, meta: meta, alunos: [] };
         if (!grupos[turma].curso && curso) grupos[turma].curso = curso;
-        grupos[turma].alunos.push({
+        var novoAluno = {
             ra: ra,
             nome: nome,
             serie: colSerie !== -1 ? _textoCelula(linha[colSerie]) : '',
@@ -715,7 +722,30 @@ function _processarAba(nomeAba, linhas, res) {
             presenca: presenca,
             comportamento: comportamentoPorPresenca(presenca),
             extras: extras
-        });
+        };
+
+        // Mesmo aluno em duas linhas da mesma turma: junta num só (completa
+        // o que estiver em branco) em vez de contar duas vezes.
+        var repetido = null;
+        for (var q = 0; q < grupos[turma].alunos.length; q++) {
+            if (raCanonico(grupos[turma].alunos[q].ra) === raCanonico(ra)) { repetido = grupos[turma].alunos[q]; break; }
+        }
+        if (repetido) {
+            ['nota', 'presenca', 'serie'].forEach(function (k) {
+                if (repetido[k] === '' && novoAluno[k] !== '') repetido[k] = novoAluno[k];
+            });
+            repetido.comportamento = comportamentoPorPresenca(repetido.presenca);
+            Object.keys(novoAluno.extras).forEach(function (k) {
+                if (!repetido.extras[k]) repetido.extras[k] = novoAluno.extras[k];
+            });
+            repetidos++;
+        } else {
+            grupos[turma].alunos.push(novoAluno);
+        }
+    }
+
+    if (repetidos) {
+        res.avisos.push('Aba "' + nomeAba + '": ' + repetidos + ' aluno(s) apareciam em mais de uma linha e foram unidos em um só.');
     }
 
     var turmasAchadas = Object.keys(grupos);

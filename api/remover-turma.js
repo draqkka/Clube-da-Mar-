@@ -1,8 +1,11 @@
-// Remove TODOS os alunos de uma turma (usado pelo botão "Remover todos os
-// alunos desta turma" dos painéis do professor e do desenvolvedor).
+// Remove TODOS os alunos de uma turma (usado pelo botão "Remover alunos
+// desta turma" dos painéis do professor e do desenvolvedor).
 //
 // Por que existe: o /api/alunos recusa uma lista vazia ("Nenhum aluno válido"),
 // então ele não serve pra esvaziar uma turma. Este aqui só apaga.
+//
+// IMPORTANTE: este arquivo precisa ficar em docs/api/ (a Vercel publica a
+// pasta docs, então só o que está em docs/api vira rota).
 //
 // Chamada: POST /api/remover-turma   corpo: { "turma": "3ºA" }
 // Resposta: { removidos: <quantos alunos foram apagados> }

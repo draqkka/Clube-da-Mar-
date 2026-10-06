@@ -486,6 +486,12 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
         var minhas = lido.turmas.filter(function (g) { return minhasTurmas.indexOf(g.turma) !== -1; });
         var deOutros = lido.turmas.filter(function (g) { return minhasTurmas.indexOf(g.turma) === -1; });
 
+        // Abas cuja turma não tem cara de turma comum (ex: "6082ºDESENVOLVIMENTO"):
+        // em vez de recusar, pergunta de qual das turmas do professor ela é.
+        var estranhas = deOutros.filter(function (g) { return !/^\d+\u00BA[A-Z]{1,2}$/.test(g.turma); });
+        deOutros = deOutros.filter(function (g) { return estranhas.indexOf(g) === -1; });
+
+        var salvarImportacao = function () {
         if (!minhas.length) {
             status.textContent = '⚠️ Nenhuma aba da planilha é de uma turma sua (' + minhasTurmas.join(', ') +
                 '). Abas encontradas: ' + lido.turmas.map(function (g) { return g.turma; }).join(', ') + '.';
@@ -526,9 +532,63 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
         }).catch(function (erro) {
             status.textContent = '⚠️ Erro ao salvar: ' + erro.message;
         });
+        }; // fim de salvarImportacao
+
+        if (estranhas.length) {
+            perguntarTurmas(estranhas, minhas, function (escolhidas) {
+                minhas = minhas.concat(escolhidas);
+                salvarImportacao();
+            });
+        } else {
+            salvarImportacao();
+        }
     };
     leitor.readAsArrayBuffer(arquivo);
 });
+
+// Pergunta de qual turma do professor é cada aba que o site não reconheceu.
+function perguntarTurmas(estranhas, jaEscolhidas, aoConfirmar) {
+    var status = document.getElementById('status-importacao');
+    status.innerHTML = '<p><strong>Não consegui identificar a turma de ' + (estranhas.length > 1 ? 'algumas abas' : 'uma aba') +
+        '.</strong> Escolha de qual das suas turmas cada uma é:</p>';
+
+    var selects = [];
+    estranhas.forEach(function (g) {
+        var linha = document.createElement('p');
+        linha.appendChild(document.createTextNode('Aba "' + g.aba + '" (' + g.alunos.length + ' aluno(s)): '));
+        var sel = document.createElement('select');
+        sel.innerHTML = '<option value="">Ignorar esta aba</option>' +
+            minhasTurmas.map(function (t) { return '<option value="' + escaparHtml(t) + '">' + escaparHtml(t) + '</option>'; }).join('');
+        linha.appendChild(sel);
+        status.appendChild(linha);
+        selects.push(sel);
+    });
+
+    var botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'btn-planilha-atalho';
+    botao.textContent = 'Confirmar e salvar';
+    botao.addEventListener('click', function () {
+        var escolhidas = [];
+        estranhas.forEach(function (g, i) {
+            var t = selects[i].value;
+            if (!t) return;
+            g.turma = t;
+            g.alunos.forEach(function (a) { a.turma = t; });
+            escolhidas.push(g);
+        });
+        if (!escolhidas.length) { status.textContent = 'Nenhuma aba escolhida — nada foi salvo.'; return; }
+
+        var todas = escolhidas.concat(jaEscolhidas).map(function (g) { return g.turma; });
+        if (todas.some(function (t, i) { return todas.indexOf(t) !== i; })) {
+            alert('Duas abas foram atribuídas à mesma turma — uma sobreporia a outra. Escolha turmas diferentes.');
+            return;
+        }
+        botao.disabled = true;
+        aoConfirmar(escolhidas);
+    });
+    status.appendChild(botao);
+}
 
 function rotuloTurma2(g) { return g.curso ? g.curso + ' · ' + g.turma : g.turma; }
 </script>

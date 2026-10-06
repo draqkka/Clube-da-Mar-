@@ -323,6 +323,7 @@ function selecionarTurma(turma) {
     turmaAtual = turma;
     dadosTurmaAtual = null;
     renderizarChipsTurma();
+    renderizarListaSolicitacoes(); // mostra só as solicitações desta turma
 
     // Turma que o professor ainda não adicionou nesta sessão: não mostra nada.
     if (importadasNaSessao.indexOf(turma) === -1) {
@@ -460,19 +461,24 @@ document.getElementById('botao-enviar-solicitacao').addEventListener('click', fu
 });
 
 // ---- Solicitações enviadas: atualiza a lista E as cores da tabela ----------
-escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
-    solicitacoes = minhasSolicitacoes;
-    renderizarTurma(); // as linhas mudam de cor assim que a Diretoria responde
-
+// Lista só as solicitações da TURMA SELECIONADA (as das outras turmas ficam
+// escondidas até o professor clicar na turma delas).
+function renderizarListaSolicitacoes() {
     var container = document.getElementById('lista-respostas-diretoria');
     container.innerHTML = '';
 
-    if (!minhasSolicitacoes.length) {
-        container.textContent = 'Você não possui solicitações ativas.';
+    var daTurma = turmaAtual
+        ? solicitacoes.filter(function (s) { return mesmaTurma(s.turma, turmaAtual); })
+        : solicitacoes;
+
+    if (!daTurma.length) {
+        container.textContent = turmaAtual
+            ? 'Você não possui solicitações ativas na turma ' + turmaAtual + '.'
+            : 'Você não possui solicitações ativas.';
         return;
     }
 
-    minhasSolicitacoes.forEach(function (s) {
+    daTurma.forEach(function (s) {
         var item = document.createElement('div');
         item.className = 'card-solicitacao-professor';
         item.style.padding = '12px';
@@ -494,6 +500,12 @@ escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
             '</div>';
         container.appendChild(item);
     });
+}
+
+escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
+    solicitacoes = minhasSolicitacoes;
+    renderizarTurma(); // as linhas mudam de cor assim que a Diretoria responde
+    renderizarListaSolicitacoes();
 });
 
 document.getElementById('lista-respostas-diretoria').addEventListener('click', function (evento) {

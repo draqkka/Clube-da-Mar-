@@ -117,7 +117,7 @@
 </div>
 </main>
 
-<!-- RESUMO DO ALUNO — aparece depois do "Sair" do painel do aluno/responsável.
+<!-- RESUMO DO ALUNO — aparece depois do "Sair" do painel do aluno.
      Dados guardados por dashboard-aluno.html (ver status-aluno.js). -->
 <section id="resumo-aluno" class="resumo-aluno" style="display:none;" aria-live="polite">
     <button type="button" class="resumo-aluno-fechar" id="resumo-aluno-fechar" aria-label="Ocultar resumo">&times;</button>
@@ -689,7 +689,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
         <!-- O botão abaixo NÃO vai mais direto pro AppSheet: primeiro manda pro
              login.html, pra escolher o perfil. Só Diretoria e Professor chegam na
-             planilha; Estudante e Responsável são barrados e voltam pro início. -->
+             planilha; Estudante é barrado e voltam pro início. -->
         <div class="area-botao-planilha">
             <a href="login.html" class="btn-planilha-atalho">
                 Verificar Status na Planilha

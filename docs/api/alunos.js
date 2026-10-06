@@ -28,6 +28,12 @@ function limparExtras(extras) {
     return saida;
 }
 
+// Nome de aluno de verdade tem pelo menos 2 letras. Isso barra lixo de
+// importação mal lida (ex: códigos de matéria como 1100", 51004").
+function nomeValido(nome) {
+    return /[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(String(nome || ''));
+}
+
 function limparAluno(a, turma, professorPadrao) {
     const presenca = numeroOuNulo(a.presenca);
     return {
@@ -73,14 +79,14 @@ module.exports = async function handler(req, res) {
             if (raBusca) {
                 const doAluno = await sql`SELECT ra, nome, serie, turma, nota, presenca, comportamento, professor, extras
                                           FROM alunos WHERE ra = ${raBusca}`;
-                return res.status(200).json({ alunos: doAluno.map(paraCliente) });
+                return res.status(200).json({ alunos: doAluno.filter(l => nomeValido(l.nome)).map(paraCliente) });
             }
             const linhas = turma
                 ? await sql`SELECT ra, nome, serie, turma, nota, presenca, comportamento, professor, extras
                             FROM alunos WHERE turma = ${turma} ORDER BY nome`
                 : await sql`SELECT ra, nome, serie, turma, nota, presenca, comportamento, professor, extras
                             FROM alunos ORDER BY turma, nome`;
-            return res.status(200).json({ alunos: linhas.map(paraCliente) });
+            return res.status(200).json({ alunos: linhas.filter(l => nomeValido(l.nome)).map(paraCliente) });
         }
 
         if (req.method === 'POST') {
@@ -97,7 +103,7 @@ module.exports = async function handler(req, res) {
             const porRa = new Map();
             corpo.alunos.forEach(function (a) {
                 const limpo = limparAluno(a || {}, turma, corpo.professor);
-                if (limpo.ra && limpo.nome) porRa.set(limpo.ra, limpo);
+                if (limpo.ra && limpo.nome && nomeValido(limpo.nome)) porRa.set(limpo.ra, limpo);
             });
             const lista = Array.from(porRa.values());
             if (!lista.length) {
@@ -127,6 +133,10 @@ module.exports = async function handler(req, res) {
                     RETURNING ra`
             ];
 
+            // Faxina: apaga do banco registros de importações antigas mal lidas
+            // (nome sem letras, ex: 1100\", 51004\").
+            consultas.push(sql`DELETE FROM alunos WHERE nome !~ '[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]' RETURNING ra`);
+
             // "Substituir a turma": remove quem não está na planilha enviada.
             if (corpo.substituir) {
                 consultas.push(sql`
@@ -142,7 +152,7 @@ module.exports = async function handler(req, res) {
                 gravados: gravados,
                 // RA que já pertence a outra turma não é sobrescrito.
                 ignorados: lista.length - gravados,
-                removidos: corpo.substituir ? resultados[1].length : 0
+                removidos: corpo.substituir ? resultados[2].length : 0
             });
         }
 

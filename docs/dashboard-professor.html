@@ -557,7 +557,7 @@ function perguntarTurmas(estranhas, jaEscolhidas, aoConfirmar) {
         var linha = document.createElement('p');
         linha.appendChild(document.createTextNode('Aba "' + g.aba + '" (' + g.alunos.length + ' aluno(s)): '));
         var sel = document.createElement('select');
-        sel.innerHTML = '<option value="">Ignorar esta aba</option>' +
+        sel.innerHTML = '<option value="">Escolha a turma…</option>' +
             minhasTurmas.map(function (t) { return '<option value="' + escaparHtml(t) + '">' + escaparHtml(t) + '</option>'; }).join('');
         linha.appendChild(sel);
         status.appendChild(linha);
@@ -569,15 +569,18 @@ function perguntarTurmas(estranhas, jaEscolhidas, aoConfirmar) {
     botao.className = 'btn-planilha-atalho';
     botao.textContent = 'Confirmar e salvar';
     botao.addEventListener('click', function () {
+        // Escolha obrigatória: não salva enquanto alguma aba estiver sem turma.
+        if (selects.some(function (s) { return !s.value; })) {
+            alert('Escolha a turma (' + minhasTurmas.join(' ou ') + ') de cada aba antes de salvar.');
+            return;
+        }
         var escolhidas = [];
         estranhas.forEach(function (g, i) {
             var t = selects[i].value;
-            if (!t) return;
             g.turma = t;
             g.alunos.forEach(function (a) { a.turma = t; });
             escolhidas.push(g);
         });
-        if (!escolhidas.length) { status.textContent = 'Nenhuma aba escolhida — nada foi salvo.'; return; }
 
         var todas = escolhidas.concat(jaEscolhidas).map(function (g) { return g.turma; });
         if (todas.some(function (t, i) { return todas.indexOf(t) !== i; })) {

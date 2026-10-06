@@ -95,6 +95,26 @@ function escaparHtml(valor) {
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// ---- "Remover turma" sem servidor (localStorage) ---------------------------
+// Igual ao cancelar solicitação: a remoção fica guardada NO NAVEGADOR. Os
+// alunos continuam no banco, mas os RAs removidos ficam escondidos aqui.
+// Se o aluno for salvo de novo (planilha importada), ele volta a aparecer.
+var CHAVE_ALUNOS_OCULTOS = 'cdm_alunos_ocultos';
+
+function _lerOcultos() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_ALUNOS_OCULTOS) || '{}') || {}; }
+    catch (e) { return {}; }
+}
+
+function _salvarOcultos(ocultos) {
+    try { localStorage.setItem(CHAVE_ALUNOS_OCULTOS, JSON.stringify(ocultos)); } catch (e) {}
+}
+
+function _filtrarOcultos(lista) {
+    var ocultos = _lerOcultos();
+    return (lista || []).filter(function (a) { return !ocultos[raCanonico(a.ra)]; });
+}
+
 // Carrega os alunos de UMA turma (nome exato, ex: "3ºA"). Devolve o mesmo
 // formato de antes, então os outros painéis continuam funcionando.
 // novaTurma = true quando a turma ainda não tem nenhum aluno cadastrado.
@@ -104,7 +124,7 @@ function carregarPlanilha(turma) {
     if (_planilhaCachePorTurma[turma]) return Promise.resolve(_planilhaCachePorTurma[turma]);
 
     return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
-        var notas = corpo.alunos || [];
+        var notas = _filtrarOcultos(corpo.alunos);
         var dados = {
             pasta: null,
             arquivo: nomeArquivoPlanilha(turma), // só usado no nome da cópia de segurança
@@ -133,7 +153,7 @@ function atualizarCacheNotas(turma, novasNotas) {
 function carregarAlunoPorRa(ra) {
     if (!raCanonico(ra)) return Promise.resolve(null);
     return _requisicaoApi('/api/alunos?ra=' + encodeURIComponent(ra)).then(function (corpo) {
-        return (corpo.alunos && corpo.alunos[0]) || null;
+        return _filtrarOcultos(corpo.alunos)[0] || null;
     });
 }
 
@@ -151,15 +171,26 @@ function salvarAlunos(turma, alunos, opcoes) {
             professor: opcoes.professor || '',
             substituir: !!opcoes.substituir
         })
+    }).then(function (resp) {
+        // Quem foi salvo de novo volta a aparecer (caso tenha sido "removido").
+        var ocultos = _lerOcultos();
+        (alunos || []).forEach(function (al) { delete ocultos[raCanonico(al.ra)]; });
+        _salvarOcultos(ocultos);
+        return resp;
     });
 }
 
-// Apaga TODOS os alunos de uma turma (usa /api/remover-turma). Devolve { removidos }.
+// "Remove" TODOS os alunos de uma turma só neste navegador (localStorage),
+// sem precisar de rota nova na API. Devolve { removidos }.
 function removerTurma(turma) {
-    return _requisicaoApi('/api/remover-turma', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ turma: turmaCanonica(turma) })
+    turma = turmaCanonica(turma);
+    return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
+        var ocultos = _lerOcultos();
+        var alunos = _filtrarOcultos(corpo.alunos);
+        alunos.forEach(function (a) { ocultos[raCanonico(a.ra)] = true; });
+        _salvarOcultos(ocultos);
+        delete _planilhaCachePorTurma[turma];
+        return { removidos: alunos.length };
     });
 }
 
@@ -169,7 +200,7 @@ function removerTurma(turma) {
 // também aparecem.
 function carregarTodasAsTurmas() {
     return _requisicaoApi('/api/alunos').then(function (corpo) {
-        var todas = corpo.alunos || [];
+        var todas = _filtrarOcultos(corpo.alunos);
         var nomesTurmas = TURMAS_DO_SISTEMA.map(turmaCanonica);
         todas.forEach(function (a) {
             var t = turmaCanonica(a.turma);

@@ -1,83 +1,56 @@
 // ==========================================================================
-// USUÁRIOS DO SISTEMA (login, senha, perfil) — direto no código, sem
-// depender mais da aba "Usuarios" da planilha.
+// RESUMO DO ALUNO (nome, média, frequência e status da Diretoria)
+// Usado pelo painel do aluno (dashboard-aluno.html) e pela tela inicial
+// (index.html), pra mostrar as MESMAS informações nos dois lugares.
 //
-// COMO ADICIONAR/EDITAR UM USUÁRIO:
-// Copie um objeto abaixo e ajuste os campos. Campos:
-//   login   -> o que a pessoa digita pra entrar. É o E-MAIL da pessoa e é
-//              ELE que identifica cada aluno(a) no sistema inteiro (painel
-//              do aluno, solicitações do professor, Diretoria e
-//              Desenvolvedor) — o RA não é mais usado pra isso.
-//   senha   -> senha em texto puro (veja o aviso de segurança no chat)
-//   perfil  -> 'estudante', 'diretoria', 'professor' ou
-//              'desenvolvedor' (acesso total ao sistema — ver dashboard-
-//              desenvolvedor.html)
-//   nome    -> nome exibido no site
-//   ra      -> OPCIONAL. Só ajuda a achar o aluno na planilha quando o RA
-//              da planilha é o correto. Pode deixar '' sem problema: o
-//              sistema acha o aluno pelo e-mail + nome + turma.
-//   turmas  -> turmas separadas por vírgula, sem espaço (ex: '2ºA,3ºA').
-//              Pra estudante, é a turma do próprio aluno. Todo estudante
-//              cadastrado aqui já aparece pro professor da turma e na
-//              Diretoria/Desenvolvedor, MESMO que ainda não esteja em
-//              nenhuma planilha importada.
-//              Pra professor, são as turmas que ele pode ver/editar.
-//              Deixe '' pra diretoria e desenvolvedor (ambos veem todas).
-//
-// ⚠️ AVISO DE SEGURANÇA: como o site não tem servidor, este arquivo (com
-// login/senha em texto puro) é lido pelo navegador de qualquer visitante —
-// ou seja, qualquer pessoa consegue abrir "usuarios.js" e ver todas as
-// senhas, inclusive a do desenvolvedor. Isso serve pra teste/demonstração,
-// mas não é seguro pra um sistema real com dados sensíveis; o ideal depois
-// é migrar login/senha pra um backend de verdade (ex.: Firebase Auth).
+// Ao clicar em "Sair", o painel guarda um resumo no navegador; a tela
+// inicial lê esse resumo e mostra o cartão. O login em si é encerrado
+// normalmente (cdm_sessao é apagada) — só o resumo fica visível.
 // ==========================================================================
-var USUARIOS = [
-    { login: 'prof.mariasoares@edu.sp.br', senha: 'Edu@2026', perfil: 'professor', nome: 'Maria Soares', ra: '', turmas: '2ºA,3ºA' },
-    { login: 'gabrieladiretoria@edu.sp.br', senha: 'Seduc@2026', perfil: 'diretoria', nome: 'Gabriela', ra: '', turmas: '' },
-    { login: 'dev@clubedamare.com.br', senha: 'Maré@2026', perfil: 'desenvolvedor', nome: 'Desenvolvedor', ra: '', turmas: '' },
-    { login: '0000108327708xsp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Julia Victória', ra: '108327708xsp', turmas: '3ºA' },
-    { login: '00001104112772sp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Rebeca Pereira', ra: '1104112772sp', turmas: '2ºA' }
-];
+var CHAVE_RESUMO_ALUNO = 'cdm_resumo_aluno';
 
-// Procura um usuário que bata com login (sem diferenciar maiúscula/minúscula),
-// senha (exata) e perfil. Retorna o objeto do usuário ou null.
-function buscarUsuario(login, senha, perfil) {
-    var encontrado = USUARIOS.find(function (u) {
-        return String(u.login).trim().toLowerCase() === login.toLowerCase() &&
-               String(u.senha) === senha &&
-               String(u.perfil).trim().toLowerCase() === perfil;
-    });
-    return encontrado || null;
+function lerResumoAluno() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_RESUMO_ALUNO) || 'null'); }
+    catch (e) { return null; }
 }
 
-
-// ==========================================================================
-// ALUNOS PELO E-MAIL (substitui o RA como identificador)
-// ==========================================================================
-
-// E-mail do usuário, sempre em minúsculo e sem espaços (é o "login").
-function emailDoUsuario(u) {
-    return String(u && u.login != null ? u.login : '').trim().toLowerCase();
+function salvarResumoAluno(resumo) {
+    try { localStorage.setItem(CHAVE_RESUMO_ALUNO, JSON.stringify(resumo)); } catch (e) {}
 }
 
-// Primeira turma do usuário (ex: '2ºA,3ºA' -> '2ºA').
-function primeiraTurmaDoUsuario(u) {
-    return String(u && u.turmas != null ? u.turmas : '').split(',')[0].trim();
+function apagarResumoAluno() {
+    try { localStorage.removeItem(CHAVE_RESUMO_ALUNO); } catch (e) {}
 }
 
-// Todos os usuários com perfil 'estudante' (opcionalmente só os de uma turma).
-function listarEstudantes(turma) {
-    return USUARIOS.filter(function (u) {
-        if (String(u.perfil).trim().toLowerCase() !== 'estudante') return false;
-        if (!turma) return true;
-        var chave = function (t) { return String(t || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); };
-        return String(u.turmas || '').split(',').some(function (t) { return chave(t) === chave(turma); });
-    });
+// Traduz o status interno da solicitação para o que o aluno vê. Os nomes
+// vêm de status-solicitacao.js (infoStatusSolicitacao), os MESMOS que o
+// professor e a direção veem:
+//   Pendente                 -> Aguardando a direção
+//   Aguardando Desenvolvedor -> Esperando contato equipe Clube da Maré
+//   Aprovado                 -> Confirmada pela equipe Clube da Maré
+//   Recusado                 -> Reprovada (pela direção ou pela equipe)
+//   (sem solicitação)        -> Aguardando envio
+function statusDiretoria(solicitacao) {
+    var i = infoStatusSolicitacao(solicitacao);
+    var textos = {
+        'aprovado': 'O contato com o Clube da Maré foi aceito! Sua participação está confirmada. 🎉',
+        'reprovado': i.mensagem,
+        'esperando-contato': 'A direção aprovou sua participação. Agora estamos esperando contato da equipe Clube da Maré.',
+        'analise': 'O professor enviou sua participação e a direção ainda está analisando.',
+        'sem-solicitacao': 'Sua participação ainda não foi enviada para análise da direção.'
+    };
+    var rotulos = { 'sem-solicitacao': 'Aguardando envio' };
+    return {
+        chave: i.chave,
+        classe: i.classe,
+        rotulo: rotulos[i.chave] || i.rotulo,
+        texto: textos[i.chave] || i.mensagem
+    };
 }
 
-// Procura o estudante pelo e-mail (sem diferenciar maiúscula/minúscula).
-function buscarEstudantePorEmail(email) {
-    var alvo = String(email || '').trim().toLowerCase();
-    if (!alvo) return null;
-    return listarEstudantes().filter(function (u) { return emailDoUsuario(u) === alvo; })[0] || null;
+function formatarMedia(v) {
+    return (v === '' || v === null || v === undefined) ? '—' : String(v).replace('.', ',');
+}
+function formatarFrequencia(v) {
+    return (v === '' || v === null || v === undefined) ? '—' : v + '%';
 }

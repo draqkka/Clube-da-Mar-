@@ -14,6 +14,7 @@
 <!-- Solicitações de participação, salvas no localStorage (sem backend) -->
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="usuarios.js"></script>
 <script src="status-aluno.js"></script>
 </head>
 <body>
@@ -73,7 +74,7 @@
             Status da solicitação: mostra se o professor já pediu a
             participação desse aluno à Diretoria, e se ela já respondeu
             (Pendente/Aprovado/Recusado). Só aparece se existir alguma
-            solicitação registrada pra esse RA.
+            solicitação registrada pra esse e-mail.
         -->
         <div id="caixa-solicitacao" class="caixa-status-solicitacao status-pendente">
             <p id="texto-solicitacao">Carregando status...</p>
@@ -123,7 +124,9 @@ document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.n
 // Resumo que também aparece na tela inicial depois do "Sair".
 var resumo = {
     perfil: sessao ? sessao.perfil : '',
+    email: sessao ? String(sessao.email || sessao.login || '').trim().toLowerCase() : '',
     ra: sessao ? sessao.ra : '',
+    turma: sessao && sessao.turmas ? (sessao.turmas[0] || '') : '',
     nome: sessao ? (sessao.nome || '') : '',
     nota: '', presenca: '', comportamento: '',
     statusChave: 'sem-solicitacao'
@@ -138,14 +141,14 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
-// Busca direto pelo RA (qualquer formato) — não depende mais de a turma da
-// conta bater exatamente com a turma gravada na planilha, e o aluno só
-// recebe os próprios dados.
-carregarAlunoPorRa(sessao.ra)
+// Busca pelo E-MAIL do login (usuarios.js) — não depende do RA da planilha.
+// Se o aluno ainda não está em nenhuma planilha, o painel abre mesmo assim,
+// só com nome e turma. O aluno só recebe os próprios dados.
+carregarAlunoPorEmail(resumo.email)
 .then(function (aluno) {
     document.getElementById('carregando').style.display = 'none';
 
-    if (!aluno) {
+    if (!aluno || aluno.origem === 'usuarios') {
         // Sem dados na planilha: o nome e o status da Diretoria continuam aparecendo.
         document.getElementById('erro-sem-dados').style.display = 'block';
         document.getElementById('valor-nota').textContent = '—';
@@ -200,7 +203,7 @@ carregarAlunoPorRa(sessao.ra)
 // ---- Status da solicitação de participação (feita pelo professor) -------
 // Vem do localStorage e atualiza sozinho (sem recarregar) se a Direção ou a
 // equipe Clube da Maré responderem enquanto o aluno está com a página aberta.
-escutarStatusAluno(sessao.ra, function (solicitacao) {
+escutarStatusAluno(resumo, function (solicitacao) {
     var info = statusDiretoria(solicitacao);
     var caixa = document.getElementById('caixa-solicitacao');
 

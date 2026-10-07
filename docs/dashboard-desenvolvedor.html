@@ -77,26 +77,13 @@
     <section class="area-avaliacao-professores">
         <h2>Todos os Alunos (todas as turmas)</h2>
         <p class="dica-importar">Mostra tudo que está salvo no banco, de todos os professores: aprovados, quem não atingiu os critérios (com o motivo), quem está fora da sala e o status da solicitação de cada um.</p>
-        <!-- Faxina: aparece sozinho quando há registros inconsistentes salvos -->
-        <div id="aviso-inconsistentes" style="display:none; margin:12px 0; padding:12px 16px; border:2px dashed #ffd700; border-radius:10px; background:rgba(255,215,0,0.08);">
-            <p id="texto-inconsistentes" style="margin:0 0 8px;"></p>
-            <button type="button" id="botao-limpar-inconsistentes" class="btn-planilha-atalho">Limpar esses registros agora</button>
-            <span id="status-limpeza" aria-live="polite" style="margin-left:10px;"></span>
-        </div>
         <div id="info-turmas"></div>
         <div id="carregando-alunos">Carregando planilha...</div>
         <div id="legenda-comportamento"></div>
-        <!-- Escolher alunos pra apagar DEFINITIVAMENTE do banco -->
-        <div id="barra-selecao" style="display:none; margin:12px 0; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.06); align-items:center; gap:12px; flex-wrap:wrap;">
-            <span id="contagem-selecionados">Nenhum aluno selecionado.</span>
-            <button type="button" id="botao-apagar-selecionados" class="btn-planilha-atalho" style="background:#8b2c2c;" disabled>Apagar selecionados do banco</button>
-            <button type="button" id="botao-limpar-selecao" class="btn-form-voltar" style="padding:8px 14px;" disabled>Desmarcar tudo</button>
-            <span id="status-apagar-selecionados" aria-live="polite"></span>
-        </div>
         <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="marcar-todos" aria-label="Selecionar todos os alunos"></th><th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Curso</th><th>Escola</th><th>Diretoria</th><th>Diretor</th><th>Bimestre</th><th>Situação</th><th>Média</th><th>Presença</th><th>Comportamento</th><th>Resultado</th><th>Motivo</th><th>Solicitação</th><th>Professor</th><th>Outras informações</th>
+                    <th>Nome</th><th>Turma</th><th>Curso</th><th>Escola</th><th>Diretoria</th><th>Diretor</th><th>Bimestre</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Resultado</th><th>Motivo</th><th>Solicitação</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-alunos"></tbody>
@@ -118,7 +105,7 @@
         <table class="tabela-alunos" id="tabela-usuarios">
             <thead>
                 <tr>
-                    <th>Login</th><th>Perfil</th><th>Nome</th><th>RA</th><th>Turmas</th><th>Senha</th>
+                    <th>Login</th><th>Perfil</th><th>Nome</th><th>Turmas</th><th>Senha</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-usuarios"></tbody>
@@ -191,7 +178,6 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 // ---- Alunos (banco) — todas as turmas, com resultado, motivo e solicitação --
 var dadosAlunos = null;        // { porTurma, notas } vindo do banco
 var todasSolicitacoes = [];    // vem do localStorage (mais recentes primeiro)
-var EXTRAS_JA_MOSTRADOS = [EXTRA_DIRETORIA, EXTRA_ESCOLA, EXTRA_DIRETOR, EXTRA_BIMESTRE, EXTRA_SITUACAO, EXTRA_CURSO];
 
 function solicitacaoDoAlunoDev(a) {
     for (var i = 0; i < todasSolicitacoes.length; i++) {
@@ -208,44 +194,9 @@ function textoSolicitacaoDev(s) {
     return '🟡 Aguardando Diretoria';
 }
 
-var inconsistentes = [];
-var selecionados = {};   // raCanonico -> true (alunos marcados pra apagar)
-
-function alunosSelecionados() {
-    return (dadosAlunos ? dadosAlunos.notas : []).filter(function (a) { return selecionados[raCanonico(a.ra)]; });
-}
-
-function atualizarBarraSelecao() {
-    var total = dadosAlunos ? dadosAlunos.notas.length : 0;
-    var n = alunosSelecionados().length;
-    document.getElementById('barra-selecao').style.display = total ? 'flex' : 'none';
-    document.getElementById('contagem-selecionados').textContent = n
-        ? n + ' aluno(s) selecionado(s) de ' + total + '.'
-        : 'Nenhum aluno selecionado. Marque as caixinhas da tabela pra escolher quem apagar.';
-    document.getElementById('botao-apagar-selecionados').disabled = !n;
-    document.getElementById('botao-limpar-selecao').disabled = !n;
-    var caixaTodos = document.getElementById('marcar-todos');
-    caixaTodos.checked = total > 0 && n === total;
-    caixaTodos.indeterminate = n > 0 && n < total;
-}
-
-function atualizarAvisoInconsistentes() {
-    inconsistentes = dadosAlunos.notas.filter(alunoInconsistente);
-    var caixa = document.getElementById('aviso-inconsistentes');
-    if (!inconsistentes.length) { caixa.style.display = 'none'; return; }
-    var porTurma = {};
-    inconsistentes.forEach(function (a) { porTurma[a.turma] = (porTurma[a.turma] || 0) + 1; });
-    document.getElementById('texto-inconsistentes').innerHTML =
-        '⚠️ Encontrei <strong>' + inconsistentes.length + '</strong> registro(s) inconsistente(s) salvos no banco (' +
-        Object.keys(porTurma).map(function (t) { return escaparHtml(t) + ': ' + porTurma[t]; }).join(', ') +
-        '): nome sem letras (ex: código de matéria) ou série diferente da turma. Limpar apaga só esses registros, pra todos os painéis.';
-    caixa.style.display = 'block';
-}
-
 function renderizarAlunos() {
     if (!dadosAlunos) return;
     var todos = dadosAlunos.notas;
-    atualizarAvisoInconsistentes();
 
     // Resumo por turma (escola, diretoria, diretor, bimestre e contagens)
     var infoTurmas = document.getElementById('info-turmas');
@@ -290,26 +241,17 @@ function renderizarAlunos() {
     ordenados.forEach(function (a) {
         var av = avaliarAluno(a);
         var resultado = !av.ativo ? 'Fora da sala' : (av.aprovado ? '✅ Aprovado' : '❌ Não atingiu');
-        var outras = Object.keys(a.extras || {}).filter(function (k) {
-            return EXTRAS_JA_MOSTRADOS.indexOf(k) === -1;
-        }).map(function (k) {
-            return escaparHtml(k) + ': ' + escaparHtml(a.extras[k]);
-        }).join(' · ');
         var e = dadosDaEscola([a]);
         var linha = document.createElement('tr');
-        var chave = raCanonico(a.ra);
-        linha.innerHTML = '<td><input type="checkbox" class="marcar-aluno" data-ra="' + escaparHtml(a.ra) + '"' +
-            (selecionados[chave] ? ' checked' : '') + ' aria-label="Selecionar ' + escaparHtml(a.nome) + '"></td>' +
-            '<td>' + escaparHtml(raParaExibir(a.ra)) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
-            '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') +
+        linha.innerHTML = '<td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.turma) +
+            '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') +
             '</td><td>' + escaparHtml(e.escola || '—') + '</td><td>' + escaparHtml(e.diretoria || '—') +
             '</td><td>' + escaparHtml(e.diretor || '—') + '</td><td>' + escaparHtml(e.bimestre || '—') +
             '</td><td>' + escaparHtml(situacaoDoAluno(a)) + '</td><td>' + escaparHtml(a.nota === '' || a.nota == null ? '—' : a.nota) +
             '</td><td>' + (a.presenca === '' || a.presenca == null ? '—' : escaparHtml(a.presenca) + '%') +
             '</td><td>' + htmlComportamento(a) + '</td><td>' + resultado +
             '</td><td>' + escaparHtml(av.aprovado ? '' : av.motivos.join('; ')) +
-            '</td><td>' + escaparHtml(textoSolicitacaoDev(solicitacaoDoAlunoDev(a))) +
-            '</td><td>' + escaparHtml(a.professor || '') + '</td><td>' + (outras || '—') + '</td>';
+            '</td><td>' + escaparHtml(textoSolicitacaoDev(solicitacaoDoAlunoDev(a))) + '</td>';
         corpo.appendChild(linha);
     });
     document.getElementById('tabela-alunos').style.display = todos.length ? 'table' : 'none';
@@ -317,7 +259,6 @@ function renderizarAlunos() {
     document.getElementById('resumo-turmas').textContent = turmasComAlunos;
     document.getElementById('resumo-aprovados').textContent = totalAprovados;
     document.getElementById('json-alunos').textContent = JSON.stringify(todos, null, 2);
-    atualizarBarraSelecao();
 }
 
 function carregarAlunosDev() {
@@ -342,81 +283,11 @@ document.getElementById('info-turmas').addEventListener('click', function (event
     if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' (as solicitações não são afetadas). Confirma?')) return;
     botao.disabled = true;
     removerTurma(turma)
-        .then(function (resp) {
-            if (resp.apenasNesteNavegador) {
-                alert('Atenção: a rota /api/remover-turma não está publicada, então removi só NESTE navegador. ' +
-                      'Suba o arquivo docs/api/remover-turma.js na Vercel pra apagar de verdade pra todos os painéis.');
-            }
-        })
         .then(carregarAlunosDev)
         .catch(function (erro) {
             botao.disabled = false;
             alert('Não consegui remover a turma ' + turma + ': ' + erro.message);
         });
-});
-
-// ---- Seleção por checklist: apagar alunos escolhidos DEFINITIVAMENTE ------
-document.getElementById('corpo-tabela-alunos').addEventListener('change', function (evento) {
-    var caixa = evento.target.closest('.marcar-aluno');
-    if (!caixa) return;
-    var chave = raCanonico(caixa.dataset.ra);
-    if (caixa.checked) selecionados[chave] = true; else delete selecionados[chave];
-    atualizarBarraSelecao();
-});
-
-document.getElementById('marcar-todos').addEventListener('change', function () {
-    var marcar = this.checked;
-    selecionados = {};
-    if (marcar) dadosAlunos.notas.forEach(function (a) { selecionados[raCanonico(a.ra)] = true; });
-    document.querySelectorAll('.marcar-aluno').forEach(function (c) { c.checked = marcar; });
-    atualizarBarraSelecao();
-});
-
-document.getElementById('botao-limpar-selecao').addEventListener('click', function () {
-    selecionados = {};
-    document.querySelectorAll('.marcar-aluno').forEach(function (c) { c.checked = false; });
-    atualizarBarraSelecao();
-});
-
-document.getElementById('botao-apagar-selecionados').addEventListener('click', function () {
-    var escolhidos = alunosSelecionados();
-    if (!escolhidos.length) return;
-    var amostra = escolhidos.slice(0, 5).map(function (a) { return '• ' + a.nome + ' (' + a.turma + ')'; }).join('\n');
-    if (!confirm('Apagar DEFINITIVAMENTE do banco ' + escolhidos.length + ' aluno(s)?\n\n' + amostra +
-        (escolhidos.length > 5 ? '\n… e mais ' + (escolhidos.length - 5) : '') +
-        '\n\nNão dá pra desfazer (só importando a planilha de novo). As solicitações não são afetadas.')) return;
-
-    var botao = this, status = document.getElementById('status-apagar-selecionados');
-    botao.disabled = true;
-    status.textContent = 'Apagando...';
-    removerAlunosPorRa(escolhidos)
-        .then(function (resp) {
-            selecionados = {};
-            status.textContent = resp.apenasNesteNavegador
-                ? '⚠️ Rota /api/remover-turma não publicada: escondi só neste navegador. Suba docs/api/remover-turma.js.'
-                : '✅ ' + resp.removidos + ' aluno(s) apagado(s) do banco.';
-            return carregarAlunosDev();
-        })
-        .catch(function (erro) { status.textContent = 'Não consegui apagar: ' + erro.message; })
-        .then(atualizarBarraSelecao);
-});
-
-// Faxina dos registros inconsistentes (lista mostrada no aviso acima).
-document.getElementById('botao-limpar-inconsistentes').addEventListener('click', function () {
-    if (!inconsistentes.length) return;
-    if (!confirm('Apagar ' + inconsistentes.length + ' registro(s) inconsistente(s) do banco? As solicitações não são afetadas.')) return;
-    var botao = this, status = document.getElementById('status-limpeza');
-    botao.disabled = true;
-    status.textContent = 'Apagando...';
-    removerAlunosPorRa(inconsistentes)
-        .then(function (resp) {
-            status.textContent = resp.apenasNesteNavegador
-                ? '⚠️ Rota /api/remover-turma não publicada: removi só neste navegador. Suba docs/api/remover-turma.js.'
-                : '✅ ' + resp.removidos + ' registro(s) apagado(s) do banco.';
-            return carregarAlunosDev();
-        })
-        .catch(function (erro) { status.textContent = 'Não consegui limpar: ' + erro.message; })
-        .then(function () { botao.disabled = false; });
 });
 
 // ---- Usuários cadastrados (usuarios.js) ----------------------------------
@@ -425,7 +296,7 @@ USUARIOS.forEach(function (u, indice) {
     var linha = document.createElement('tr');
     var idSenha = 'senha-' + indice;
     linha.innerHTML = '<td>' + u.login + '</td><td>' + u.perfil + '</td><td>' + (u.nome || '') +
-        '</td><td>' + (u.ra || '-') + '</td><td>' + (u.turmas || '-') +
+        '</td><td>' + (u.turmas || '-') +
         '</td><td><span id="' + idSenha + '" style="letter-spacing:2px;">••••••••</span> ' +
         '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + u.senha + '">mostrar</button></td>';
     corpoUsuarios.appendChild(linha);
@@ -476,7 +347,7 @@ escutarTodasSolicitacoes(function (solicitacoes) {
             (s.status === 'Recusado' ? 'status-recusado' :
             (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
 
-        var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + raParaExibir(s.ra) + ', ' + s.turma + ')</p>' +
+        var html = '<p><strong>' + s.nomeAluno + '</strong> (' + s.turma + ')</p>' +
             '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
             (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
             '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius: 6px;">Status: <strong>' + statusLabel + '</strong></p>' +

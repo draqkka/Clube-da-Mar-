@@ -763,7 +763,16 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     var card = document.getElementById('resumo-aluno-card');
     var classes = ['status-pendente', 'status-aprovado', 'status-recusado', 'status-aguardando-dev'];
 
-    document.getElementById('resumo-aluno-nome').textContent = resumo.nome;
+    // Saudação com nome curto: "Olá, Rebeca Pereira" / "Olá, Julia Victória".
+    function nomeCurto(nomeCompleto) {
+        var n = String(nomeCompleto || '').trim();
+        var base = n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (base.indexOf('rebeca') === 0) return 'Rebeca Pereira';
+        if (base.indexOf('julia') === 0) return 'Julia Victória';
+        var partes = n.split(/\s+/);
+        return partes.length > 1 ? partes[0] + ' ' + partes[partes.length - 1] : n;
+    }
+    document.getElementById('resumo-aluno-nome').textContent = 'Olá, ' + nomeCurto(resumo.nome);
     document.getElementById('resumo-aluno-media').textContent = formatarMedia(resumo.nota);
     document.getElementById('resumo-aluno-frequencia').textContent = formatarFrequencia(resumo.presenca);
     secao.style.display = 'block';

@@ -192,11 +192,11 @@ function salvarAlunos(turma, alunos, opcoes) {
     });
 }
 
-// "Remove" TODOS os alunos de uma turma só neste navegador (localStorage),
-// sem precisar de rota nova na API. Devolve { removidos }.
+// Remove TODOS os alunos de uma turma DE VERDADE no banco (some pra todo
+// mundo, em qualquer navegador). Se a rota falhar, o erro aparece na tela
+// em vez de fingir que removeu. Devolve { removidos }.
 function removerTurma(turma) {
     turma = turmaCanonica(turma);
-    // 1) Tenta apagar DE VERDADE no banco (some pra todo mundo, em qualquer navegador).
     return _requisicaoApi('/api/remover-turma', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,16 +204,6 @@ function removerTurma(turma) {
     }).then(function (resp) {
         delete _planilhaCachePorTurma[turma];
         return { removidos: resp && resp.removidos != null ? resp.removidos : 0 };
-    }).catch(function () {
-        // 2) Se a rota não estiver publicada, esconde só neste navegador.
-        return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
-            var ocultos = _lerOcultos();
-            var alunos = _filtrarOcultos(corpo.alunos);
-            alunos.forEach(function (a) { ocultos[raCanonico(a.ra)] = true; });
-            _salvarOcultos(ocultos);
-            delete _planilhaCachePorTurma[turma];
-            return { removidos: alunos.length };
-        });
     });
 }
 

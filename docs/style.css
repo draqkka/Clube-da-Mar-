@@ -2974,3 +2974,30 @@ body{
 /* Textos de dica dentro de painéis CLAROS (creme): o cinza-claro padrão quase
    sumia no fundo — aqui usa o cinza escuro de texto secundário. */
 .area-avaliacao-professores .dica-importar{ color: var(--cor-texto-medio); }
+
+
+/* ---- Resumo do aluno POR CIMA do banner, no lugar da logo ------------------
+   O cartão fica dentro do .hero e se sobrepõe à logo (na mesma posição dela).
+   Para mover: ajuste top/left. Para o tamanho: width. Fecha no "×".
+   No celular (até 768px) o banner é pequeno, então o cartão volta a ficar
+   logo abaixo dele, em tamanho normal. */
+.hero .resumo-aluno{
+    position: absolute;
+    top: 100px;
+    left: 3%;
+    width: min(560px, 60%);
+    margin: 0;
+    padding: 16px 22px;
+    z-index: 5;               /* acima da logo (z-index 2) e do menu do banner */
+    box-sizing: border-box;
+}
+.hero .resumo-aluno h2{ font-size: 1.4rem; padding-right: 28px; }
+.hero .resumo-aluno .grid-status{ margin: 10px 0; }
+@media (max-width: 768px){
+    .hero .resumo-aluno{
+        position: relative;
+        top: auto; left: auto;
+        width: auto;
+        margin: 12px;
+    }
+}

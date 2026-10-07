@@ -2851,6 +2851,7 @@ body{
 .card-status-diretoria.status-pendente{ background: #4a3d10; color: var(--cor-branco); }
 .card-status-diretoria.status-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
 .card-status-diretoria.status-recusado{ background: #4a1010; color: var(--cor-branco); }
+.card-status-diretoria.status-aguardando-dev{ background: #0f2d4a; color: var(--cor-branco); }
 .card-status-diretoria .card-status-rotulo{ color: inherit; opacity: .8; }
 
 /* ---- Resumo do aluno na tela inicial (depois do "Sair") ---- */
@@ -2905,3 +2906,71 @@ body{
     margin: 10px 0; padding: 8px 12px; border-radius: 8px;
     background: rgba(255,210,31,.12); font-size: .85rem; line-height: 2;
 }
+
+/* =========================================================================
+   STATUS DA SOLICITAÇÃO — trilha de etapas + pop-up de aviso
+   (ver status-solicitacao.js; usado nos painéis de professor, direção,
+   aluno e desenvolvedor)
+   ========================================================================= */
+.trilha-status-solic{ display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px; vertical-align:middle; }
+.chip-etapa-solic{
+    font-size:.82rem; padding:3px 10px; border-radius:999px;
+    background: rgba(128,128,128,.16); color: inherit; border: 1px solid rgba(128,128,128,.45);
+}
+.seta-etapa-solic{ opacity:.6; font-size:1rem; }
+.btn-status-solic{
+    font-family: inherit; font-size:.88rem; font-weight:bold; cursor:pointer;
+    padding:4px 12px; border-radius:999px; border-width:1px; border-style:solid;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3); transition: transform .15s, box-shadow .15s;
+}
+.btn-status-solic:hover{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+.btn-status-solic:focus-visible{ outline: 3px solid var(--cor-dourado); outline-offset: 2px; }
+/* as classes status-* já existem (pendente / aprovado / recusado / aguardando-dev) */
+.btn-status-solic.status-aprovado{ border-color:#17a86b; }
+
+.popup-aviso{
+    position: fixed; inset: 0; z-index: 10000; display:flex; align-items:center; justify-content:center;
+    background: rgba(0,0,0,.7); padding: 16px;
+}
+.popup-aviso[hidden]{ display:none; }
+.popup-aviso-caixa{
+    width:100%; max-width:480px; max-height:92vh; overflow-y:auto; text-align:center;
+    background:#12324f; color:#fff; border-radius:16px; padding:28px 24px 24px;
+    border-top: 6px solid var(--cor-dourado); box-shadow: 0 12px 44px rgba(0,0,0,.6);
+}
+.popup-aviso-caixa.popup-aprovado{ border-top-color: var(--cor-verde-claro); }
+.popup-aviso-caixa.popup-reprovado{ border-top-color:#e74c3c; }
+.popup-aviso-caixa.popup-esperando-contato{ border-top-color: var(--cor-evento-azul); }
+.popup-aviso-emoji{ font-size:3rem; line-height:1; margin-bottom:8px; }
+.popup-aviso-caixa h2{ margin:0 0 10px; font-size:1.4rem; }
+.popup-aviso-mensagem{ margin:0 0 14px; line-height:1.5; }
+.popup-aviso-detalhes{
+    text-align:left; background: rgba(0,0,0,.25); border-radius:10px; padding:10px 14px;
+    font-size:.9rem; line-height:1.5; margin-bottom:16px;
+}
+.popup-aviso-detalhes:empty{ display:none; }
+.popup-aviso-detalhes p{ margin:4px 0; }
+.popup-aviso-ok{
+    border:none; border-radius:8px; padding:10px 28px; cursor:pointer; font-family: var(--fonte-titulos);
+    font-size:1rem; background: linear-gradient(135deg, var(--cor-dourado), var(--cor-laranja)); color:#000;
+}
+
+/* Tabelas largas (ex: painel do desenvolvedor, 14 colunas): rolam dentro do
+   próprio quadro em vez de serem cortadas. */
+.tabela-rolagem{
+    width:100%; overflow-x:auto; margin-top:10px; border-radius:12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35); -webkit-overflow-scrolling: touch;
+}
+.tabela-rolagem .tabela-alunos{ margin-top:0; box-shadow:none; border-radius:0; overflow:visible; min-width:1500px; }
+.tabela-rolagem .tabela-alunos th{ white-space:nowrap; }
+/* Painel mais largo que o padrão (1100px) pra tabelas com muitas colunas */
+.painel-dashboard.painel-largo{ max-width: min(1700px, 96vw); }
+
+/* Linha da tabela do professor: aguardando a equipe Clube da Maré */
+.tabela-alunos tr.linha-aguardando td{ background: rgba(25, 118, 210, .22) !important; }
+
+.caixa-status-solicitacao .btn-status-solic{ box-shadow: 0 0 0 2px rgba(255,255,255,.55); }
+
+/* Textos de dica dentro de painéis CLAROS (creme): o cinza-claro padrão quase
+   sumia no fundo — aqui usa o cinza escuro de texto secundário. */
+.area-avaliacao-professores .dica-importar{ color: var(--cor-texto-medio); }

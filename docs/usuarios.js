@@ -36,7 +36,7 @@ var USUARIOS = [
     { login: 'gabrieladiretoria@edu.sp.br', senha: 'Seduc@2026', perfil: 'diretoria', nome: 'Gabriela', ra: '', turmas: '' },
     { login: 'dev@clubedamare.com.br', senha: 'Maré@2026', perfil: 'desenvolvedor', nome: 'Desenvolvedor', ra: '', turmas: '' },
     { login: '0000108327708xsp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Julia Victória', ra: '108327708xsp', turmas: '3ºA' },
-    { login: '00001104112772sp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Rebeca Pereira', ra: '1104112772sp', turmas: '2ºA' }
+    { login: '00001104112772sp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Rebeca dos Santos Pereira', ra: '1104112772sp', turmas: '3ºA' }
 ];
 
 // Procura um usuário que bata com login (sem diferenciar maiúscula/minúscula),

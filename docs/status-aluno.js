@@ -22,27 +22,30 @@ function apagarResumoAluno() {
     try { localStorage.removeItem(CHAVE_RESUMO_ALUNO); } catch (e) {}
 }
 
-// Traduz o status interno da solicitação para o que o aluno vê.
-//   Aprovado                          -> Aprovado pela Diretoria
-//   Recusado                          -> Reprovado pela Diretoria
-//   Pendente / Aguardando Desenvolvedor -> Em análise pela Diretoria
-//   (sem solicitação)                 -> Aguardando envio à Diretoria
+// Traduz o status interno da solicitação para o que o aluno vê. Os nomes
+// vêm de status-solicitacao.js (infoStatusSolicitacao), os MESMOS que o
+// professor e a direção veem:
+//   Pendente                 -> Aguardando a direção
+//   Aguardando Desenvolvedor -> Esperando contato equipe Clube da Maré
+//   Aprovado                 -> Confirmada pela equipe Clube da Maré
+//   Recusado                 -> Reprovada (pela direção ou pela equipe)
+//   (sem solicitação)        -> Aguardando envio
 function statusDiretoria(solicitacao) {
-    var s = solicitacao ? solicitacao.status : '';
-    if (s === 'Aprovado') {
-        return { chave: 'aprovado', classe: 'status-aprovado', rotulo: 'Aprovado',
-                 texto: 'Sua participação no Beach Club foi aprovada pela Diretoria! 🎉' };
-    }
-    if (s === 'Recusado') {
-        return { chave: 'reprovado', classe: 'status-recusado', rotulo: 'Reprovado',
-                 texto: 'Sua participação não foi aprovada pela Diretoria.' };
-    }
-    if (s === 'Pendente' || s === 'Aguardando Desenvolvedor') {
-        return { chave: 'analise', classe: 'status-pendente', rotulo: 'Em análise',
-                 texto: 'A Diretoria ainda está analisando sua participação.' };
-    }
-    return { chave: 'sem-solicitacao', classe: 'status-pendente', rotulo: 'Aguardando envio',
-             texto: 'Sua participação ainda não foi enviada para análise da Diretoria.' };
+    var i = infoStatusSolicitacao(solicitacao);
+    var textos = {
+        'aprovado': 'O contato com o Clube da Maré foi aceito! Sua participação está confirmada. 🎉',
+        'reprovado': i.mensagem,
+        'esperando-contato': 'A direção aprovou sua participação. Agora estamos esperando contato da equipe Clube da Maré.',
+        'analise': 'O professor enviou sua participação e a direção ainda está analisando.',
+        'sem-solicitacao': 'Sua participação ainda não foi enviada para análise da direção.'
+    };
+    var rotulos = { 'sem-solicitacao': 'Aguardando envio' };
+    return {
+        chave: i.chave,
+        classe: i.classe,
+        rotulo: rotulos[i.chave] || i.rotulo,
+        texto: textos[i.chave] || i.mensagem
+    };
 }
 
 function formatarMedia(v) {

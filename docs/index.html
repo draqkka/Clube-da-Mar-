@@ -114,30 +114,32 @@
         <img src="imagens/Menu inicial/logo-clube-da-mare.png" class="hero-logo" alt="Logo do Clube da Maré Beach Club">
         <!-- ALT: logo do clube sobreposta no canto do banner principal -->
     </a>
+
+    <!-- RESUMO DO ALUNO — aparece depois do "Sair" do painel do aluno.
+         Dados guardados por dashboard-aluno.html (ver status-aluno.js). -->
+    <section id="resumo-aluno" class="resumo-aluno" style="display:none;" aria-live="polite">
+        <button type="button" class="resumo-aluno-fechar" id="resumo-aluno-fechar" aria-label="Ocultar resumo">&times;</button>
+        <h2 id="resumo-aluno-nome">Aluno</h2>
+        <div class="grid-status">
+            <div class="card-status">
+                <span class="card-status-rotulo">Média</span>
+                <span class="card-status-valor" id="resumo-aluno-media">—</span>
+            </div>
+            <div class="card-status">
+                <span class="card-status-rotulo">Frequência</span>
+                <span class="card-status-valor" id="resumo-aluno-frequencia">—</span>
+            </div>
+            <div class="card-status card-status-diretoria" id="resumo-aluno-card">
+                <span class="card-status-rotulo">Status</span>
+                <span class="card-status-valor" id="resumo-aluno-status">—</span>
+            </div>
+        </div>
+        <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
+    </section>
 </div>
 </main>
 
-<!-- RESUMO DO ALUNO — aparece depois do "Sair" do painel do aluno.
-     Dados guardados por dashboard-aluno.html (ver status-aluno.js). -->
-<section id="resumo-aluno" class="resumo-aluno" style="display:none;" aria-live="polite">
-    <button type="button" class="resumo-aluno-fechar" id="resumo-aluno-fechar" aria-label="Ocultar resumo">&times;</button>
-    <h2 id="resumo-aluno-nome">Aluno</h2>
-    <div class="grid-status">
-        <div class="card-status">
-            <span class="card-status-rotulo">Média</span>
-            <span class="card-status-valor" id="resumo-aluno-media">—</span>
-        </div>
-        <div class="card-status">
-            <span class="card-status-rotulo">Frequência</span>
-            <span class="card-status-valor" id="resumo-aluno-frequencia">—</span>
-        </div>
-        <div class="card-status card-status-diretoria" id="resumo-aluno-card">
-            <span class="card-status-rotulo">Status</span>
-            <span class="card-status-valor" id="resumo-aluno-status">—</span>
-        </div>
-    </div>
-    <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
-</section>
+
 
 
 <main class="conteudo-pagina">
@@ -772,12 +774,19 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     });
 
     // Status da Diretoria ao vivo (atualiza se ela decidir com a página aberta).
-    escutarStatusAluno(resumo.ra, function (solicitacao) {
+    escutarStatusAluno(resumo, function (solicitacao) {
         var info = statusDiretoria(solicitacao);
         classes.forEach(function (c) { card.classList.remove(c); });
         card.classList.add(info.classe);
         document.getElementById('resumo-aluno-status').textContent = info.rotulo;
         document.getElementById('resumo-aluno-texto').textContent = info.texto;
+        // Aluno reprovado: o status mostra "Reprovado" e a mesma mensagem do painel.
+        if (resumo.reprovado) {
+            classes.forEach(function (c) { card.classList.remove(c); });
+            card.classList.add('status-recusado');
+            document.getElementById('resumo-aluno-status').textContent = 'Reprovado';
+            document.getElementById('resumo-aluno-texto').textContent = resumo.mensagemReprovacao || '';
+        }
     });
 })();
 </script>

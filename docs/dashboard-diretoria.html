@@ -11,6 +11,7 @@
 <script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
+<script src="status-solicitacao.js"></script>
 </head>
 <body>
 
@@ -80,8 +81,22 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 
 // Planilha — a Diretoria vê todas as turmas juntas (um arquivo por turma,
 // ver TURMAS_DO_SISTEMA em planilha.js).
+var dadosAlunos = null;
+var todasSolicitacoes = [];
+
+// Escola de uma solicitação antiga (sem "escola" gravada): procura nos alunos.
+window.resolverEscolaSolicitacao = function (s) {
+    if (!dadosAlunos) return '';
+    var alunos = dadosAlunos.notas.filter(function (a) { return mesmaTurma(a.turma, s.turma); });
+    var doAluno = alunos.filter(function (a) { return mesmoRa(a.ra, s.ra); })[0];
+    var e = doAluno ? dadosDaEscola([doAluno]).escola : '';
+    return e || dadosDaEscola(alunos).escola || '';
+};
+
 carregarTodasAsTurmas()
     .then(function (dados) {
+        dadosAlunos = dados;
+        renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         document.getElementById('carregando').style.display = 'none';
         var corpo = document.getElementById('corpo-tabela-alunos');
         dados.notas.forEach(function (a) {
@@ -118,10 +133,11 @@ carregarTodasAsTurmas()
     });
 
 
-    // Gerenciamento de Solicitações e Notificação ao Professor
-escutarTodasSolicitacoes(function (solicitacoes) {
+// Gerenciamento de Solicitações e Notificação ao Professor
+function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
+    var solicitacoes = todasSolicitacoes;
 
     if (!solicitacoes.length) {
         document.getElementById('sem-solicitacoes').style.display = 'block';
@@ -134,39 +150,40 @@ escutarTodasSolicitacoes(function (solicitacoes) {
         card.className = 'card-solicitacao';
 
         // A Diretoria só decide sobre as "Pendente" — a aprovação dela NÃO
-        // é final, só passa a bola pro Desenvolvedor confirmar. Ela só pode
-        // reabrir (refazer) uma decisão que ela mesma tomou (recusa dela).
+        // é final, só passa a bola pra equipe Clube da Maré (Desenvolvedor)
+        // confirmar. Ela só pode reabrir (refazer) uma recusa dela mesma.
         var podeAgir = s.status === 'Pendente';
         var podeReabrir = s.status === 'Recusado' && s.respondidoPor === 'Diretoria';
-        var statusLabel = s.status + (s.respondidoPor ? ' — ' + s.respondidoPor : '');
-        var classeStatus = s.status === 'Aprovado' ? 'status-aprovado' :
-            (s.status === 'Recusado' ? 'status-recusado' :
-            (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
+        var escola = escolaDaSolicitacao(s);
 
-        var html = '<p><strong>' + s.nomeAluno + '</strong> (' + s.turma + ')</p>' +
-            '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
-            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
-            '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius:6px;">Status: <strong>' + statusLabel + '</strong></p>';
+        var html = '<p><strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ')</p>' +
+            '<p class="detalhe-solicitacao"><strong>Escola:</strong> ' + (escola ? escaparHtml(escola) : '<em>não informada na planilha</em>') + '</p>' +
+            '<p class="detalhe-solicitacao">Professor: ' + escaparHtml(s.professor) + '</p>' +
+            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + escaparHtml(s.observacao) + '</p>' : '') +
+            '<p style="margin-top:6px;">Status: ' + htmlStatusSolicitacao(s, { semProfessor: true }) + '</p>';
 
         if (podeAgir) {
             html += '<div style="margin-top:10px;">' +
-                '<textarea class="form-login-campo campo-resposta" data-id="' + s.id + '" placeholder="Sua resposta ao professor (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
+                '<textarea class="form-login-campo campo-resposta" data-id="' + escaparHtml(s.id) + '" placeholder="Sua resposta ao professor (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
                 '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Aprovar (envia pro Desenvolvedor confirmar)</button> ' +
-                '<button type="button" class="btn-recusar-solicitacao" data-id="' + s.id + '">Recusar</button>' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">Aprovar (envia pra equipe Clube da Maré confirmar)</button> ' +
+                '<button type="button" class="btn-recusar-solicitacao" data-id="' + escaparHtml(s.id) + '">Recusar</button>' +
                 '</div></div>';
         } else {
-            html += (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + (s.respondidoPor || 'Diretoria') + '): ' + s.resposta + '</p>' : '');
-            if (s.status === 'Aguardando Desenvolvedor') {
-                html += '<p class="detalhe-solicitacao">Aguardando confirmação final do Desenvolvedor.</p>';
-            } else if (podeReabrir) {
-                html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
+            html += (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + escaparHtml(s.respondidoPor === 'Desenvolvedor' ? 'Equipe Clube da Maré' : (s.respondidoPor || 'Direção')) + '): ' + escaparHtml(s.resposta) + '</p>' : '');
+            if (podeReabrir) {
+                html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + escaparHtml(s.id) + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
             }
         }
 
         card.innerHTML = html;
         lista.appendChild(card);
     });
+}
+
+escutarTodasSolicitacoes(function (solicitacoes) {
+    todasSolicitacoes = solicitacoes;
+    renderizarSolicitacoes();
 });
 
 // Ações nos botões (Aprovar envia pra confirmação do Desenvolvedor; Recusar

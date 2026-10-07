@@ -13,6 +13,7 @@
 <script src="planilha.js"></script>
 <!-- Solicitações de participação, salvas no localStorage (sem backend) -->
 <script src="solicitacoes-local.js"></script>
+<script src="status-solicitacao.js"></script>
 <script src="status-aluno.js"></script>
 </head>
 <body>
@@ -57,7 +58,7 @@
                 <span class="card-status-valor" id="valor-comportamento">-</span>
             </div>
             <div class="card-status card-status-diretoria" id="card-diretoria">
-                <span class="card-status-rotulo">Diretoria</span>
+                <span class="card-status-rotulo">Status</span>
                 <span class="card-status-valor" id="valor-diretoria">—</span>
             </div>
         </div>
@@ -75,7 +76,9 @@
             solicitação registrada pra esse RA.
         -->
         <div id="caixa-solicitacao" class="caixa-status-solicitacao status-pendente">
-            <p id="texto-solicitacao">Carregando status da Diretoria...</p>
+            <p id="texto-solicitacao">Carregando status...</p>
+            <!-- Todas as etapas (professor › direção › equipe Clube da Maré). A atual é um botão que abre um aviso. -->
+            <p id="trilha-solicitacao" style="margin-top:10px;"></p>
         </div>
 
         <!-- Só aparece quando o aluno está aprovado (ver critério no JS).
@@ -195,18 +198,20 @@ carregarAlunoPorRa(sessao.ra)
 });
 
 // ---- Status da solicitação de participação (feita pelo professor) -------
-// Vem do Firebase agora, e atualiza sozinho ao vivo (onSnapshot) se a
-// Diretoria aprovar/recusar enquanto o aluno está com a página aberta.
+// Vem do localStorage e atualiza sozinho (sem recarregar) se a Direção ou a
+// equipe Clube da Maré responderem enquanto o aluno está com a página aberta.
 escutarStatusAluno(sessao.ra, function (solicitacao) {
     var info = statusDiretoria(solicitacao);
     var caixa = document.getElementById('caixa-solicitacao');
 
-    caixa.classList.remove('status-pendente', 'status-aprovado', 'status-recusado');
+    caixa.classList.remove('status-pendente', 'status-aprovado', 'status-recusado', 'status-aguardando-dev');
     caixa.classList.add(info.classe);
     document.getElementById('texto-solicitacao').textContent = info.texto;
+    // O aluno vê todas as etapas, do professor até a equipe Clube da Maré.
+    document.getElementById('trilha-solicitacao').innerHTML = solicitacao ? htmlStatusSolicitacao(solicitacao) : '';
 
     var card = document.getElementById('card-diretoria');
-    card.classList.remove('status-pendente', 'status-aprovado', 'status-recusado');
+    card.classList.remove('status-pendente', 'status-aprovado', 'status-recusado', 'status-aguardando-dev');
     card.classList.add(info.classe);
     document.getElementById('valor-diretoria').textContent = info.rotulo;
 

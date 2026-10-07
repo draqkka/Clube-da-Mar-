@@ -142,10 +142,10 @@ function chaveAluno(a) {
     return String((a && (a.email || a.ra)) || '');
 }
 
-function _acharRegistroDoUsuario(u, lista, jaLigados) {
+function _acharRegistroDoUsuario(u, lista, jaLigados, ignorarTurma) {
     var turmaU = turmaCanonica(primeiraTurmaDoUsuario(u));
     var candidatos = lista.filter(function (a) {
-        return !a.email && jaLigados.indexOf(a) === -1 && (!a.turma || !turmaU || mesmaTurma(a.turma, turmaU));
+        return !a.email && jaLigados.indexOf(a) === -1 && (ignorarTurma || !a.turma || !turmaU || mesmaTurma(a.turma, turmaU));
     });
     if (u.ra) {
         var porRa = candidatos.filter(function (a) { return mesmoRa(a.ra, u.ra); });
@@ -159,13 +159,13 @@ function _acharRegistroDoUsuario(u, lista, jaLigados) {
 
 // Liga os registros do banco aos e-mails de usuarios.js e acrescenta quem só
 // existe em usuarios.js. "turma" (opcional) limita aos estudantes daquela turma.
-function _juntarComUsuarios(listaDoBanco, turma, incluirSoUsuarios) {
+function _juntarComUsuarios(listaDoBanco, turma, incluirSoUsuarios, ignorarTurma) {
     var lista = (listaDoBanco || []).slice();
     if (typeof listarEstudantes !== 'function' || typeof USUARIOS === 'undefined') return lista;
     var ligados = [];
     listarEstudantes(turma || '').forEach(function (u) {
         var email = emailDoUsuario(u);
-        var registro = _acharRegistroDoUsuario(u, lista, ligados);
+        var registro = _acharRegistroDoUsuario(u, lista, ligados, ignorarTurma);
         if (registro) {
             registro.email = email;
             ligados.push(registro);
@@ -200,11 +200,25 @@ function _alunoSoDeUsuarios(u) {
 function carregarAlunoPorEmail(email) {
     var u = buscarEstudantePorEmail(email);
     if (!u) return Promise.resolve(null);
+    var meuEmail = emailDoUsuario(u);
     var turma = turmaCanonica(primeiraTurmaDoUsuario(u));
+
+    function achar(corpo, turmaFiltro, ignorarTurma) {
+        // sem filtro de "ocultos": o aluno sempre vê o próprio painel
+        var lista = _juntarComUsuarios(corpo.alunos, turmaFiltro, true, ignorarTurma);
+        return lista.filter(function (a) { return a.email === meuEmail; })[0] || null;
+    }
+
+    // 1) procura na turma do cadastro; 2) se não achar (ex: o professor importou
+    // a planilha dele em outra turma), procura em TODAS as turmas pelo nome.
     return _requisicaoApi('/api/alunos' + (turma ? '?turma=' + encodeURIComponent(turma) : ''))
         .then(function (corpo) {
-            var lista = _juntarComUsuarios(corpo.alunos, turma, true);   // sem filtro de "ocultos": o aluno sempre vê o próprio painel
-            return lista.filter(function (a) { return a.email === emailDoUsuario(u); })[0] || _alunoSoDeUsuarios(u);
+            var a = achar(corpo, turma, false);
+            if (a && a.origem !== 'usuarios') return a;
+            return _requisicaoApi('/api/alunos').then(function (todos) {
+                var b = achar(todos, '', true);
+                return (b && b.origem !== 'usuarios') ? b : (a || _alunoSoDeUsuarios(u));
+            });
         })
         .catch(function () { return _alunoSoDeUsuarios(u); });
 }

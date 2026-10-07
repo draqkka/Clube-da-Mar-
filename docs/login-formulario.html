@@ -190,6 +190,7 @@ document.getElementById('form-acesso').addEventListener('submit', function (even
                 login: login,
                 perfil: perfil,
                 nome: usuario.nome,
+                email: String(usuario.login).trim().toLowerCase(),   // identifica o aluno (no lugar do RA)
                 ra: usuario.ra,
                 turmas: turmas
             }));

@@ -35,7 +35,7 @@
     <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
         <thead>
             <tr>
-                <th>RA</th><th>Nome</th><th>Série</th><th>Turma</th><th>Nota</th><th>Presença</th><th>Comportamento</th><th>Professor</th><th>Outras informações</th>
+                <th>Nome</th><th>Turma</th><th>Curso</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Comportamento</th>
             </tr>
         </thead>
         <tbody id="corpo-tabela-alunos"></tbody>
@@ -86,17 +86,11 @@ carregarTodasAsTurmas()
         var corpo = document.getElementById('corpo-tabela-alunos');
         dados.notas.forEach(function (a) {
             var linha = document.createElement('tr');
-            // Colunas extras da planilha (ex: Turno) aparecem juntas em "Outras informações".
-            var outras = Object.keys(a.extras || {}).filter(function (k) {
-                return [EXTRA_DIRETORIA, EXTRA_ESCOLA, EXTRA_DIRETOR, EXTRA_BIMESTRE].indexOf(k) === -1;
-            }).map(function (k) {
-                return escaparHtml(k) + ': ' + escaparHtml(a.extras[k]);
-            }).join(' · ');
-            linha.innerHTML = '<td>' + escaparHtml(raParaExibir(a.ra)) + '</td><td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.serie || '—') +
-                '</td><td>' + escaparHtml(a.turma) + '</td><td>' + escaparHtml(a.nota === '' ? '—' : a.nota) +
-                '</td><td>' + (a.presenca === '' ? '—' : escaparHtml(a.presenca) + '%') +
-                '</td><td>' + htmlComportamento(a) + '</td><td>' + escaparHtml(a.professor || '') +
-                '</td><td>' + (outras || '—') + '</td>';
+            linha.innerHTML = '<td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.turma) +
+                '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') + '</td><td>' + escaparHtml(situacaoDoAluno(a)) +
+                '</td><td>' + escaparHtml(a.nota === '' || a.nota == null ? '—' : a.nota) +
+                '</td><td>' + (a.presenca === '' || a.presenca == null ? '—' : escaparHtml(a.presenca) + '%') +
+                '</td><td>' + htmlComportamento(a) + '</td>';
             corpo.appendChild(linha);
         });
         document.getElementById('tabela-alunos').style.display = dados.notas.length ? 'table' : 'none';
@@ -149,7 +143,7 @@ escutarTodasSolicitacoes(function (solicitacoes) {
             (s.status === 'Recusado' ? 'status-recusado' :
             (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
 
-        var html = '<p><strong>' + s.nomeAluno + '</strong> (RA ' + raParaExibir(s.ra) + ', ' + s.turma + ')</p>' +
+        var html = '<p><strong>' + s.nomeAluno + '</strong> (' + s.turma + ')</p>' +
             '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
             (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
             '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius:6px;">Status: <strong>' + statusLabel + '</strong></p>';

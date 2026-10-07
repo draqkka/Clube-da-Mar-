@@ -132,7 +132,7 @@
             <span class="card-status-valor" id="resumo-aluno-frequencia">—</span>
         </div>
         <div class="card-status card-status-diretoria" id="resumo-aluno-card">
-            <span class="card-status-rotulo">Diretoria</span>
+            <span class="card-status-rotulo">Status</span>
             <span class="card-status-valor" id="resumo-aluno-status">—</span>
         </div>
     </div>
@@ -750,6 +750,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 
 <script src="solicitacoes-local.js"></script>
+<script src="status-solicitacao.js"></script>
 <script src="status-aluno.js"></script>
 <script>
 (function () {
@@ -758,7 +759,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
     var secao = document.getElementById('resumo-aluno');
     var card = document.getElementById('resumo-aluno-card');
-    var classes = ['status-pendente', 'status-aprovado', 'status-recusado'];
+    var classes = ['status-pendente', 'status-aprovado', 'status-recusado', 'status-aguardando-dev'];
 
     document.getElementById('resumo-aluno-nome').textContent = resumo.nome;
     document.getElementById('resumo-aluno-media').textContent = formatarMedia(resumo.nota);

@@ -11,6 +11,7 @@
 <script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
+<script src="status-solicitacao.js"></script>
 <!-- Lista de usuários — só é carregada nesta página pra exibir a tabela de
      contas cadastradas (nenhuma outra página do painel precisa dela). -->
 <script src="usuarios.js"></script>
@@ -34,7 +35,7 @@
     abrir o código (usuarios.js, por exemplo, sempre foi público pro
     navegador) — esta página só organiza essa informação num lugar só.
 -->
-<main class="conteudo-pagina painel-dashboard">
+<main class="conteudo-pagina painel-dashboard painel-largo">
 
     <div class="login-saudacao">
         <h1 id="titulo-boas-vindas">Olá, Desenvolvedor!</h1>
@@ -60,15 +61,11 @@
             <span class="card-status-valor" id="resumo-usuarios">-</span>
         </div>
         <div class="card-status">
-            <span class="card-status-rotulo">Aguardando Diretoria</span>
-            <span class="card-status-valor" id="resumo-pendentes">-</span>
-        </div>
-        <div class="card-status">
             <span class="card-status-rotulo">Aguardando sua confirmação</span>
             <span class="card-status-valor" id="resumo-aguardando-dev">-</span>
         </div>
         <div class="card-status">
-            <span class="card-status-rotulo">Solicitações no total</span>
+            <span class="card-status-rotulo">Solicitações da direção</span>
             <span class="card-status-valor" id="resumo-total-solicitacoes">-</span>
         </div>
     </div>
@@ -80,7 +77,8 @@
         <div id="info-turmas"></div>
         <div id="carregando-alunos">Carregando planilha...</div>
         <div id="legenda-comportamento"></div>
-        <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
+        <div class="tabela-rolagem" id="rolagem-alunos" style="display:none;">
+        <table class="tabela-alunos" id="tabela-alunos">
             <thead>
                 <tr>
                     <th>Nome</th><th>Turma</th><th>Curso</th><th>Escola</th><th>Diretoria</th><th>Diretor</th><th>Bimestre</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Resultado</th><th>Motivo</th><th>Solicitação</th>
@@ -88,12 +86,13 @@
             </thead>
             <tbody id="corpo-tabela-alunos"></tbody>
         </table>
+        </div>
     </section>
 
     <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
-        <h2>Todas as Solicitações de Participação</h2>
-        <p class="dica-importar">O Desenvolvedor fica acima da Diretoria nessa decisão: a aprovação da Diretoria só encaminha a solicitação pra cá ("Aguardando Desenvolvedor") — quem confirma de verdade (aprova ou recusa, de forma final) é o Desenvolvedor. Dá pra agir direto numa "Pendente" também, sem esperar a Diretoria, e reabrir qualquer decisão já tomada.</p>
+        <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
+        <p class="dica-importar">Aqui aparecem só as solicitações que a <strong>Direção já aprovou</strong> e encaminhou pra você — as solicitações dos professores que ainda estão com a Direção não aparecem. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
         <div id="lista-solicitacoes"></div>
         <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
     </section>
@@ -102,7 +101,8 @@
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
         <h2>Usuários Cadastrados (usuarios.js)</h2>
         <p class="dica-importar">Pra adicionar/editar/remover uma conta, edite direto o arquivo "usuarios.js" — esta tabela só está lendo o que já está lá.</p>
-        <table class="tabela-alunos" id="tabela-usuarios">
+        <div class="tabela-rolagem">
+        <table class="tabela-alunos" id="tabela-usuarios" style="min-width:0;">
             <thead>
                 <tr>
                     <th>Login</th><th>Perfil</th><th>Nome</th><th>Turmas</th><th>Senha</th>
@@ -110,19 +110,20 @@
             </thead>
             <tbody id="corpo-tabela-usuarios"></tbody>
         </table>
+        </div>
     </section>
 
     <!-- Dados brutos salvos no navegador — útil pra depuração -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
         <h2>Dados Brutos no Navegador</h2>
         <p class="dica-importar">
-            "Solicitações" fica em <code>localStorage</code> (permanece salvo entre visitas, só neste navegador).
+            "Solicitações" ficam no <strong>banco</strong> (tabela <code>solicitacoes</code>, a mesma lista pra todo mundo); abaixo está a cópia que esta página está usando agora.
             "Sessão atual" fica em <code>sessionStorage</code> (some ao fechar a aba).
         </p>
 
-        <h3 style="margin-top:16px;">Solicitações (localStorage)</h3>
+        <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
         <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
-        <button type="button" class="btn-planilha-atalho" id="botao-limpar-solicitacoes">Apagar todas as solicitações (teste)</button>
+        <button type="button" class="btn-planilha-atalho" id="botao-limpar-solicitacoes">Apagar todas as solicitações do banco (teste)</button>
 
         <h3 style="margin-top:24px;">Alunos (banco de dados — /api/alunos)</h3>
         <pre id="json-alunos" class="caixa-dados-brutos"></pre>
@@ -186,13 +187,22 @@ function solicitacaoDoAlunoDev(a) {
     return null;
 }
 
+// Na coluna "Solicitação" o Desenvolvedor só vê o que a Direção encaminhou
+// (solicitações ainda com a Direção, ou recusadas por ela, aparecem como "—").
 function textoSolicitacaoDev(s) {
-    if (!s) return '—';
-    if (s.status === 'Aprovado') return '🟢 Aprovada (final)';
-    if (s.status === 'Recusado') return '🔴 Recusada' + (s.respondidoPor ? ' (' + s.respondidoPor + ')' : '');
-    if (s.status === 'Aguardando Desenvolvedor') return '🔵 Aguardando sua confirmação';
-    return '🟡 Aguardando Diretoria';
+    if (!s || !solicitacaoVisivelParaDesenvolvedor(s)) return '—';
+    return textoStatusSolicitacao(s, { semProfessor: true });
 }
+
+// Escola de uma solicitação antiga (sem "escola" gravada): procura nos
+// alunos que vieram do banco.
+window.resolverEscolaSolicitacao = function (s) {
+    if (!dadosAlunos) return '';
+    var alunos = dadosAlunos.notas.filter(function (a) { return mesmaTurma(a.turma, s.turma); });
+    var doAluno = alunos.filter(function (a) { return mesmoRa(a.ra, s.ra); })[0];
+    var e = doAluno ? dadosDaEscola([doAluno]).escola : '';
+    return e || dadosDaEscola(alunos).escola || '';
+};
 
 function renderizarAlunos() {
     if (!dadosAlunos) return;
@@ -254,7 +264,7 @@ function renderizarAlunos() {
             '</td><td>' + escaparHtml(textoSolicitacaoDev(solicitacaoDoAlunoDev(a))) + '</td>';
         corpo.appendChild(linha);
     });
-    document.getElementById('tabela-alunos').style.display = todos.length ? 'table' : 'none';
+    document.getElementById('rolagem-alunos').style.display = todos.length ? 'block' : 'none';
     document.getElementById('resumo-alunos').textContent = todos.length;
     document.getElementById('resumo-turmas').textContent = turmasComAlunos;
     document.getElementById('resumo-aprovados').textContent = totalAprovados;
@@ -267,6 +277,7 @@ function carregarAlunosDev() {
             document.getElementById('carregando-alunos').style.display = 'none';
             dadosAlunos = dados;
             renderizarAlunos();
+            renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         })
         .catch(function (erro) {
             document.getElementById('carregando-alunos').style.display = 'block';
@@ -312,62 +323,81 @@ corpoUsuarios.addEventListener('click', function (evento) {
     botao.textContent = estaEscondida ? 'ocultar' : 'mostrar';
 });
 
-// ---- Todas as solicitações ------------------------------------------------
-escutarTodasSolicitacoes(function (solicitacoes) {
-    todasSolicitacoes = solicitacoes;
-    renderizarAlunos(); // atualiza a coluna "Solicitação" dos alunos
+// ---- Solicitações encaminhadas pela Direção --------------------------------
+// O Desenvolvedor só vê o que a Direção já aprovou (Aguardando Desenvolvedor)
+// e o que ele mesmo já decidiu. As "Pendente" dos professores NÃO aparecem.
+function solicitacoesDoDev() {
+    return todasSolicitacoes.filter(solicitacaoVisivelParaDesenvolvedor);
+}
+
+function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
+    var visiveis = solicitacoesDoDev();
 
-    document.getElementById('resumo-total-solicitacoes').textContent = solicitacoes.length;
-    document.getElementById('resumo-pendentes').textContent =
-        solicitacoes.filter(function (s) { return s.status === 'Pendente'; }).length;
+    document.getElementById('resumo-total-solicitacoes').textContent = visiveis.length;
     document.getElementById('resumo-aguardando-dev').textContent =
-        solicitacoes.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
+        visiveis.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
+    document.getElementById('sem-solicitacoes').style.display = visiveis.length ? 'none' : 'block';
 
-    if (!solicitacoes.length) {
-        document.getElementById('sem-solicitacoes').style.display = 'block';
-    } else {
-        document.getElementById('sem-solicitacoes').style.display = 'none';
-    }
-
-    solicitacoes.forEach(function (s) {
+    visiveis.forEach(function (s) {
         var card = document.createElement('div');
         card.className = 'card-solicitacao';
 
-        // O Desenvolvedor fica ACIMA da Diretoria: dá pra confirmar (ou
-        // recusar) qualquer solicitação que ainda não tenha decisão final —
-        // seja ela "Pendente" (ainda nem passou pela Diretoria) ou
-        // "Aguardando Desenvolvedor" (Diretoria já aprovou, falta ele). Uma
-        // vez com decisão final (Aprovado/Recusado), só reabrir manda de
-        // volta pro início da fila.
-        var podeConfirmar = s.status === 'Pendente' || s.status === 'Aguardando Desenvolvedor';
-        var statusLabel = s.status + (s.respondidoPor ? ' — ' + s.respondidoPor : '');
-        var classeStatus = s.status === 'Aprovado' ? 'status-aprovado' :
-            (s.status === 'Recusado' ? 'status-recusado' :
-            (s.status === 'Aguardando Desenvolvedor' ? 'status-aguardando-dev' : 'status-pendente'));
+        var podeConfirmar = s.status === 'Aguardando Desenvolvedor';
+        var info = infoStatusSolicitacao(s);
+        var escola = escolaDaSolicitacao(s);
 
-        var html = '<p><strong>' + s.nomeAluno + '</strong> (' + s.turma + ')</p>' +
-            '<p class="detalhe-solicitacao">Professor: ' + s.professor + '</p>' +
-            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + s.observacao + '</p>' : '') +
-            '<p class="' + classeStatus + '" style="display:inline-block; padding:2px 10px; border-radius: 6px;">Status: <strong>' + statusLabel + '</strong></p>' +
-            (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + (s.respondidoPor || '') + '): ' + s.resposta + '</p>' : '');
+        var html = '<p><strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ')</p>' +
+            '<p class="detalhe-solicitacao"><strong>Escola:</strong> ' + (escola ? escaparHtml(escola) : '<em>não informada na planilha</em>') + '</p>' +
+            '<p class="detalhe-solicitacao">Professor: ' + escaparHtml(s.professor) + '</p>' +
+            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + escaparHtml(s.observacao) + '</p>' : '') +
+            '<p class="' + info.classe + '" style="display:inline-block; padding:2px 10px; border-radius:6px;">Status: <strong>' +
+            escaparHtml(textoStatusSolicitacao(s, { semProfessor: true })) + '</strong></p>' +
+            (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + escaparHtml(s.respondidoPor === 'Desenvolvedor' ? 'Você' : (s.respondidoPor || 'Diretoria')) + '): ' + escaparHtml(s.resposta) + '</p>' : '');
 
         if (podeConfirmar) {
             html += '<div style="margin-top:10px;">' +
-                '<textarea class="form-login-campo campo-resposta" data-id="' + s.id + '" placeholder="Resposta (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
+                '<textarea class="form-login-campo campo-resposta" data-id="' + escaparHtml(s.id) + '" placeholder="Resposta (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
                 '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + s.id + '">Confirmar aprovação (final)</button> ' +
-                '<button type="button" class="btn-recusar-solicitacao" data-id="' + s.id + '">Recusar</button>' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">Confirmar aprovação (final)</button> ' +
+                '<button type="button" class="btn-recusar-solicitacao" data-id="' + escaparHtml(s.id) + '">Recusar</button>' +
                 '</div></div>';
         } else {
-            html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + s.id + '" style="margin-top:10px;">Reabrir (sobrepõe a decisão)</button>';
+            html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + escaparHtml(s.id) + '" style="margin-top:10px;">Reabrir (volta pra sua fila)</button>';
         }
 
         card.innerHTML = html;
         lista.appendChild(card);
     });
+}
+
+escutarTodasSolicitacoes(function (solicitacoes) {
+    todasSolicitacoes = solicitacoes;
+    renderizarAlunos();        // atualiza a coluna "Solicitação" dos alunos
+    renderizarSolicitacoes();
+    if (typeof atualizarDadosBrutos === 'function') atualizarDadosBrutos();
 });
+
+// Pop-up de aviso depois de cada decisão (um por aluno).
+function avisarDecisao(s, aprovou, resposta) {
+    var escola = escolaDaSolicitacao(s);
+    var linhas = ['<strong>Aluno(a):</strong> ' + escaparHtml(s.nomeAluno) + ' (' + escaparHtml(s.turma) + ')'];
+    if (escola) linhas.push('<strong>Escola:</strong> ' + escaparHtml(escola));
+    if (resposta) linhas.push('<strong>Sua resposta:</strong> “' + escaparHtml(resposta) + '”');
+    linhas.push('A Direção, o professor e o aluno já veem o novo status.');
+    mostrarPopupAviso(aprovou ? {
+        emoji: '🟢', classe: 'popup-aprovado',
+        titulo: 'Aluno(a) aprovado(a)',
+        mensagem: 'O contato com o Clube da Maré foi aceito para ' + s.nomeAluno + '. O status agora é “Confirmada pela equipe Clube da Maré”.',
+        linhas: linhas
+    } : {
+        emoji: '🔴', classe: 'popup-reprovado',
+        titulo: 'Aluno(a) reprovado(a)',
+        mensagem: 'O contato com o Clube da Maré NÃO foi aceito para ' + s.nomeAluno + '. O status agora é “Reprovada pela equipe Clube da Maré”.',
+        linhas: linhas
+    });
+}
 
 document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
     var refazer = evento.target.closest('.btn-refazer-solicitacao');
@@ -375,7 +405,7 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
     var recusar = evento.target.closest('.btn-recusar-solicitacao');
 
     if (refazer) {
-        reabrirSolicitacao(refazer.dataset.id);
+        reabrirComoDesenvolvedor(refazer.dataset.id);
         return;
     }
 
@@ -386,12 +416,14 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
     var card = botao.closest('.card-solicitacao');
     var campoTexto = card.querySelector('.campo-resposta');
     var resposta = campoTexto ? campoTexto.value.trim() : '';
+    var solicitacao = todasSolicitacoes.filter(function (x) { return x.id === id; })[0];
 
     if (aprovar) {
         aprovarComoDesenvolvedor(id, resposta);
     } else {
         recusarComoDesenvolvedor(id, resposta);
     }
+    if (solicitacao) avisarDecisao(solicitacao, !!aprovar, resposta);
 });
 
 // ---- Dados brutos (localStorage / sessionStorage) ------------------------
@@ -407,7 +439,7 @@ function atualizarDadosBrutos() {
 atualizarDadosBrutos();
 
 document.getElementById('botao-limpar-solicitacoes').addEventListener('click', function () {
-    if (!confirm('Isso apaga TODAS as solicitações salvas neste navegador (não afeta a planilha de notas). Confirma?')) return;
+    if (!confirm('Isso apaga TODAS as solicitações do banco, para todos os usuários (não afeta a planilha de notas). Confirma?')) return;
     limparTodasSolicitacoes().then(atualizarDadosBrutos);
 });
 </script>

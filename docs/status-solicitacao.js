@@ -190,6 +190,7 @@ function abrirPopupStatus(s) {
     if (!s) return;
     var info = infoStatusSolicitacao(s);
     var linhas = ['<strong>Aluno(a):</strong> ' + _escSolic(s.nomeAluno) + ' (' + _escSolic(s.turma) + ')'];
+    if (s.emailAluno) linhas.push('<strong>E-mail:</strong> ' + _escSolic(s.emailAluno));
     var escola = escolaDaSolicitacao(s);
     if (escola) linhas.push('<strong>Escola:</strong> ' + _escSolic(escola));
     linhas.push('<strong>Andamento:</strong> ' + _escSolic(textoStatusSolicitacao(s)));

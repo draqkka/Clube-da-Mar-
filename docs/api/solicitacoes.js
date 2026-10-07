@@ -29,7 +29,8 @@ function limpar(s) {
     const criadoEm = Number(s.criadoEm);
     return {
         id: id,
-        ra: texto(s.ra, 40),
+        emailAluno: texto(s.emailAluno, 150).toLowerCase(),  // identifica o aluno (vem de usuarios.js)
+        ra: texto(s.ra, 80),                                  // só de reserva
         nomeAluno: texto(s.nomeAluno, 150),
         turma: texto(s.turma, 20),
         escola: texto(s.escola, 200),

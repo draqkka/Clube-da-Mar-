@@ -127,6 +127,88 @@ function _filtrarOcultos(lista) {
     });
 }
 
+// ---- Alunos ligados ao E-MAIL de usuarios.js --------------------------------
+// O aluno é identificado pelo e-mail do login (usuarios.js), não pelo RA da
+// planilha (que podia estar errado ou faltando). Aqui cada estudante de
+// usuarios.js é LIGADO ao registro dele vindo do banco (aluno.email). As
+// listas do professor/Diretoria/Desenvolvedor vêm SÓ da planilha; apenas o
+// painel do próprio aluno abre com nome e turma se ele ainda não estiver nela.
+// Ordem pra achar o registro no banco: RA (se o RA do usuarios.js bater) >
+// nome igual > nome compatível (ex: "Julia Victória" = "JULIA VICTÓRIA SANTOS
+// SILVA"), sempre dentro da mesma turma e sem dúvida (só 1 candidato).
+
+// Chave que identifica um aluno nas telas: e-mail, ou RA quando não há e-mail.
+function chaveAluno(a) {
+    return String((a && (a.email || a.ra)) || '');
+}
+
+function _acharRegistroDoUsuario(u, lista, jaLigados) {
+    var turmaU = turmaCanonica(primeiraTurmaDoUsuario(u));
+    var candidatos = lista.filter(function (a) {
+        return !a.email && jaLigados.indexOf(a) === -1 && (!a.turma || !turmaU || mesmaTurma(a.turma, turmaU));
+    });
+    if (u.ra) {
+        var porRa = candidatos.filter(function (a) { return mesmoRa(a.ra, u.ra); });
+        if (porRa.length === 1) return porRa[0];
+    }
+    var exatos = candidatos.filter(function (a) { return _normalizarTexto(a.nome) === _normalizarTexto(u.nome); });
+    if (exatos.length === 1) return exatos[0];
+    var parecidos = candidatos.filter(function (a) { return nomesCompativeis(a.nome, u.nome); });
+    return parecidos.length === 1 ? parecidos[0] : null;
+}
+
+// Liga os registros do banco aos e-mails de usuarios.js e acrescenta quem só
+// existe em usuarios.js. "turma" (opcional) limita aos estudantes daquela turma.
+function _juntarComUsuarios(listaDoBanco, turma, incluirSoUsuarios) {
+    var lista = (listaDoBanco || []).slice();
+    if (typeof listarEstudantes !== 'function' || typeof USUARIOS === 'undefined') return lista;
+    var ligados = [];
+    listarEstudantes(turma || '').forEach(function (u) {
+        var email = emailDoUsuario(u);
+        var registro = _acharRegistroDoUsuario(u, lista, ligados);
+        if (registro) {
+            registro.email = email;
+            ligados.push(registro);
+            return;
+        }
+        // Professor, Diretoria e Desenvolvedor só veem quem veio da planilha.
+        // Só o painel do próprio aluno usa o cadastro do usuarios.js sozinho.
+        if (!incluirSoUsuarios) return;
+        lista.push({
+            ra: email,                       // sem RA confiável: o e-mail é o identificador
+            email: email,
+            nome: u.nome,
+            serie: '',
+            turma: turmaCanonica(primeiraTurmaDoUsuario(u)),
+            nota: '', presenca: '', comportamento: '',
+            professor: '',
+            extras: {},
+            origem: 'usuarios'               // veio só de usuarios.js (nunca é gravado no banco)
+        });
+    });
+    return lista;
+}
+
+// Registro "só com o que usuarios.js sabe" (usado quando o banco não responde).
+function _alunoSoDeUsuarios(u) {
+    return _juntarComUsuarios([], '', true).filter(function (a) { return a.email === emailDoUsuario(u); })[0] || null;
+}
+
+// Busca o aluno pelo E-MAIL do login. Sempre devolve alguém se o e-mail for de
+// um estudante de usuarios.js (mesmo sem planilha / sem banco): nesse caso vem
+// só nome e turma, sem nota/frequência.
+function carregarAlunoPorEmail(email) {
+    var u = buscarEstudantePorEmail(email);
+    if (!u) return Promise.resolve(null);
+    var turma = turmaCanonica(primeiraTurmaDoUsuario(u));
+    return _requisicaoApi('/api/alunos' + (turma ? '?turma=' + encodeURIComponent(turma) : ''))
+        .then(function (corpo) {
+            var lista = _juntarComUsuarios(corpo.alunos, turma, true);   // sem filtro de "ocultos": o aluno sempre vê o próprio painel
+            return lista.filter(function (a) { return a.email === emailDoUsuario(u); })[0] || _alunoSoDeUsuarios(u);
+        })
+        .catch(function () { return _alunoSoDeUsuarios(u); });
+}
+
 // Carrega os alunos de UMA turma (nome exato, ex: "3ºA"). Devolve o mesmo
 // formato de antes, então os outros painéis continuam funcionando.
 // novaTurma = true quando a turma ainda não tem nenhum aluno cadastrado.
@@ -136,7 +218,7 @@ function carregarPlanilha(turma) {
     if (_planilhaCachePorTurma[turma]) return Promise.resolve(_planilhaCachePorTurma[turma]);
 
     return _requisicaoApi('/api/alunos?turma=' + encodeURIComponent(turma)).then(function (corpo) {
-        var notas = _filtrarOcultos(corpo.alunos);
+        var notas = _filtrarOcultos(_juntarComUsuarios(corpo.alunos, turma));
         var dados = {
             pasta: null,
             arquivo: nomeArquivoPlanilha(turma), // só usado no nome da cópia de segurança
@@ -213,7 +295,7 @@ function removerTurma(turma) {
 // também aparecem.
 function carregarTodasAsTurmas() {
     return _requisicaoApi('/api/alunos').then(function (corpo) {
-        var todas = _filtrarOcultos(corpo.alunos);
+        var todas = _filtrarOcultos(_juntarComUsuarios(corpo.alunos, ''));
         var nomesTurmas = TURMAS_DO_SISTEMA.map(turmaCanonica);
         todas.forEach(function (a) {
             var t = turmaCanonica(a.turma);

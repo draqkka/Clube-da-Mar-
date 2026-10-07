@@ -11,6 +11,7 @@
 <script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
+<script src="status-solicitacao.js"></script>
 </head>
 <body>
 
@@ -89,9 +90,10 @@
 
         <h3>Alunos aprovados (frequência ≥ 85% e média ≥ 7)</h3>
         <div class="legenda-cores">
-            <span>🟢 Diretoria aprovou</span>
-            <span>🔴 Diretoria reprovou</span>
-            <span>🟡 Aguardando resposta</span>
+            <span>🟡 Aguardando a direção</span>
+            <span>🔵 Aprovado pela direção — esperando contato equipe Clube da Maré</span>
+            <span>🟢 Confirmada pela equipe Clube da Maré</span>
+            <span>🔴 Reprovada</span>
         </div>
         <p id="progresso-diretoria" class="progresso-diretoria"></p>
 
@@ -231,11 +233,19 @@ function solicitacaoDoAluno(aluno) {
 
 function infoSolicitacao(s) {
     if (!s) return { classe: '', texto: '—' };
-    if (s.status === 'Recusado') return { classe: 'linha-recusada', texto: '🔴 Reprovada' + (s.respondidoPor ? ' (' + s.respondidoPor + ')' : '') };
-    if (s.status === 'Aprovado') return { classe: 'linha-aprovada', texto: '🟢 Confirmada' };
-    if (s.status === 'Aguardando Desenvolvedor') return { classe: 'linha-aprovada', texto: '🟢 Aprovada pela Diretoria (confirmação final em andamento)' };
-    return { classe: 'linha-pendente', texto: '🟡 Enviada — aguardando Diretoria' };
+    var classe = { 'aprovado': 'linha-aprovada', 'reprovado': 'linha-recusada', 'esperando-contato': 'linha-aguardando' }[infoStatusSolicitacao(s).chave] || 'linha-pendente';
+    return { classe: classe, texto: textoStatusSolicitacao(s, { semProfessor: true }) };
 }
+
+// Escola de uma solicitação antiga (sem "escola" gravada): procura nos alunos
+// já carregados da turma dela.
+window.resolverEscolaSolicitacao = function (s) {
+    var d = _planilhaCachePorTurma[turmaCanonica(s.turma)];
+    if (!d) return '';
+    var doAluno = d.notas.filter(function (a) { return mesmoRa(a.ra, s.ra); })[0];
+    var e = doAluno ? dadosDaEscola([doAluno]).escola : '';
+    return e || dadosDaEscola(d.notas).escola || '';
+};
 
 // ---- Tabela da turma -------------------------------------------------------
 function renderizarTurma() {
@@ -268,14 +278,17 @@ function renderizarTurma() {
     // Aprovados (com cor conforme a resposta da Diretoria)
     var corpo = document.getElementById('corpo-tabela-aprovados');
     corpo.innerHTML = '';
-    var enviadas = 0, respondidas = 0, confirmadas = 0, reprovadas = 0;
+    var enviadas = 0, respondidas = 0, confirmadas = 0, reprovadas = 0, esperandoEquipe = 0;
 
     aprovados.forEach(function (a) {
         var s = solicitacaoDoAluno(a);
         var info = infoSolicitacao(s);
         if (s) {
             enviadas++;
-            if (s.status !== 'Pendente') { respondidas++; if (s.status === 'Recusado') reprovadas++; else confirmadas++; }
+            if (s.status !== 'Pendente') respondidas++;
+            if (s.status === 'Recusado') reprovadas++;
+            else if (s.status === 'Aprovado') confirmadas++;
+            else if (s.status === 'Aguardando Desenvolvedor') esperandoEquipe++;
         }
         var botao = !s
             ? '<button type="button" class="btn-solicitar-participacao" data-ra="' + escaparHtml(a.ra) + '">Solicitar participação</button>'
@@ -293,15 +306,18 @@ function renderizarTurma() {
     document.getElementById('tabela-aprovados').style.display = aprovados.length ? 'table' : 'none';
     document.getElementById('sem-aprovados').style.display = (todos.length && !aprovados.length) ? 'block' : 'none';
 
-    // Quantas a Diretoria já respondeu; quando respondeu todas, mostra o resultado.
+    // Andamento: quantas a direção já respondeu e quantas a equipe Clube da Maré já confirmou.
     var progresso = document.getElementById('progresso-diretoria');
     if (!enviadas) {
         progresso.textContent = '';
+    } else if (respondidas === enviadas && !esperandoEquipe) {
+        progresso.textContent = '✅ Tudo respondido nesta turma: 🟢 ' + confirmadas +
+            ' confirmada(s) pela equipe Clube da Maré e 🔴 ' + reprovadas + ' reprovada(s).';
     } else if (respondidas === enviadas) {
-        progresso.textContent = '✅ A Diretoria respondeu todas as solicitações desta turma: 🟢 ' + confirmadas +
-            ' aprovada(s) e 🔴 ' + reprovadas + ' reprovada(s).';
+        progresso.textContent = 'A direção respondeu todas as solicitações desta turma — 🔵 ' + esperandoEquipe +
+            ' esperando contato da equipe Clube da Maré (🟢 ' + confirmadas + ' confirmada(s), 🔴 ' + reprovadas + ' reprovada(s)).';
     } else {
-        progresso.textContent = 'A Diretoria respondeu ' + respondidas + ' de ' + enviadas + ' solicitação(ões) desta turma — as linhas mudam de cor conforme ela responde.';
+        progresso.textContent = 'A direção respondeu ' + respondidas + ' de ' + enviadas + ' solicitação(ões) desta turma — as linhas mudam de cor conforme ela responde.';
     }
 
     // Ativos que não atingiram os critérios (recolhido)
@@ -442,6 +458,7 @@ document.getElementById('botao-enviar-solicitacao').addEventListener('click', fu
         ra: alunoSelecionado.ra,
         nomeAluno: alunoSelecionado.nome,
         turma: alunoSelecionado.turma,
+        escola: dadosDaEscola([alunoSelecionado]).escola || dadosDaEscola(dadosTurmaAtual ? dadosTurmaAtual.notas : []).escola || '',
         professor: sessao.login,
         observacao: document.getElementById('observacao-solicitacao').value.trim()
     })
@@ -486,7 +503,7 @@ function renderizarListaSolicitacoes() {
         item.style.background = 'rgba(0,0,0,0.2)';
 
         item.innerHTML = '<strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ') — ' +
-            escaparHtml(infoSolicitacao(s).texto) +
+            htmlStatusSolicitacao(s, { semProfessor: true }) +
             (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + escaparHtml(s.observacao) + '</p>' : '') +
             (s.resposta ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta (' + escaparHtml(s.respondidoPor || '') + '): "' + escaparHtml(s.resposta) + '"</p>' : '') +
             '<div style="margin-top: 10px;">' +

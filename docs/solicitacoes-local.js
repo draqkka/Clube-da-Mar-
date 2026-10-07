@@ -39,7 +39,7 @@ function _guardarReservaLocal() {
 // Lista atual (cópia em memória). Antes da primeira busca, usa a reserva local.
 function _lerSolicitacoes() {
     if (_cache === null) _cache = _lerReservaLocal();
-    return _cache.map(function (s) { return Object.assign({}, s); }); // cópia: quem chama pode mexer à vontade
+    return _cache.map(function (s) { return _completarEmailSolicitacao(Object.assign({}, s)); }); // cópia: quem chama pode mexer à vontade
 }
 
 function _avisarOuvintes() {
@@ -160,6 +160,68 @@ function _gerarId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// ---- IDENTIFICAÇÃO DO ALUNO PELO E-MAIL ------------------------------------
+// O aluno é identificado pelo E-MAIL do login (usuarios.js), não pelo RA —
+// o RA vindo da planilha podia estar errado ou nem existir (virava "NOME" +
+// nome do aluno). Cada solicitação guarda "emailAluno". Solicitações antigas,
+// que só têm nome/RA, são ligadas ao e-mail pelo NOME + turma.
+function _textoSemAcento(t) {
+    return String(t == null ? '' : t).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase().replace(/\s+/g, ' ').trim();
+}
+
+function _turmaChaveSolic(t) {
+    return _textoSemAcento(t).replace(/[^A-Z0-9]/g, '');
+}
+
+function _palavrasDoNome(n) {
+    return _textoSemAcento(n).replace(/[^A-Z ]/g, ' ').split(' ').filter(function (p) {
+        return p && ['DE', 'DA', 'DO', 'DAS', 'DOS', 'E'].indexOf(p) === -1;
+    });
+}
+
+// "Julia Victória" e "JULIA VICTÓRIA SANTOS SILVA" são a mesma pessoa:
+// vale se todas as palavras do nome mais curto (mín. 2) estão no mais longo.
+function nomesCompativeis(a, b) {
+    var pa = _palavrasDoNome(a), pb = _palavrasDoNome(b);
+    if (!pa.length || !pb.length) return false;
+    var curto = pa.length <= pb.length ? pa : pb;
+    var longo = pa.length <= pb.length ? pb : pa;
+    if (curto.length < 2 && curto.length !== longo.length) return false;
+    return curto.every(function (p) { return longo.indexOf(p) !== -1; });
+}
+
+// A solicitação "s" é desse aluno? "aluno" pode ser um registro de aluno ou
+// { email, nome, turma, ra }. Ordem: e-mail (se os dois têm) > RA > nome+turma.
+function solicitacaoDoMesmoAluno(s, aluno) {
+    if (!s || !aluno) return false;
+    var es = String(s.emailAluno || '').trim().toLowerCase();
+    var ea = String(aluno.email || '').trim().toLowerCase();
+    if (es && ea) return es === ea;
+
+    var raS = _raChave(s.ra), raA = _raChave(aluno.ra);
+    if (raS && raA && raS === raA) return true;
+
+    var nomeA = aluno.nome || aluno.nomeAluno;
+    if (nomeA && s.nomeAluno && nomesCompativeis(nomeA, s.nomeAluno)) {
+        return !aluno.turma || !s.turma || _turmaChaveSolic(aluno.turma) === _turmaChaveSolic(s.turma);
+    }
+    return false;
+}
+
+// Solicitação antiga sem e-mail: tenta descobrir o e-mail pelo nome + turma
+// entre os estudantes de usuarios.js (só se achar UM estudante, sem dúvida).
+function _completarEmailSolicitacao(s) {
+    if (s.emailAluno || typeof listarEstudantes !== 'function') return s;
+    var candidatos = listarEstudantes().filter(function (u) {
+        var turmaU = typeof primeiraTurmaDoUsuario === 'function' ? primeiraTurmaDoUsuario(u) : '';
+        return nomesCompativeis(u.nome, s.nomeAluno) &&
+            (!turmaU || !s.turma || _turmaChaveSolic(turmaU) === _turmaChaveSolic(s.turma));
+    });
+    if (candidatos.length === 1) s.emailAluno = String(candidatos[0].login).trim().toLowerCase();
+    return s;
+}
+
 // ---- FLUXO DE APROVAÇÃO EM DUAS ETAPAS -----------------------------------
 // status possíveis de uma solicitação:
 //   'Pendente'              -> professor enviou, aguardando a Diretoria
@@ -180,7 +242,8 @@ function _gerarId() {
 function criarSolicitacao(dados) {
     var nova = {
         id: _gerarId(),
-        ra: String(dados.ra),
+        emailAluno: String(dados.emailAluno || '').trim().toLowerCase(),   // identifica o aluno
+        ra: String(dados.ra == null ? '' : dados.ra),                      // só de reserva (pode estar errado)
         nomeAluno: dados.nomeAluno,
         turma: dados.turma,
         escola: dados.escola || '',
@@ -319,11 +382,14 @@ function limparTodasSolicitacoes() {
     return _enviarAoServidor(_chamarApi('DELETE', URL_SOLICITACOES + '?todas=1')).catch(function () {});
 }
 
-// ---- Aluno: status da solicitação mais recente do próprio RA -
-function escutarStatusAluno(ra, aoAtualizar) {
+// ---- Aluno: status da solicitação mais recente do PRÓPRIO ALUNO -----------
+// "aluno" = { email, nome, turma, ra } (o e-mail é o que vale). Por
+// compatibilidade, ainda aceita só um texto (RA).
+function escutarStatusAluno(aluno, aoAtualizar) {
+    if (typeof aluno !== 'object' || aluno === null) aluno = { ra: aluno };
     _registrarOuvinte(function () {
         var doAluno = _lerSolicitacoes()
-            .filter(function (s) { return _raChave(s.ra) === _raChave(ra); })
+            .filter(function (s) { return solicitacaoDoMesmoAluno(s, aluno); })
             .sort(function (a, b) { return b.criadoEm - a.criadoEm; });
         aoAtualizar(doAluno[0] || null);
     });

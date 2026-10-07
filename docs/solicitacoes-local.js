@@ -1,42 +1,152 @@
 // ==========================================================================
-// SOLICITAÇÕES DE PARTICIPAÇÃO — sem backend, guardadas no localStorage.
+// SOLICITAÇÕES DE PARTICIPAÇÃO — guardadas no BANCO (/api/solicitacoes).
 //
-// ⚠️ LIMITAÇÃO IMPORTANTE: como não existe mais nenhum servidor (nem
-// Firebase, nem Apps Script), essas solicitações só ficam salvas NO MESMO
-// NAVEGADOR/COMPUTADOR que criou ou respondeu a elas. Se o professor usa um
-// computador e a Diretoria usa outro, cada um vê uma lista diferente — a
-// solicitação de um NÃO aparece pro outro. Só funciona de verdade se todo
-// mundo acessar do mesmo navegador (ex: um computador/Chromebook único da
-// secretaria) ou pra fins de teste/demonstração.
+// Professor, direção, desenvolvedor e aluno veem a MESMA lista, mesmo em
+// computadores diferentes. Como funciona:
+//   - a página mantém uma cópia em memória (_cache), que é o que as telas
+//     leem — por isso as funções continuam rápidas e com os mesmos nomes;
+//   - toda alteração aparece na hora (cópia local) e é enviada ao banco;
+//   - a cada poucos segundos (e quando a aba volta a ficar visível) a página
+//     busca a lista do banco, então a resposta de outra pessoa aparece
+//     sozinha, sem recarregar;
+//   - uma cópia fica salva no localStorage só como reserva (abre rápido e
+//     funciona se a internet cair por um instante).
+//
+// Na primeira vez que a página abre depois dessa mudança, as solicitações que
+// estavam salvas SÓ neste navegador são enviadas ao banco (uma vez só).
 // ==========================================================================
 var CHAVE_SOLICITACOES = 'cdm_solicitacoes';
+var CHAVE_MIGRADAS = 'cdm_solicitacoes_migradas';
+var URL_SOLICITACOES = '/api/solicitacoes';
+var INTERVALO_ATUALIZACAO_MS = 5000;
 
-// Quem chamou uma das funções "escutar..." fica registrado aqui. Toda vez
-// que os dados mudam (nesta aba OU em outra), todo mundo é avisado — assim
-// a lista se atualiza sozinha sem precisar recarregar a página.
 var _ouvintes = [];
+var _cache = null;          // lista em memória (null = ainda não carregou)
+var _gravandoAgora = 0;     // quantas gravações estão a caminho do servidor
+var _versaoLocal = 0;       // sobe a cada alteração local (descarta busca "velha")
+var _timerAtualizacao = null;
+var _migracaoFeita = false;
 
-function _lerSolicitacoes() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_SOLICITACOES) || '[]');
-    } catch (e) {
-        return [];
-    }
+function _lerReservaLocal() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_SOLICITACOES) || '[]'); }
+    catch (e) { return []; }
 }
 
-function _salvarSolicitacoes(lista) {
-    localStorage.setItem(CHAVE_SOLICITACOES, JSON.stringify(lista));
+function _guardarReservaLocal() {
+    try { localStorage.setItem(CHAVE_SOLICITACOES, JSON.stringify(_cache || [])); } catch (e) {}
+}
+
+// Lista atual (cópia em memória). Antes da primeira busca, usa a reserva local.
+function _lerSolicitacoes() {
+    if (_cache === null) _cache = _lerReservaLocal();
+    return _cache.map(function (s) { return Object.assign({}, s); }); // cópia: quem chama pode mexer à vontade
+}
+
+function _avisarOuvintes() {
     _ouvintes.forEach(function (atualizar) { atualizar(); });
+}
+
+// Troca a lista em memória, guarda a reserva e avisa as telas.
+function _salvarSolicitacoes(lista) {
+    _cache = lista;
+    _versaoLocal++;
+    _guardarReservaLocal();
+    _avisarOuvintes();
+}
+
+function _chamarApi(metodo, url, corpo) {
+    return fetch(url, {
+        method: metodo,
+        headers: corpo ? { 'Content-Type': 'application/json' } : undefined,
+        body: corpo ? JSON.stringify(corpo) : undefined
+    }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+            if (!r.ok) throw new Error(j.erro || ('Erro ' + r.status));
+            return j;
+        });
+    });
+}
+
+// Envia uma gravação ao banco. Se falhar, a próxima busca devolve a verdade
+// do servidor (a tela se corrige sozinha).
+function _enviarAoServidor(promessa) {
+    _gravandoAgora++;
+    return promessa.then(function (r) { _gravandoAgora--; return r; },
+        function (e) { _gravandoAgora--; console.warn('Solicitações: não consegui salvar no servidor —', e.message); throw e; });
+}
+
+function _gravarNoServidor(solicitacao) {
+    return _enviarAoServidor(_chamarApi('POST', URL_SOLICITACOES, { solicitacao: solicitacao }));
+}
+
+// Busca a lista no banco e atualiza as telas (só se algo mudou).
+function _atualizarDoServidor() {
+    if (_gravandoAgora > 0) return Promise.resolve();
+    var versaoNoInicio = _versaoLocal;
+    return _chamarApi('GET', URL_SOLICITACOES).then(function (resp) {
+        // Se a pessoa mexeu em algo enquanto a busca ia e voltava, essa
+        // resposta já está velha — a próxima rodada resolve.
+        if (versaoNoInicio !== _versaoLocal || _gravandoAgora > 0) return;
+        var doServidor = resp.solicitacoes || [];
+
+        // Migração única: solicitações que só existiam neste navegador.
+        var jaMigrou = false;
+        try { jaMigrou = localStorage.getItem(CHAVE_MIGRADAS) === '1'; } catch (e) {}
+        if (!jaMigrou && !_migracaoFeita) {
+            _migracaoFeita = true;
+            var idsServidor = {};
+            doServidor.forEach(function (s) { idsServidor[s.id] = true; });
+            var soLocais = _lerReservaLocal().filter(function (s) { return s && s.id && !idsServidor[s.id]; });
+            if (soLocais.length) {
+                return _enviarAoServidor(_chamarApi('POST', URL_SOLICITACOES, { lote: soLocais })).then(function () {
+                    try { localStorage.setItem(CHAVE_MIGRADAS, '1'); } catch (e) {}
+                    return _atualizarDoServidor();
+                }, function () { _migracaoFeita = false; });
+            }
+            try { localStorage.setItem(CHAVE_MIGRADAS, '1'); } catch (e) {}
+        }
+
+        var antes = JSON.stringify(_cache || []);
+        var depois = JSON.stringify(doServidor);
+        _cache = doServidor;
+        _guardarReservaLocal();
+        if (antes !== depois || !_atualizouUmaVez) { _atualizouUmaVez = true; _avisarOuvintes(); }
+    }).catch(function (e) {
+        console.warn('Solicitações: não consegui buscar no servidor —', e.message);
+    });
+}
+var _atualizouUmaVez = false;
+
+function _iniciarAtualizacaoAutomatica() {
+    if (_timerAtualizacao) return;
+    _atualizarDoServidor();
+    _timerAtualizacao = setInterval(_atualizarDoServidor, INTERVALO_ATUALIZACAO_MS);
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) _atualizarDoServidor();
+    });
+    // Duas abas no mesmo navegador: a reserva local mudou -> mostra já.
+    window.addEventListener('storage', function (evento) {
+        if (evento.key === CHAVE_SOLICITACOES) {
+            _cache = _lerReservaLocal();
+            _avisarOuvintes();
+        }
+    });
 }
 
 function _registrarOuvinte(atualizar) {
     _ouvintes.push(atualizar);
-    atualizar(); // mostra o estado atual assim que a página chama escutarXxx
-    // Cobre o caso de duas abas abertas no MESMO navegador (ex: professor
-    // testando em duas abas). Entre computadores diferentes isso não dispara.
-    window.addEventListener('storage', function (evento) {
-        if (evento.key === CHAVE_SOLICITACOES) atualizar();
-    });
+    atualizar(); // mostra o estado atual (reserva local) assim que a página chama escutarXxx
+    _iniciarAtualizacaoAutomatica();
+}
+
+// Altera UMA solicitação (função "mudar" recebe o objeto) e grava no banco.
+function _alterarSolicitacao(id, mudar) {
+    var lista = _lerSolicitacoes();
+    var solicitacao = lista.filter(function (s) { return s.id === id; })[0];
+    if (!solicitacao) return Promise.resolve();
+    mudar(solicitacao);
+    _salvarSolicitacoes(lista);
+    return _gravarNoServidor(solicitacao).catch(function () {});
 }
 
 // Compara RA ignorando maiúscula/minúscula, pontuação e zeros à esquerda
@@ -58,27 +168,39 @@ function _gerarId() {
 //                                 da Diretoria nessa decisão)
 //   'Aprovado'              -> confirmado pelo Desenvolvedor (final)
 //   'Recusado'              -> recusado (por Diretoria OU Desenvolvedor)
+// Na TELA, cada status tem um nome (ver status-solicitacao.js):
+//   Aguardando Desenvolvedor -> "Aprovado pela direção" + "Esperando contato
+//   equipe Clube da Maré"; Aprovado -> "Confirmada pela equipe Clube da Maré".
+// O Desenvolvedor só enxerga o que a direção encaminhou (aprovadoDirecao).
 // O campo "respondidoPor" guarda quem tomou a última decisão ('Diretoria'
 // ou 'Desenvolvedor'), pra ficar registrado quem decidiu de verdade.
 // ---------------------------------------------------------------------------
 
 // ---- Professor: cria uma nova solicitação (sempre nasce "Pendente") ------
 function criarSolicitacao(dados) {
-    var lista = _lerSolicitacoes();
-    lista.push({
+    var nova = {
         id: _gerarId(),
         ra: String(dados.ra),
         nomeAluno: dados.nomeAluno,
         turma: dados.turma,
+        escola: dados.escola || '',
         professor: dados.professor,
         observacao: dados.observacao || '',
         status: 'Pendente',
         resposta: '',
         respondidoPor: '',
+        aprovadoDirecao: false,
         criadoEm: Date.now()
-    });
+    };
+    var lista = _lerSolicitacoes();
+    lista.push(nova);
     _salvarSolicitacoes(lista);
-    return Promise.resolve();
+    // Aqui o erro SOBE (a tela do professor mostra "não foi possível enviar") e
+    // a solicitação que não chegou ao banco é tirada da lista.
+    return _gravarNoServidor(nova).catch(function (erro) {
+        _salvarSolicitacoes(_lerSolicitacoes().filter(function (s) { return s.id !== nova.id; }));
+        throw new Error('não consegui salvar no servidor (' + erro.message + ')');
+    });
 }
 
 // ---- Diretoria: lista as pendentes, ao vivo dentro do mesmo navegador ----
@@ -102,27 +224,26 @@ function escutarTodasSolicitacoes(aoAtualizar) {
 // novoStatus  -> o novo status da solicitação (ver lista acima)
 // resposta    -> texto opcional pro professor (motivo/orientação)
 // respondidoPor -> 'Diretoria' ou 'Desenvolvedor', quem decidiu de fato
-function responderSolicitacao(id, novoStatus, resposta, respondidoPor) {
-    var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return s.id === id; });
-    if (solicitacao) {
-        solicitacao.status = novoStatus;
-        solicitacao.resposta = resposta || '';
-        solicitacao.respondidoPor = respondidoPor || '';
-    }
-    _salvarSolicitacoes(lista);
-    return Promise.resolve();
+// aprovadoDirecao -> true quando a solicitação já passou pela aprovação da
+//                    direção (é isso que faz ela aparecer pro Desenvolvedor)
+function responderSolicitacao(id, novoStatus, resposta, respondidoPor, aprovadoDirecao) {
+    return _alterarSolicitacao(id, function (s) {
+        s.status = novoStatus;
+        s.resposta = resposta || '';
+        s.respondidoPor = respondidoPor || '';
+        s.aprovadoDirecao = !!aprovadoDirecao;
+    });
 }
 
 // ---- Diretoria: aprova uma solicitação pendente. Isso NÃO é a aprovação
 // final — só passa a solicitação pra etapa de confirmação do Desenvolvedor.
 function aprovarComoDiretoria(id, resposta) {
-    return responderSolicitacao(id, 'Aguardando Desenvolvedor', resposta, 'Diretoria');
+    return responderSolicitacao(id, 'Aguardando Desenvolvedor', resposta, 'Diretoria', true);
 }
 
 // ---- Diretoria: recusa uma solicitação pendente (decisão final dela) -----
 function recusarComoDiretoria(id, resposta) {
-    return responderSolicitacao(id, 'Recusado', resposta, 'Diretoria');
+    return responderSolicitacao(id, 'Recusado', resposta, 'Diretoria', false);
 }
 
 // ---- Desenvolvedor: confirmação final — aprova ou recusa qualquer
@@ -131,11 +252,11 @@ function recusarComoDiretoria(id, resposta) {
 // nessa hierarquia, ele também pode agir direto numa "Pendente" sem
 // esperar a Diretoria, se precisar.
 function aprovarComoDesenvolvedor(id, resposta) {
-    return responderSolicitacao(id, 'Aprovado', resposta, 'Desenvolvedor');
+    return responderSolicitacao(id, 'Aprovado', resposta, 'Desenvolvedor', true);
 }
 
 function recusarComoDesenvolvedor(id, resposta) {
-    return responderSolicitacao(id, 'Recusado', resposta, 'Desenvolvedor');
+    return responderSolicitacao(id, 'Recusado', resposta, 'Desenvolvedor', true);
 }
 
 // ---- Diretoria: reabre uma solicitação que ELA MESMA recusou, pra
@@ -143,15 +264,23 @@ function recusarComoDesenvolvedor(id, resposta) {
 // sentido pra decisões que ainda são dela — uma vez que o Desenvolvedor
 // decide (Aprovado/Recusado por ele), só o próprio Desenvolvedor reabre.
 function reabrirSolicitacao(id) {
-    var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return s.id === id; });
-    if (solicitacao) {
-        solicitacao.status = 'Pendente';
-        solicitacao.resposta = '';
-        solicitacao.respondidoPor = '';
-    }
-    _salvarSolicitacoes(lista);
-    return Promise.resolve();
+    return _alterarSolicitacao(id, function (s) {
+        s.status = 'Pendente';
+        s.resposta = '';
+        s.respondidoPor = '';
+        s.aprovadoDirecao = false;
+    });
+}
+
+// ---- Desenvolvedor: reabre uma decisão dele (Aprovado/Recusado) — volta
+// pra "Aguardando Desenvolvedor", ou seja, pra fila DELE (não pra direção).
+function reabrirComoDesenvolvedor(id) {
+    return _alterarSolicitacao(id, function (s) {
+        s.status = 'Aguardando Desenvolvedor';
+        s.resposta = '';
+        s.respondidoPor = '';
+        s.aprovadoDirecao = true;
+    });
 }
 
 // ---- Professor: lista TODAS as solicitações que ele mesmo criou (não só
@@ -168,30 +297,26 @@ function escutarSolicitacoesProfessor(professorLogin, aoAtualizar) {
 // ---- Professor: reabre uma solicitação já respondida (volta pra
 // "Pendente" com uma nova observação, pra Diretoria reavaliar).
 function reavaliarSolicitacaoProfessor(id, novaObservacao) {
-    var lista = _lerSolicitacoes();
-    var solicitacao = lista.find(function (s) { return s.id === id; });
-    if (solicitacao) {
-        solicitacao.status = 'Pendente';
-        solicitacao.observacao = novaObservacao || solicitacao.observacao;
-        solicitacao.resposta = '';
-        solicitacao.respondidoPor = '';
-        solicitacao.criadoEm = Date.now(); // volta pro topo da fila da Diretoria
-    }
-    _salvarSolicitacoes(lista);
-    return Promise.resolve();
+    return _alterarSolicitacao(id, function (s) {
+        s.status = 'Pendente';
+        s.observacao = novaObservacao || s.observacao;
+        s.resposta = '';
+        s.respondidoPor = '';
+        s.aprovadoDirecao = false;
+        s.criadoEm = Date.now(); // volta pro topo da fila da Diretoria
+    });
 }
 
 // ---- Professor: cancela (remove) uma solicitação enviada -----------------
 function cancelarSolicitacao(id) {
-    var lista = _lerSolicitacoes().filter(function (s) { return s.id !== id; });
-    _salvarSolicitacoes(lista);
-    return Promise.resolve();
+    _salvarSolicitacoes(_lerSolicitacoes().filter(function (s) { return s.id !== id; }));
+    return _enviarAoServidor(_chamarApi('DELETE', URL_SOLICITACOES + '?id=' + encodeURIComponent(id))).catch(function () {});
 }
 
-// ---- Desenvolvedor: apaga todas as solicitações salvas (uso em testes) ---
+// ---- Desenvolvedor: apaga TODAS as solicitações do banco (uso em testes) --
 function limparTodasSolicitacoes() {
     _salvarSolicitacoes([]);
-    return Promise.resolve();
+    return _enviarAoServidor(_chamarApi('DELETE', URL_SOLICITACOES + '?todas=1')).catch(function () {});
 }
 
 // ---- Aluno: status da solicitação mais recente do próprio RA -

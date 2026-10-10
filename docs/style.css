@@ -3001,3 +3001,116 @@ body{
         margin: 12px;
     }
 }
+
+
+/* =========================================================================
+   AJUSTES DE RESPONSIVIDADE NO CELULAR (index.html)
+   Este bloco fica no FINAL do arquivo de propósito: assim ele vale por cima
+   das regras anteriores, só em telas estreitas. No computador nada muda.
+   ========================================================================= */
+@media (max-width: 768px) {
+
+    /* ---- Menu do topo: mais opaco, pra o conteúdo não aparecer por trás
+            do ícone quando a página rola (ex.: formulário de contato) ---- */
+    .topnav {
+        background: rgba(0, 0, 0, .96);
+        padding: 10px 5%;
+    }
+
+    /* ---- Banner de abertura: o menu fixo (~56px) cobria o topo da imagem
+            e a logo ficava por cima do texto do banner. Agora o banner
+            começa abaixo do menu, fica mais alto (recorta as laterais em
+            vez de encolher) e a logo diminui e fica no canto. ---- */
+    #inicio.hero {
+        padding-top: 56px;
+        background: #000;
+    }
+    #inicio.hero > img:first-child {
+        height: 240px;
+        object-fit: cover;
+        object-position: 38% center;
+    }
+    #inicio .hero-logo {
+        top: 66px;
+        left: 3%;
+        width: 28%;
+        min-width: 0;
+        max-width: 120px;
+    }
+
+    /* ---- Eventos: 4 cards numa linha ficavam espremidos e o texto
+            vazava. No celular viram 2 por linha. A imagem de fundo ganha
+            altura pra acompanhar as 2 linhas de cards. ---- */
+    .fundo-hero-eventos {
+        height: 800px;
+        object-fit: cover;
+    }
+    .painel-eventos {
+        margin-top: -710px;
+        padding: 40px 4% 30px;
+    }
+    .grid-eventos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+    .card-evento:hover {
+        transform: none;   /* o "zoom" ao passar o mouse estoura a tela no toque */
+    }
+    .info-evento h3 {
+        font-size: 15px;
+        overflow-wrap: anywhere;
+    }
+
+    /* ---- Wellness: 5 itens em 1 linha ficavam ilegíveis. Agora são 3 por
+            linha (3 em cima, 2 embaixo, centralizados). ---- */
+    .wellness-itens {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 22px 10px;
+    }
+    .item-wellness {
+        width: 30%;
+        min-width: 90px;
+    }
+
+    /* ---- Ingressos: o fundo era esticado pra cobrir a seção toda e
+            cortava o título "INGRESSO DIGITAL". Agora a imagem aparece
+            inteira no topo (com a base esmaecida) e o painel fica logo
+            abaixo, com altura que acompanha o conteúdo. ---- */
+    .pagina-ingressos {
+        min-height: 0;
+        background: #001020;
+        padding-bottom: 30px;
+    }
+    .background-ingressos {
+        position: static;
+        width: 100%;
+        height: auto;
+        object-fit: initial;
+        -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+        mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    }
+    .painel-ingressos {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 92%;
+        height: auto;
+        margin: -24px auto 0;
+    }
+
+    /* ---- Rodapé: espaço extra embaixo pra o botão flutuante do chat
+            não cobrir o texto de direitos reservados. ---- */
+    .rodape-site {
+        padding-bottom: 90px;
+    }
+}
+
+/* Telas bem pequenas (ex.: iPhone SE antigo, 320px) */
+@media (max-width: 360px) {
+    #inicio.hero > img:first-child { height: 210px; }
+    .fundo-hero-eventos { height: 860px; }
+    .painel-eventos { margin-top: -770px; }
+    .info-evento h3 { font-size: 14px; }
+}

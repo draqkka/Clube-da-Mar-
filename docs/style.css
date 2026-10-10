@@ -319,13 +319,16 @@ html {
 /* ==========================================================================
    QUEM SOMOS 
    ========================================================================== */
-/* ===== Fundo full-width ===== */
 .quemsomos-container {
     position: relative;
     width: 100%;
     padding: 80px 5%;
     overflow: hidden;
     color: var(--cor-branco);
+    background: #0aa8d6; /* cor de segurança enquanto a imagem carrega */
+    display: flex;
+    align-items: center;
+    min-height: 46.26vw; /* mesma proporção da imagem (1844x853): as fotos não são cortadas, e a seção cresce se o texto precisar */
 }
 
 .fundo-quemsomos {
@@ -335,17 +338,32 @@ html {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: right center; /* mantém as fotos/palmeira sempre visíveis */
     z-index: 0;
+}
+
+/* Escurece só o lado do texto pra ele ficar legível sobre a água clara */
+.quemsomos-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(90deg,
+        rgba(0, 45, 80, 0.62) 0%,
+        rgba(0, 45, 80, 0.50) 45%,
+        rgba(0, 45, 80, 0) 68%);
+    pointer-events: none;
 }
 
 .quemsomos-conteudo {
     position: relative;
     z-index: 10;
     display: grid;
-    grid-template-columns: 1.3fr 1fr;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); /* coluna da direita fica livre pras fotos do fundo */
     gap: 50px;
     align-items: center;
     max-width: 1300px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -353,52 +371,58 @@ html {
     font-size: 50px;
     color: var(--cor-branco);
     margin-bottom: 6px;
-}
-
-.quemsomos-texto h2::after {
-    
-    display: block;
-    width: 210px;
-    height: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    text-shadow: 0 2px 8px rgba(0, 40, 70, 0.55);
 }
 
 .quemsomos-texto p {
-    font-size: 15px;
-    line-height: 1.8;      /* mais espaço entre as linhas (antes 1.1) */
-    margin-bottom: 24px;   /* mais espaço entre os parágrafos (antes 16px) */
-    color: #f0f0f0;
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 40, 70, 0.75);
 }
 
-.quemsomos-fotos {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.quemsomos-fotos-mobile {
+    display: none; /* só aparece no celular */
 }
 
-.quemsomos-fotos img {
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
-}
-
-@media (max-width: 800px) {
+/* Celular e tablet: fundo vira só a água, as fotos descem pra baixo do texto */
+@media (max-width: 1100px) {
+    .quemsomos-container {
+        padding: 90px max(22px, 6%) 40px;
+        display: block;
+        min-height: 0;
+    }
+    .fundo-quemsomos {
+        object-position: 20% center; /* parte da água sem fotos */
+    }
+    .quemsomos-container::before {
+        background: linear-gradient(180deg,
+            rgba(0, 45, 80, 0.55) 0%,
+            rgba(0, 45, 80, 0.50) 100%);
+    }
     .quemsomos-conteudo {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
     .quemsomos-texto h2 {
-        font-size: 30px;
+        font-size: 34px;
     }
     .quemsomos-texto p {
-        font-size: 14px;
-        line-height: 1.75;
-        margin-bottom: 20px;
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 18px;
+    }
+    .quemsomos-fotos-mobile {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        margin: 10px auto 70px; /* folga embaixo pro botão flutuante do chat não cobrir */
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(0, 40, 70, 0.35);
     }
 }
-
-    
-
 
 
 

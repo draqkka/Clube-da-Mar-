@@ -3097,7 +3097,24 @@ body{
         left: auto;
         width: 92%;
         height: auto;
-        margin: -24px auto 0;
+        /* Sobe o painel pra ficar logo ABAIXO de "INGRESSO DIGITAL / Seu acesso
+           começa aqui", centralizado. A imagem tem proporção 3:2 (altura =
+           66,7% da largura) e o subtítulo termina a ~37% dessa altura — por
+           isso -42vw funciona em qualquer largura de celular. */
+        margin: -42vw auto 0;
+        padding: 14px;
+        background: rgba(0, 12, 26, .72);   /* fundo escuro suave: o texto não briga com o celular/catraca da imagem */
+        border-radius: 14px;
+    }
+    /* Os 4 cards de detalhe não podem passar da largura do painel (em ~430px
+       o da direita encostava/vazava pela borda) */
+    .pagina-ingressos .grid-detalhes {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .pagina-ingressos .item-detalhe {
+        min-width: 0;
+        box-sizing: border-box;
+        overflow-wrap: break-word;
     }
 
     /* ---- Rodapé: espaço extra embaixo pra o botão flutuante do chat

@@ -3103,7 +3103,35 @@ body{
     /* ---- Rodapé: espaço extra embaixo pra o botão flutuante do chat
             não cobrir o texto de direitos reservados. ---- */
     .rodape-site {
-        padding-bottom: 90px;
+        margin-top: 0;            /* tira a faixa preta vazia acima do rodapé */
+        padding: 32px 5% 24px;
+    }
+    .rodape-conteudo {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 24px 20px;
+    }
+    .rodape-nav {
+        grid-column: 1 / -1;      /* Navegação ocupa a linha toda */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0 12px;
+    }
+    .rodape-nav h4 {
+        grid-column: 1 / -1;
+    }
+    .rodape-bloco p,
+    .rodape-bloco a {
+        overflow-wrap: break-word;  /* só quebra o e-mail se realmente não couber */
+        font-size: .85rem;
+    }
+    /* O botão flutuante do chat fica no canto direito: o texto de direitos
+       reservados ganha folga desse lado em vez de empurrar o rodapé pra baixo */
+    .rodape-linha {
+        padding-right: 76px;
+        padding-left: 4px;
+        text-align: left;
+        min-height: 44px;
     }
 }
 
@@ -3113,4 +3141,5 @@ body{
     .fundo-hero-eventos { height: 860px; }
     .painel-eventos { margin-top: -770px; }
     .info-evento h3 { font-size: 14px; }
+    .rodape-conteudo { grid-template-columns: 1fr; }   /* Endereço e Contato um embaixo do outro */
 }

@@ -54,3 +54,15 @@ function formatarMedia(v) {
 function formatarFrequencia(v) {
     return (v === '' || v === null || v === undefined) ? '—' : v + '%';
 }
+
+
+// Nome curto usado na saudação (painel do aluno e tela inicial):
+// "Rebeca dos Santos Pereira" -> "Rebeca Pereira"; senão primeiro + último nome.
+function nomeCurtoAluno(nomeCompleto) {
+    var n = String(nomeCompleto || '').trim();
+    var base = n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (base.indexOf('rebeca') === 0) return 'Rebeca Pereira';
+    if (base.indexOf('julia') === 0) return 'Julia Victória';
+    var partes = n.split(/\s+/);
+    return partes.length > 1 ? partes[0] + ' ' + partes[partes.length - 1] : n;
+}

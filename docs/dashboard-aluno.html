@@ -119,7 +119,7 @@ var FORMULARIOS = {
 };
 
 // Saudação inicial.
-document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || '') + '!';
+document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + nomeCurtoAluno(sessao.nome || '') + '!';
 
 // Resumo que também aparece na tela inicial depois do "Sair".
 var resumo = {

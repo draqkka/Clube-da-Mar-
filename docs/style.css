@@ -3217,10 +3217,10 @@ body{
 
 /* Resumo do aluno no celular: sobe e cobre a parte de baixo do banner
    (como no computador), em vez de ficar todo abaixo dele.
-   Para subir mais/menos, mude o margin-top (mais negativo = mais alto). */
+   Para subir mais/menos, mude o margin-top (mais negativo = mais alto). Com -230px o painel começa na altura da logo. */
 @media (max-width: 768px) {
     .hero .resumo-aluno {
-        margin: -48px 12px 12px;
+        margin: -230px 12px 12px;
         padding: 12px 14px;
         z-index: 5;
     }

@@ -3213,3 +3213,20 @@ body{
 
     .painel-dashboard .login-saudacao h1 { font-size: 1.9rem; overflow-wrap: anywhere; }
 }
+
+
+/* Resumo do aluno no celular: sobe e cobre a parte de baixo do banner
+   (como no computador), em vez de ficar todo abaixo dele.
+   Para subir mais/menos, mude o margin-top (mais negativo = mais alto). */
+@media (max-width: 768px) {
+    .hero .resumo-aluno {
+        margin: -48px 12px 12px;
+        padding: 12px 14px;
+        z-index: 5;
+    }
+    .hero .resumo-aluno .grid-status { gap: 8px; margin: 8px 0; }
+    .hero .resumo-aluno .grid-status .card-status { padding: 10px 8px; }
+    .hero .resumo-aluno .card-status-valor { font-size: 1.25rem; }
+    .hero .resumo-aluno .card-status-diretoria .card-status-valor { font-size: 1.35rem; }
+    .hero .resumo-aluno-texto { margin-top: 2px; font-size: .9rem; }
+}

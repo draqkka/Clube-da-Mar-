@@ -1076,7 +1076,7 @@ html {
 
     overflow:hidden;
 
-    height:120px;
+    height:100px;
 
     color:var(--cor-branco);
 
@@ -3320,6 +3320,31 @@ body{
     cursor: pointer;
     z-index: 999;
     transition: transform .2s ease;
+}
+/* Título "Comece Aqui" em cima do botão do YouTube (com setinha apontando pro botão) */
+.youtube-titulo {
+    position: fixed;
+    left: var(--youtube-distancia);
+    bottom: calc(var(--youtube-distancia) + var(--youtube-tamanho) + 12px);
+    background: var(--cor-menu-amarelo);
+    color: var(--cor-azul-profundo);
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    white-space: nowrap;
+    pointer-events: none;      /* o clique passa direto; só o botão abre o vídeo */
+    z-index: 999;
+}
+.youtube-titulo::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: calc(var(--youtube-tamanho) / 2 - 7px);
+    border: 7px solid transparent;
+    border-top-color: var(--cor-menu-amarelo);
 }
 .botao-youtube-flutuante svg { width: 58%; height: auto; display: block; }
 .botao-youtube-flutuante:hover { transform: scale(1.08); }

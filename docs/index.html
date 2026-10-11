@@ -15,17 +15,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<!-- 🌟 BLOCO 1 — Títulos de Forte Impacto: Alfa Slab One, Fjalla One, Gravitas One -->
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Fjalla+One&family=Gravitas+One&display=swap" rel="stylesheet">
 
 <!-- ✍️ BLOCO 2 — Escrita Manual Casual: Caveat, Delicious Handrawn, Permanent Marker -->
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Delicious+Handrawn&family=Permanent+Marker&display=swap" rel="stylesheet">
 
-<!-- 🎨 BLOCO 3 — Cursivas Criativas & Retro: Lobster Two, Pacifico, Playwrite DE LA Guides -->
-<link href="https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Pacifico&family=Playwrite+DE+LA+Guides&display=swap" rel="stylesheet">
-
-<!-- 📜 BLOCO 4 — Caligrafia Elegante: Miss Fajardose, Petemoss, Pinyon Script, Zeyada -->
-<link href="https://fonts.googleapis.com/css2?family=Miss+Fajardose&family=Petemoss&family=Pinyon+Script&family=Zeyada&display=swap" rel="stylesheet">
 
 </head>
 <body>
@@ -522,6 +515,11 @@
         <div class="painel-local" id="painel-local">
             <h3 id="nome-local">¡Importante!</h3>
             <p id="descricao-local">Clique em um ponto do mapa pra ver os detalhes do local.</p>
+            <h4 class="titulo-baixar-mapa">Como deixar salvo o mapa no meu dispositivo</h4>
+            <ul class="dica-baixar-mapa">
+                <li><i class="fa-solid fa-mobile-screen"></i> <strong>No celular:</strong> toque e segure o dedo sobre o mapa (fora das bolinhas) e escolha <strong>"Baixar imagem"</strong>.</li>
+                <li><i class="fa-solid fa-computer-mouse"></i> <strong>No computador:</strong> clique com o botão direito do mouse sobre o mapa (fora das bolinhas), escolha <strong>"Salvar imagem como"</strong> e selecione a pasta onde quer salvar.</li>
+            </ul>
         </div>
 
     </section>
@@ -872,6 +870,25 @@ var LINK_VIDEO_TUTORIAL = '';
     fechar.addEventListener('click', fecharModal);
     fundo.addEventListener('click', function (e) { if (e.target === fundo) fecharModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fecharModal(); });
+})();
+</script>
+<script>
+// Efeito dos cards de evento no celular: o "hover" não existe no toque,
+// então ao tocar num card ele ganha a classe .ativo (zoom + sombra);
+// tocar em outro card ou fora dos cards tira o efeito.
+(function () {
+    var cards = document.querySelectorAll('.card-evento');
+    cards.forEach(function (card) {
+        card.addEventListener('click', function (e) {
+            var jaAtivo = card.classList.contains('ativo');
+            cards.forEach(function (c) { c.classList.remove('ativo'); });
+            if (!jaAtivo) card.classList.add('ativo');
+            e.stopPropagation();
+        });
+    });
+    document.addEventListener('click', function () {
+        cards.forEach(function (c) { c.classList.remove('ativo'); });
+    });
 })();
 </script>
 </body>

@@ -10,29 +10,14 @@
        nome de qualquer fonte dos blocos (ex.: var(--fonte-pacifico)). */
 
     /* >>> FONTE ATIVA <<< */
-    --fonte-titulos: var(--fonte-fjalla-one);       /* usada em todos os h1, h2, h3, h4 */
-    --fonte-textos: Arial, Helvetica, sans-serif;   /* usada nos parágrafos e textos gerais */
+    --fonte-titulos: var(--fonte-PermanentMarker);       /* usada em todos os h1, h2, h3, h4 */
+    --fonte-textos: Permanent Marker, caveat;   /* usada nos parágrafos e textos gerais */
 
-    /* 🌟 BLOCO 1 — Títulos de Forte Impacto */
-    --fonte-alfa-slab-one: "Alfa Slab One", serif;
-    --fonte-fjalla-one: "Fjalla One", sans-serif;
-    --fonte-gravitas-one: "Gravitas One", serif;
 
-    /* ✍️ BLOCO 2 — Escrita Manual Casual */
-    --fonte-caveat: "Caveat", cursive;
-    --fonte-delicious-handrawn: "Delicious Handrawn", cursive;
-    --fonte-permanent-marker: "Permanent Marker", cursive;
 
-    /* 🎨 BLOCO 3 — Cursivas Criativas & Retro */
-    --fonte-lobster-two: "Lobster Two", cursive;
-    --fonte-pacifico: "Pacifico", cursive;
-    --fonte-playwrite-de-la-guides: "Playwrite DE LA Guides", cursive;
-
-    /* 📜 BLOCO 4 — Caligrafia Elegante */
-    --fonte-miss-fajardose: "Miss Fajardose", cursive;
-    --fonte-petemoss: "Petemoss", cursive;
-    --fonte-pinyon-script: "Pinyon Script", cursive;
-    --fonte-zeyada: "Zeyada", cursive;
+    /* ===== PALETA VIVA DO SITE =====
+       Azul do mar · Verde-água · Laranja do pôr do sol · Amarelo sol · Rosa · Roxo.
+       Mude um valor aqui e ele muda em todo o site. */
 
     /* ===== CORES DE BASE ===== */
     --cor-preto: #000;             /* fundo geral do site (body) */
@@ -42,33 +27,44 @@
     --cor-cinza: #ccc;             /* texto claro sobre fundo escuro */
     --cor-cinza-claro: #e0e0e0;    /* texto claro, detalhes */
 
-    /* ===== CORES DE MARCA (usadas em várias seções) ===== */
-    --cor-menu-amarelo: yellow;         /* links do menu de navegação */
-    --cor-azul-escuro: #0b3c79;         /* títulos e ícones em azul (mapa, programação) */
-    --cor-verde-agua: #00a8a8;          /* títulos "Quem Somos", eventos */
-    --cor-creme: #f5f0e6;               /* fundo dos painéis claros (programação, mapa, legenda) */
-    --cor-laranja: #e67e22;             /* botões, bordas e categoria "Esportes" */
-    --cor-dourado: #ffd700;             /* detalhes em dourado (ingressos) */
-    --cor-roxo: #6d34bb;                /* categoria "Bem-Estar" e evento roxo */
-    --cor-verde-claro: #2ecc71;         /* destaques em verde (ingressos) */
+    /* ===== CORES DE MARCA (vivas) ===== */
+    --cor-azul-escuro: #0a5cff;         /* azul vivo: títulos e ícones (mapa, programação) */
+    --cor-azul-profundo: #0a3d91;       /* azul bem escuro: texto sobre fundos amarelos/claros */
+    --cor-verde-agua: #00bfb3;          /* verde-água vivo: títulos "Quem Somos", eventos */
+    --cor-creme: #fff4dc;               /* fundo dos painéis claros (programação, mapa, legenda) */
+    --cor-laranja: #ff7a00;             /* laranja vivo: botões, bordas e categoria "Esportes" */
+    --cor-dourado: #ffc800;             /* amarelo-sol: detalhes em dourado (ingressos) */
+    --cor-roxo: #8a3ffc;                /* roxo vivo: categoria "Bem-Estar" e evento roxo */
+    --cor-verde-claro: #19d263;         /* verde vivo: destaques (ingressos) */
+
+    /* ===== MENU DO TOPO ===== */
+    --cor-barra-menu: #0a5cff;          /* cor da barra do menu (azul do mar vivo) */
+    --cor-barra-menu-painel: #083fb3;   /* fundo do painel do menu no celular (azul mais fechado) */
+    --cor-menu-texto: #ffffff;          /* cor dos links do menu */
+    --cor-menu-hover: #ffd000;          /* cor dos links ao passar o mouse / sublinhado */
+    --cor-menu-amarelo: #ffd000;        /* (usada em outros pontos do site) */
+
+    /* ===== TÍTULO "EVENTOS DA EXCURSÃO" ===== */
+    --cor-titulo-eventos: #ffd000;      /* amarelo-sol */
 
     /* ===== WELLNESS ===== */
-    --cor-amarelo-wellness: #dfd001;        /* ícones e título da seção Wellness */
-    --cor-amarelo-wellness-hover: #b8c200;  /* cor do hover nos itens de Wellness */
+    --cor-amarelo-wellness: #ffc800;        /* fundo amarelo dos cards de evento */
+    --cor-wellness: #ff7a00;                /* ícones e título da seção Wellness (laranja vivo, lê bem sobre o creme) */
+    --cor-amarelo-wellness-hover: #00a99d;  /* cor do hover nos itens de Wellness (verde-água) */
 
     /* ===== CARTÕES DE "PRÓXIMOS EVENTOS" ===== */
-    --cor-evento-rosa: #d1006c;
-    --cor-evento-laranja: #ef7c00;
-    --cor-evento-azul: #1976d2;
+    --cor-evento-rosa: #ff2d87;
+    --cor-evento-laranja: #ff7a00;
+    --cor-evento-azul: #0a84ff;
 
     /* ===== CATEGORIAS DO MAPA (pontos e legenda) ===== */
-    --cor-cat-lazer: #0f6e56;
-    --cor-cat-servico: #27500a;
+    --cor-cat-lazer: #00a67e;
+    --cor-cat-servico: #3aa800;
     /* Esportes usa --cor-laranja e Bem-Estar usa --cor-roxo, já definidos acima */
 
     /* ===== DETALHES ESPECÍFICOS (usados uma única vez) ===== */
-    --cor-gradiente-laranja: #ff9d00;   /* ponta da linha do tempo (timeline) */
-    --cor-hora: #ff9900;                /* horário na timeline de programação */
+    --cor-gradiente-laranja: #ff8a00;   /* ponta da linha do tempo (timeline) */
+    --cor-hora: #ff7a00;                /* horário na timeline de programação */
     --cor-amarelo-contato: #ffe81d;     /* cor do texto digitado no formulário de Feedback */
 }
 
@@ -138,14 +134,15 @@ html {
     display: flex;
     justify-content: flex-end;
     padding: 16px 5%;
-    background: rgba(0, 0, 0, .88);
+    background: var(--cor-barra-menu);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
     z-index: 1000;
 }
 
 .menu-icone {
     background: none;
     border: none;
-    color: var(--cor-menu-amarelo);
+    color: var(--cor-menu-texto);
     font-size: 24px;
     padding: 6px 10px;
     cursor: pointer;
@@ -153,7 +150,7 @@ html {
 }
 
 .menu-icone:hover {
-    color: var(--cor-branco);
+    color: var(--cor-menu-hover);
 }
 
 /* NOVO: botão "Sair" visível direto no topo (só nas páginas de login),
@@ -162,7 +159,7 @@ html {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--cor-menu-amarelo);
+    color: var(--cor-menu-texto);
     text-decoration: none;
     font-weight: bold;
     font-size: 16px;
@@ -170,7 +167,7 @@ html {
 }
 
 .link-sair-topo:hover {
-    color: var(--cor-branco);
+    color: var(--cor-menu-hover);
 }
 
 .menu-dropdown {
@@ -182,7 +179,7 @@ html {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    background: rgba(0, 0, 0, 0.96);
+    background: var(--cor-barra-menu-painel);
     border-radius: 12px;
     padding: 10px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
@@ -199,7 +196,7 @@ html {
 }
 
 .menu-dropdown a {
-    color: var(--cor-menu-amarelo);
+    color: var(--cor-menu-texto);
     text-decoration: none;
     font-size: 17px;
     font-weight: bold;
@@ -208,8 +205,8 @@ html {
 }
 
 .menu-dropdown a:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--cor-branco);
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--cor-menu-hover);
 }
 
 .menu-dropdown a.link-entrar {
@@ -276,7 +273,7 @@ html {
 
     .menu-dropdown a:hover {
         background: none;
-        color: var(--cor-branco);
+        color: var(--cor-menu-hover);
     }
 
     /* sublinhado amarelo que aparece embaixo do link ao passar o mouse */
@@ -287,7 +284,7 @@ html {
         right: 2px;
         bottom: -4px;
         height: 2px;
-        background: var(--cor-menu-amarelo);
+        background: var(--cor-menu-hover);
         transform: scaleX(0);
         transition: transform .25s ease;
     }
@@ -452,7 +449,7 @@ html {
 
 
 .secao-home-eventos {
-    margin-top: 5px;
+    margin-top: 0; /* era 5px: deixava uma linha preta entre Quem Somos e Eventos */
 }
 
 /* Espaço extra entre Eventos e Wellness, só na versão de tudo-em-uma-página (index.html) */
@@ -505,11 +502,13 @@ html {
 }
 
 .painel-eventos h2 {
-    font-size: 25px;
-    margin-bottom: 4px;
-    color: var(--cor-verde-agua);
+    font-size: 46px;
+    margin-bottom: 18px;
+    color: var(--cor-titulo-eventos);
     text-align: center;
     margin-top: -60px;
+    /* contorno escuro pra o título aparecer bem sobre o céu e as nuvens */
+    text-shadow: 0 2px 0 var(--cor-azul-profundo), 0 0 10px rgba(10, 61, 145, .75), 0 3px 12px rgba(0, 0, 0, .5);
 }
     
 
@@ -521,8 +520,8 @@ html {
     grid-template-columns: repeat(4, 1fr);
     position: relative;
     z-index: 10;
-    gap: 20px;
-    max-width: 900px;
+    gap: 36px;               /* espaço entre os cards (era 20px) */
+    max-width: 1040px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -554,7 +553,8 @@ html {
 }
 
 
-.card-evento:hover{
+.card-evento:hover,
+.card-evento.ativo{   /* .ativo = card tocado no celular (ver script no fim do index.html) */
 
     transform:scale(1.07);
 
@@ -612,9 +612,9 @@ html {
 
 
 .info-evento h3 {
-    font-size: 15px;
+    font-size: 16px;
     margin-bottom: 4px;
-    color: var(--cor-verde-agua);
+    color: var(--cor-azul-profundo);   /* azul escuro sobre o amarelo: bem mais legível */
 
 }
 
@@ -627,7 +627,7 @@ html {
 
 /* ===== Fundo full-width ===== */
 .hero-wellness {
-    margin-top: 5px;
+    margin-top: 0;
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -673,7 +673,7 @@ html {
 
 .titulo-wellness h2{
 
-    color:var(--cor-amarelo-wellness);
+    color:var(--cor-wellness);
 
     font-size:38px;
 
@@ -729,7 +729,7 @@ html {
 
     font-size:42px;
 
-    color:var(--cor-amarelo-wellness);
+    color:var(--cor-wellness);
 
     margin-bottom:15px;
 
@@ -741,7 +741,7 @@ html {
 
     font-size:14px;
 
-    color:var(--cor-amarelo-wellness);
+    color:var(--cor-wellness);
 
     line-height:1.4;
 
@@ -1344,7 +1344,7 @@ html {
 }
 
 .fundo-hero-mapa {
-    margin-top: 5px;
+    margin-top: 0; /* era 5px: deixava uma linha preta entre Programação e Mapa */
     width: 100%;
     height: 400px;
     object-fit: cover;
@@ -1486,6 +1486,31 @@ html {
     font-size: 14px;
     color: var(--cor-texto-medio);
     line-height: 1.5;
+}
+
+/* Dica de como baixar a imagem do mapa (celular e computador) */
+.titulo-baixar-mapa {
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--cor-azul-escuro);
+    font-size: 16px;
+    line-height: 1.4;
+}
+.dica-baixar-mapa {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+}
+.dica-baixar-mapa li {
+    font-size: 14px;
+    color: var(--cor-texto-medio);
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+.dica-baixar-mapa i {
+    color: var(--cor-azul-escuro);
+    margin-right: 6px;
 }
 
 /* NOVO: aviso de acesso restrito na home (Estudante/Responsável barrados da planilha) */
@@ -2667,7 +2692,7 @@ body{
     background: #0a0a0a;
     color: var(--cor-cinza);
     padding: 40px 20px 20px;
-    margin-top: 60px;
+    margin-top: 0;   /* sem faixa preta entre a seção de Contato e o rodapé */
 }
 .rodape-conteudo{
     max-width: 1100px;
@@ -3062,7 +3087,7 @@ body{
     /* ---- Menu do topo: mais opaco, pra o conteúdo não aparecer por trás
             do ícone quando a página rola (ex.: formulário de contato) ---- */
     .topnav {
-        background: rgba(0, 0, 0, .96);
+        background: var(--cor-barra-menu);
         padding: 10px 5%;
     }
 
@@ -3098,12 +3123,20 @@ body{
         margin-top: -710px;
         padding: 40px 4% 30px;
     }
+    .painel-eventos h2 {
+        font-size: 32px;
+        margin-top: -40px;
+    }
     .grid-eventos {
         grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
+        gap: 22px 20px;     /* mais espaço entre os cards (era 14px) */
     }
-    .card-evento:hover {
-        transform: none;   /* o "zoom" ao passar o mouse estoura a tela no toque */
+    /* O efeito de "zoom" voltou no celular, mais suave pra não estourar a tela:
+       aparece ao tocar no card (e some ao tocar fora). */
+    .card-evento:hover,
+    .card-evento.ativo {
+        transform: scale(1.04);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, .4);
     }
     .info-evento h3 {
         font-size: 15px;
@@ -3359,4 +3392,134 @@ body{
 @media (max-width: 600px) {
     .modal-video-fundo { padding: 10px; }
     .modal-video-barra { font-size: .9rem; padding: 10px 12px; }
+}
+
+
+/* ==========================================================================
+   LOGIN (login.html e login-formulario.html) — visual vivo + responsivo
+   Antes o formulário era empurrado pro rodapé da tela (space-between) e no
+   celular ficava um buraco enorme entre o título e os campos. Agora o
+   conteúdo fica centralizado na tela, em qualquer tamanho.
+   ========================================================================== */
+.pagina-login {
+    min-height: 100vh;
+    min-height: 100dvh;              /* celular: considera a barra do navegador */
+    padding: 96px 5% 40px;           /* 96px = espaço do menu fixo no topo */
+    background:
+        radial-gradient(circle at 85% 6%, rgba(255, 255, 255, .28) 0, rgba(255, 255, 255, 0) 40%),   /* brilho de luz no canto */
+        linear-gradient(165deg, var(--cor-azul-escuro) 0%, #0a8fe8 50%, var(--cor-verde-agua) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+}
+.pagina-login > div {
+    width: 100%;
+    max-width: 520px;
+}
+
+/* Textos sobre o fundo azul */
+.pagina-login .login-saudacao { color: #fff; }
+.pagina-login .login-saudacao h1 {
+    color: #fff;
+    font-size: clamp(28px, 6vw, 40px);
+    text-shadow: 0 2px 10px rgba(0, 40, 110, .45);
+}
+.pagina-login .login-saudacao p {
+    color: rgba(255, 255, 255, .95);
+    font-size: 16px;
+    margin-top: 6px;
+    text-shadow: 0 1px 6px rgba(0, 40, 110, .45);
+}
+.login-instrucao {
+    color: rgba(255, 255, 255, .95);
+    font-size: 15px;
+    margin: 14px 0 18px;
+}
+
+/* "Voltar ao site" vira um botãozinho fácil de tocar */
+.form-login-voltar {
+    color: #fff;
+    background: rgba(255, 255, 255, .18);
+    padding: 9px 16px;
+    border-radius: 24px;
+    margin-bottom: 22px;
+    min-height: 40px;
+}
+.form-login-voltar:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, .3);
+}
+
+/* Escolha de perfil */
+.login-perfis { max-width: 100%; gap: 14px; }
+.login-perfil-item {
+    align-items: center;
+    padding: 18px 22px;
+    min-height: 64px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 40, 110, .22);
+}
+.login-perfil-item:hover { border-color: var(--cor-laranja); }
+.login-perfil-rotulo { color: var(--cor-texto-medio); }
+.login-perfil-nome { color: var(--cor-azul-profundo); font-size: 22px; }
+.login-perfil-extra { color: var(--cor-laranja); font-size: 16px; }
+
+/* Cartão do formulário */
+.form-login-card {
+    max-width: 520px;
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: 0 14px 38px rgba(0, 40, 110, .3);
+}
+.form-login-campo {
+    font-size: 16px;                 /* 16px evita o zoom automático do iPhone ao tocar no campo */
+    min-height: 48px;
+    border: 2px solid #d9e4f5;
+}
+.form-login-campo:focus {
+    border-color: var(--cor-azul-escuro);
+    box-shadow: 0 0 0 3px rgba(10, 92, 255, .18);
+}
+.form-login-olho { padding: 10px; right: 6px; font-size: 18px; }
+.btn-form-voltar,
+.btn-form-acessar { min-height: 50px; display: flex; align-items: center; justify-content: center; }
+.btn-form-voltar { border-color: var(--cor-azul-escuro); color: var(--cor-azul-escuro); }
+.btn-form-acessar {
+    background: var(--cor-laranja);
+    border-color: var(--cor-laranja);
+    color: #fff;
+}
+.btn-form-acessar:hover { background: #e66a00; border-color: #e66a00; }
+
+/* Só movimenta o item de perfil quando existe mouse (no toque isso estourava a tela) */
+@media (hover: none) {
+    .login-perfil-item:hover { transform: none; }
+    .login-perfil-item:active { transform: scale(.98); border-color: var(--cor-laranja); }
+}
+
+/* Tablet e celular */
+@media (max-width: 600px) {
+    .pagina-login {
+        padding: 84px 16px 28px;
+        gap: 18px;
+    }
+    .login-perfil-item {
+        flex-wrap: nowrap;             /* a setinha fica na mesma linha, à direita */
+        gap: 10px;
+    }
+    .login-perfil-extra { margin-left: auto; width: auto; }
+    .form-login-card { padding: 22px 16px; }
+    .form-login-botoes {
+        flex-direction: column-reverse; /* "Acessar" fica em cima, mais perto do polegar */
+        gap: 12px;
+        margin-top: 20px;
+    }
+}
+
+/* Celular deitado / telas baixas: não força altura de tela inteira */
+@media (max-height: 520px) {
+    .pagina-login { justify-content: flex-start; min-height: 0; }
 }

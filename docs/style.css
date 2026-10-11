@@ -3258,3 +3258,105 @@ body{
     .hero .resumo-aluno .card-status-diretoria .card-status-valor { font-size: 1.15rem; }
     .hero .resumo-aluno-texto { margin: 2px 0 0; font-size: .8rem; line-height: 1.35; }
 }
+
+
+/* =========================================================================
+   BOTÃO FLUTUANTE DO YOUTUBE (canto ESQUERDO — espelho do botão do chat)
+   Mesmo tamanho e mesma distância das bordas do botão do chat (direito).
+   Pra ajustar a distância/tamanho, mude as 3 variáveis abaixo.
+   ========================================================================= */
+:root {
+    --youtube-distancia: 22px;   /* distância da borda esquerda e de baixo */
+    --youtube-tamanho: 64px;     /* diâmetro do botão */
+}
+.botao-youtube-flutuante {
+    position: fixed;
+    left: var(--youtube-distancia);
+    bottom: var(--youtube-distancia);
+    width: var(--youtube-tamanho);
+    height: var(--youtube-tamanho);
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--cor-branco);
+    color: #ff0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    cursor: pointer;
+    z-index: 999;
+    transition: transform .2s ease;
+}
+.botao-youtube-flutuante svg { width: 58%; height: auto; display: block; }
+.botao-youtube-flutuante:hover { transform: scale(1.08); }
+.botao-youtube-flutuante:focus-visible { outline: 3px solid var(--cor-menu-amarelo); outline-offset: 3px; }
+
+/* Modal do vídeo */
+.modal-video-fundo {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-video-fundo.aberto { display: flex; }
+.modal-video {
+    width: min(900px, 100%);
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+}
+.modal-video-barra {
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    padding: 12px 16px;
+    font-family: var(--fonte-titulos);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.modal-video-fechar {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--cor-branco);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+.modal-video-fechar:hover { color: var(--cor-menu-amarelo); }
+.modal-video-corpo {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+}
+.modal-video-corpo iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.modal-video-aviso {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--cor-branco);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+    .modal-video-fundo { padding: 10px; }
+    .modal-video-barra { font-size: .9rem; padding: 10px 12px; }
+}

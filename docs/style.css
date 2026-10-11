@@ -3220,13 +3220,16 @@ body{
    Para subir mais/menos, mude o margin-top (mais negativo = mais alto). Com -230px o painel começa na altura da logo. */
 @media (max-width: 768px) {
     .hero .resumo-aluno {
-        margin: -230px 12px 12px;
-        padding: 12px 14px;
+        margin: -230px 16px 12px;
+        padding: 8px 12px;
         z-index: 5;
     }
-    .hero .resumo-aluno .grid-status { gap: 8px; margin: 8px 0; }
-    .hero .resumo-aluno .grid-status .card-status { padding: 10px 8px; }
-    .hero .resumo-aluno .card-status-valor { font-size: 1.25rem; }
-    .hero .resumo-aluno .card-status-diretoria .card-status-valor { font-size: 1.35rem; }
-    .hero .resumo-aluno-texto { margin-top: 2px; font-size: .9rem; }
+    .hero .resumo-aluno h2 { font-size: 1.1rem; margin-bottom: 2px; padding-right: 26px; }
+    .hero .resumo-aluno-fechar { top: 6px; right: 10px; font-size: 1.3rem; }
+    .hero .resumo-aluno .grid-status { gap: 6px; margin: 6px 0; }
+    .hero .resumo-aluno .grid-status .card-status { padding: 6px 6px; border-radius: 10px; }
+    .hero .resumo-aluno .card-status-rotulo { font-size: .7rem; }
+    .hero .resumo-aluno .card-status-valor { font-size: 1.05rem; }
+    .hero .resumo-aluno .card-status-diretoria .card-status-valor { font-size: 1.15rem; }
+    .hero .resumo-aluno-texto { margin: 2px 0 0; font-size: .8rem; line-height: 1.35; }
 }

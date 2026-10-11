@@ -803,5 +803,76 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 <script src="https://files.bpcontent.cloud/2026/10/10/21/20261010215442-129FGL7F.js" defer></script>
 
 </main>
+
+<!-- ===== BOTÃO DO YOUTUBE (canto esquerdo, espelhando o chat) + MODAL DO TUTORIAL ===== -->
+<button type="button" id="botao-youtube" class="botao-youtube-flutuante" aria-label="Ver tutorial em vídeo de como usar o site" title="Tutorial: como usar o site">
+    <svg viewBox="0 0 28 20" aria-hidden="true" focusable="false">
+        <rect width="28" height="20" rx="5.5" fill="#ff0000"/>
+        <path d="M11 5.5v9l8-4.5z" fill="#fff"/>
+    </svg>
+</button>
+
+<div id="modal-video-fundo" class="modal-video-fundo" aria-hidden="true">
+    <div class="modal-video" role="dialog" aria-modal="true" aria-labelledby="modal-video-titulo">
+        <div class="modal-video-barra">
+            <span id="modal-video-titulo">Tutorial | Como usar o site do Clube da Maré</span>
+            <button type="button" id="modal-video-fechar" class="modal-video-fechar" aria-label="Fechar vídeo">&times;</button>
+        </div>
+        <div class="modal-video-corpo" id="modal-video-corpo"></div>
+    </div>
+</div>
+
+<script>
+// ===== TUTORIAL EM VÍDEO =====
+// Quando gravar o vídeo e subir no YouTube, cole aqui o link (ou só o código)
+// entre as aspas. Exemplos:  'https://www.youtube.com/watch?v=Z5alu1MGDeg'  ou  'Z5alu1MGDeg'
+// Enquanto estiver vazio, o botão mostra a mensagem "em breve".
+var LINK_VIDEO_TUTORIAL = '';
+
+(function () {
+    var botao = document.getElementById('botao-youtube');
+    var fundo = document.getElementById('modal-video-fundo');
+    var corpo = document.getElementById('modal-video-corpo');
+    var fechar = document.getElementById('modal-video-fechar');
+
+    function idDoVideo(texto) {
+        texto = String(texto || '').trim();
+        if (/^[\w-]{11}$/.test(texto)) return texto;
+        var m = texto.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/);
+        return m ? m[1] : '';
+    }
+
+    function abrir() {
+        var id = idDoVideo(LINK_VIDEO_TUTORIAL);
+        corpo.innerHTML = '';
+        if (id) {
+            var frame = document.createElement('iframe');
+            frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0';
+            frame.title = 'Tutorial: como usar o site do Clube da Maré';
+            frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+            frame.allowFullscreen = true;
+            corpo.appendChild(frame);
+        } else {
+            var aviso = document.createElement('p');
+            aviso.className = 'modal-video-aviso';
+            aviso.textContent = 'O tutorial em vídeo estará disponível em breve.';
+            corpo.appendChild(aviso);
+        }
+        fundo.classList.add('aberto');
+        fundo.setAttribute('aria-hidden', 'false');
+    }
+
+    function fecharModal() {
+        fundo.classList.remove('aberto');
+        fundo.setAttribute('aria-hidden', 'true');
+        corpo.innerHTML = ''; // remove o iframe pra parar o vídeo
+    }
+
+    botao.addEventListener('click', abrir);
+    fechar.addEventListener('click', fecharModal);
+    fundo.addEventListener('click', function (e) { if (e.target === fundo) fecharModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fecharModal(); });
+})();
+</script>
 </body>
 </html>

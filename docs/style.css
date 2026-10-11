@@ -4,10 +4,35 @@
    ========================================================================== */
 :root {
 
-    /* ===== FONTES =====
-       Troque o nome aqui depois de linkar a fonte nova no <head> do HTML. */
-    --fonte-titulos: "Fjalla One", sans-serif;      /* usada em todos os h1, h2, h3, h4 */
+    /* ===== FONTES — separadas em 4 blocos =====
+       Todas já estão linkadas no <head> dos HTMLs. Pra TROCAR a fonte do site,
+       mude só as DUAS linhas "FONTE ATIVA" logo abaixo: troque o var(...) pelo
+       nome de qualquer fonte dos blocos (ex.: var(--fonte-pacifico)). */
+
+    /* >>> FONTE ATIVA <<< */
+    --fonte-titulos: var(--fonte-fjalla-one);       /* usada em todos os h1, h2, h3, h4 */
     --fonte-textos: Arial, Helvetica, sans-serif;   /* usada nos parágrafos e textos gerais */
+
+    /* 🌟 BLOCO 1 — Títulos de Forte Impacto */
+    --fonte-alfa-slab-one: "Alfa Slab One", serif;
+    --fonte-fjalla-one: "Fjalla One", sans-serif;
+    --fonte-gravitas-one: "Gravitas One", serif;
+
+    /* ✍️ BLOCO 2 — Escrita Manual Casual */
+    --fonte-caveat: "Caveat", cursive;
+    --fonte-delicious-handrawn: "Delicious Handrawn", cursive;
+    --fonte-permanent-marker: "Permanent Marker", cursive;
+
+    /* 🎨 BLOCO 3 — Cursivas Criativas & Retro */
+    --fonte-lobster-two: "Lobster Two", cursive;
+    --fonte-pacifico: "Pacifico", cursive;
+    --fonte-playwrite-de-la-guides: "Playwrite DE LA Guides", cursive;
+
+    /* 📜 BLOCO 4 — Caligrafia Elegante */
+    --fonte-miss-fajardose: "Miss Fajardose", cursive;
+    --fonte-petemoss: "Petemoss", cursive;
+    --fonte-pinyon-script: "Pinyon Script", cursive;
+    --fonte-zeyada: "Zeyada", cursive;
 
     /* ===== CORES DE BASE ===== */
     --cor-preto: #000;             /* fundo geral do site (body) */

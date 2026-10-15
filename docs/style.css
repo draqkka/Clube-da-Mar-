@@ -3745,118 +3745,130 @@ body { animation: mareEntrada .45s ease both; }
 
 
 /* ==========================================================================
-   TRANSIÇÕES EM GRADIENTE ENTRE AS SEÇÕES
-   Inclui também Ingressos e Contato para manter a continuidade visual.
+   TRANSIÇÕES EM DEGRADÊ ENTRE AS SEÇÕES (versão suave)
+   Como funciona: em cada emenda, uma faixa centrada na linha entre duas seções
+   "derrete" uma na outra.
+     - a COR da faixa vem da própria imagem da seção de baixo (5 cores lidas da
+       borda de cima dela, da esquerda pra direita), então a emenda casa certinho;
+     - a OPACIDADE usa uma curva suave (smoothstep) em vez de reta, que some com
+       a "linha" que se via entre as seções.
+   Pra deixar o degradê mais alto/baixo, mude o "height" de cada faixa.
+   Pra tirar uma transição, apague o bloco dela.
    ========================================================================== */
 
-/* Banner -> Quem Somos (azul da água, no topo da imagem do Quem Somos) */
+/* banner → Quem Somos */
 #inicio.hero::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 150px;
+    height: clamp(120px, 20vw, 300px);
+    bottom: calc(clamp(120px, 20vw, 300px) / -2);
     pointer-events: none;
-    z-index: 3;
-    background: linear-gradient(to bottom, rgba(10, 174, 190, 0) 0%, #0aaebe 100%);
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: linear-gradient(to right, #00a5c7, #03b4ce, #04b8d0, #04b9d0, #2d8b64);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Quem Somos -> Eventos (parte de baixo da água escurece para o palco) */
+/* Quem Somos → Eventos */
 .quemsomos-container::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 150px;
+    height: clamp(120px, 20vw, 300px);
+    bottom: calc(clamp(120px, 20vw, 300px) / -2);
     pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(to bottom, rgba(5, 185, 208, 0) 0%, rgba(55, 108, 138, .9) 100%);
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: linear-gradient(to right, #625510, #aa9f82, #0f78bd, #0162b8, #004fa6);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Eventos -> Programação */
+/* Eventos → Wellness */
 .hero-eventos::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 150px;
+    height: clamp(120px, 18vw, 280px);
+    bottom: calc(clamp(120px, 18vw, 280px) / -2);
     pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(to bottom, rgba(77, 113, 59, 0) 0%, rgba(100, 168, 189, .85) 100%);
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: linear-gradient(to right, #948f60, #f8ebda, #f9ecdb, #f8ebd9, #f8ead7);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Programação -> Próximos eventos/Mapa */
+/* Programação → Mapa */
 .hero-eventos-programacao::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 150px;
+    height: clamp(120px, 18vw, 280px);
+    bottom: calc(clamp(120px, 18vw, 280px) / -2);
     pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(to bottom, rgba(154, 106, 50, 0) 0%, rgba(178, 133, 104, .85) 100%);
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: linear-gradient(to right, #ba764f, #de975f, #aa867a, #977769, #ae8e6b);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Mapa -> Ingressos: transição da área clara para os tons quentes dos ingressos */
-.hero-mapa::after,
-.legenda-mapa::after {
+/* Mapa (foto) → painel claro */
+.hero-mapa::after {
     content: "";
-    display: block;
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 120px;
+    height: clamp(100px, 14vw, 220px);
+    bottom: calc(clamp(100px, 14vw, 220px) / -2);
     pointer-events: none;
-    background: linear-gradient(to bottom, rgba(255, 244, 220, 0) 0%, rgba(178, 133, 104, .78) 100%);
-    z-index: 3;
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: #fff4dc;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-.hero-mapa,
-.legenda-mapa {
-    position: relative;
+/* Legenda (clara) → Ingressos */
+.legenda-mapa::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: clamp(140px, 22vw, 320px);
+    bottom: calc(clamp(140px, 22vw, 320px) / -2);
+    pointer-events: none;
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: linear-gradient(to right, #000b1b, #000c1b, #000f1f, #000e1a, #070a0c);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Ingressos -> Contato */
+/* Ingressos → Contato */
 .pagina-ingressos::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 150px;
+    height: clamp(100px, 14vw, 220px);
+    bottom: calc(clamp(100px, 14vw, 220px) / -2);
     pointer-events: none;
-    z-index: 3;
-    background: linear-gradient(to bottom, rgba(20, 20, 24, 0) 0%, rgba(10, 35, 48, .9) 100%);
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: linear-gradient(to right, #001424, #001527, #00172a, #001526, #00182c);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Final da área de Contato: suaviza a passagem para o rodapé/fundo seguinte */
+/* Contato → rodapé */
 .pagina-contato::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 120px;
+    height: clamp(90px, 10vw, 160px);
+    bottom: calc(clamp(90px, 10vw, 160px) / -2);
     pointer-events: none;
-    z-index: 3;
-    background: linear-gradient(to bottom, rgba(10, 35, 48, 0) 0%, rgba(0, 0, 0, .9) 100%);
+    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
+    background: #0a0a0a;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
 }
-
-/* Respeita usuários que preferem menos movimento; os gradientes permanecem estáticos. */
-@media (prefers-reduced-motion: reduce) {
-    #inicio.hero::after,
-    .quemsomos-container::after,
-    .hero-eventos::after,
-    .hero-eventos-programacao::after,
-    .hero-mapa::after,
-    .legenda-mapa::after,
-    .pagina-ingressos::after,
-    .pagina-contato::after {
-        animation: none;
-        transition: none;
-    }
-}
+.hero-mapa, .legenda-mapa { position: relative; }
+/* o cartão do aluno/professor/diretoria, a logo e os painéis ficam acima do degradê */
+#inicio .hero-logo, #inicio .resumo-aluno { z-index: 5; }
+.hero-eventos-programacao .eventos-programacao-container { z-index: 10; }

@@ -354,12 +354,12 @@ function _lerPasta(arrayBuffer) {
 
 var _ALIASES_COLUNAS = {
     ra: ['ra', 'registroaluno', 'registrodoaluno'],
-    nome: ['nome', 'nomedoaluno', 'nomecompleto', 'aluno'],
+    nome: ['aluno', 'nome', 'nomedoaluno', 'nomecompleto', 'nomealuno', 'estudante', 'nomedoestudante'],
     serie: ['serie', 'ano', 'anoserie'],
     turma: ['turma', 'classe'],
     nota: ['nota', 'media'],
     presenca: ['presenca', 'frequencia', 'freq'],
-    comportamento: ['comportamento'],
+    comportamento: ['desempenho', 'comportamento'],
     professor: ['professor']
 };
 
@@ -391,16 +391,16 @@ function lerPlanilhaDeAlunos(arrayBuffer) {
     // Cabeçalho = primeira linha (entre as 10 primeiras) que tem RA e Nome.
     var indiceCabecalho = -1, mapa = null;
     for (var i = 0; i < Math.min(linhas.length, 10) && indiceCabecalho === -1; i++) {
-        var tentativa = { ra: -1, nome: -1 };
+        var tentativa = { nome: -1 };
         linhas[i].forEach(function (celula, coluna) {
             var campo = _campoConhecido(celula);
             if (campo && tentativa[campo] === undefined) tentativa[campo] = coluna;
             else if (campo && tentativa[campo] === -1) tentativa[campo] = coluna;
         });
-        if (tentativa.ra !== -1 && tentativa.nome !== -1) { indiceCabecalho = i; mapa = tentativa; }
+        if (tentativa.nome !== -1) { indiceCabecalho = i; mapa = tentativa; }
     }
     if (indiceCabecalho === -1) {
-        throw new Error('Não encontrei a linha de cabeçalho com as colunas "RA" e "Nome" — baixe o modelo em branco e confira.');
+        throw new Error('Não encontrei a linha de cabeçalho com a coluna "Aluno" (ou "Nome") — confira a planilha.');
     }
 
     var cabecalho = linhas[indiceCabecalho];
@@ -415,9 +415,10 @@ function lerPlanilhaDeAlunos(arrayBuffer) {
     var alunos = [], avisos = [];
     for (var l = indiceCabecalho + 1; l < linhas.length; l++) {
         var linha = linhas[l];
-        var ra = String(valor(linha, 'ra')).trim();
         var nome = String(valor(linha, 'nome')).trim();
-        if (!ra || !nome) continue; // linha vazia ou anotação solta
+        if (!nome) continue; // linha vazia ou anotação solta
+        var ra = String(valor(linha, 'ra')).trim();
+        if (!ra) ra = 'NOME' + _chaveColuna(nome).toUpperCase(); // sem RA: usa o nome como identificador
 
         var nota = _numeroOuVazio(valor(linha, 'nota'));
         var presenca = _numeroOuVazio(valor(linha, 'presenca'));
@@ -461,9 +462,12 @@ function baixarPlanilhaTurma(turma) {
         Object.keys(n.extras || {}).forEach(function (k) { if (nomesExtras.indexOf(k) === -1) nomesExtras.push(k); });
     });
 
-    var cabecalho = ['RA', 'Nome', 'Série', 'Turma', 'Nota', 'Presença', 'Comportamento', 'Professor'].concat(nomesExtras);
+    // Só as colunas úteis: "Turma" já cobre a série/turma, então RA e Série
+    // não vão mais pra cópia. "Aluno" é o nome da coluna do aluno (o site
+    // também reconhece "Nome", "Estudante" etc. ao ler uma planilha).
+    var cabecalho = ['Aluno', 'Turma', 'Nota', 'Presença', 'Desempenho', 'Professor'].concat(nomesExtras);
     var linhas = dados.notas.map(function (n) {
-        return [n.ra, n.nome, n.serie || '', n.turma, n.nota, n.presenca, n.comportamento, n.professor || '']
+        return [n.nome, n.turma, n.nota, n.presenca, n.comportamento, n.professor || '']
             .concat(nomesExtras.map(function (k) { return (n.extras || {})[k] || ''; }));
     });
 
@@ -500,7 +504,7 @@ var EXTRA_ESCOLA = 'Escola';         // nome da escola — vem do topo de cada a
 var EXTRA_DIRETOR = 'Diretor';       // diretor(a) — vem do topo de cada aba
 var EXTRA_BIMESTRE = 'Bimestre';     // ex: "2º Bimestre" — vem do título da planilha
 
-var _CHAVES_NOME = ['aluno', 'nome', 'nomedoaluno', 'nomecompleto', 'nomealuno'];
+var _CHAVES_NOME = ['aluno', 'nome', 'nomedoaluno', 'nomecompleto', 'nomealuno', 'estudante', 'nomedoestudante', 'alunoa'];
 var _CHAVES_RA = ['ra', 'registroaluno', 'registrodoaluno', 'nrra', 'numerora'];
 var _CHAVES_DIG = ['dig', 'digito', 'digra', 'dv', 'digitora'];
 var _CHAVES_UF = ['uf', 'ufra'];

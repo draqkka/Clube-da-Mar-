@@ -192,9 +192,12 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     if (dadosTurmaAtual && turmaAtual) {
         var ativos = dadosTurmaAtual.notas.filter(alunoAtivo);
         var aprov = ativos.filter(function (a) { return avaliarAluno(a).aprovado; });
+        // Mesmos cartões que o painel mostra na turma selecionada.
         cartoes.push({ rotulo: 'Turma', valor: turmaAtual });
         cartoes.push({ rotulo: 'Alunos ativos', valor: ativos.length });
         cartoes.push({ rotulo: 'Aprovados', valor: aprov.length });
+        cartoes.push({ rotulo: 'Não atingiram', valor: ativos.length - aprov.length });
+        cartoes.push({ rotulo: 'Fora da sala', valor: dadosTurmaAtual.notas.length - ativos.length });
     } else {
         cartoes.push({ rotulo: 'Turmas', valor: minhasTurmas.length ? minhasTurmas.join(', ') : '—' });
     }

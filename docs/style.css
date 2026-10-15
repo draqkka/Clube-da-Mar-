@@ -3716,3 +3716,29 @@ body.fonte-profissional h3, body.fonte-profissional h4 { line-height: 1.25; }
     color: var(--cor-dourado);
     font-size: .8rem;
 }
+
+
+/* === Transições suaves entre seções, navegação e rodapé === */
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+main > section, .conteudo-pagina > section, .area-avaliacao-professores, .rodape-site {
+  transition: opacity .45s ease, transform .45s ease, filter .45s ease, box-shadow .3s ease;
+}
+.topnav a, .menu-dropdown a, .rodape-site a, .rodape-nav a {
+  transition: color .25s ease, background-color .25s ease, transform .25s ease, text-shadow .25s ease;
+}
+.topnav a:hover, .menu-dropdown a:hover, .rodape-site a:hover, .rodape-nav a:hover {
+  transform: translateY(-2px); text-shadow: 0 4px 14px rgba(255, 205, 35, .38);
+}
+.area-avaliacao-professores:hover, .rodape-site:hover {
+  box-shadow: 0 14px 34px rgba(0, 35, 70, .16);
+}
+.filtro-escola-dev { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0 18px; }
+.filtro-escola-dev label { font-weight:700; }
+.filtro-escola-dev select { min-width:min(100%, 320px); padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); background:#fff; color:#18314c; font:inherit; box-shadow:0 5px 16px rgba(0,0,0,.08); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } *, *::before, *::after { transition-duration:.01ms !important; animation-duration:.01ms !important; } }
+
+/* Revelação suave ao entrar em cena durante a rolagem */
+.mare-revelar { opacity: 0; transform: translateY(22px); filter: saturate(.88); }
+.mare-revelar.mare-visivel { opacity: 1; transform: translateY(0); filter: saturate(1); }
+body { animation: mareEntrada .45s ease both; }
+@keyframes mareEntrada { from { opacity: .65; } to { opacity: 1; } }

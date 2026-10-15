@@ -139,6 +139,19 @@
             </div>
         </div>
         <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
+        <p class="resumo-aluno-dica"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i>Clique no cartão para abrir seu painel completo</p>
+    </section>
+
+    <!-- RESUMO DO PROFESSOR / DIRETORIA — mesmo cartão, aparece depois do
+         "Voltar ao site" dos painéis (dados guardados por resumo-painel.js).
+         Clicar em qualquer parte dele abre o painel inteiro. -->
+    <section id="resumo-painel" class="resumo-aluno" style="display:none;" aria-live="polite">
+        <button type="button" class="resumo-aluno-fechar" id="resumo-painel-fechar" aria-label="Ocultar resumo">&times;</button>
+        <span class="resumo-aluno-perfil" id="resumo-painel-perfil">Perfil</span>
+        <h2 id="resumo-painel-nome">Olá!</h2>
+        <div class="grid-status" id="resumo-painel-cartoes"></div>
+        <p id="resumo-painel-texto" class="resumo-aluno-texto"></p>
+        <p class="resumo-aluno-dica"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i>Clique no cartão para abrir seu painel completo</p>
     </section>
 </div>
 </main>
@@ -758,6 +771,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
 <script src="status-aluno.js"></script>
+<script src="resumo-painel.js"></script>
 <script>
 (function () {
     var resumo = lerResumoAluno();
@@ -772,6 +786,11 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     document.getElementById('resumo-aluno-media').textContent = formatarMedia(resumo.nota);
     document.getElementById('resumo-aluno-frequencia').textContent = formatarFrequencia(resumo.presenca);
     secao.style.display = 'block';
+
+    // Clicar em QUALQUER parte do cartão (ou no nome) volta pro painel do aluno,
+    // com as informações que o professor disponibilizou, em tela cheia.
+    tornarCartaoClicavel(secao, function () { abrirPainelGuardado(resumo); },
+        'Abrir o painel completo de ' + nomeCurtoAluno(resumo.nome));
 
     document.getElementById('resumo-aluno-fechar').addEventListener('click', function () {
         apagarResumoAluno();
@@ -792,6 +811,44 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
             document.getElementById('resumo-aluno-status').textContent = 'Reprovado';
             document.getElementById('resumo-aluno-texto').textContent = resumo.mensagemReprovacao || '';
         }
+    });
+})();
+
+// ===== Cartão do PROFESSOR / DIRETORIA (mesmo comportamento do aluno) =====
+(function () {
+    var resumo = lerResumoPainel();
+    if (!resumo || !resumo.nome || lerResumoAluno()) return;   // só um cartão por vez
+
+    var secao = document.getElementById('resumo-painel');
+    var rotulos = { professor: 'Professor(a)', diretoria: 'Diretoria' };
+
+    document.getElementById('resumo-painel-perfil').textContent = rotulos[resumo.perfil] || 'Painel';
+    document.getElementById('resumo-painel-nome').textContent = 'Olá, ' + resumo.nome + '!';
+    document.getElementById('resumo-painel-texto').textContent = resumo.texto || '';
+
+    var grade = document.getElementById('resumo-painel-cartoes');
+    grade.innerHTML = '';
+    (resumo.cartoes || []).forEach(function (c) {
+        var card = document.createElement('div');
+        card.className = 'card-status';
+        var r = document.createElement('span');
+        r.className = 'card-status-rotulo';
+        r.textContent = c.rotulo;
+        var v = document.createElement('span');
+        v.className = 'card-status-valor';
+        v.textContent = c.valor;
+        card.appendChild(r);
+        card.appendChild(v);
+        grade.appendChild(card);
+    });
+    secao.style.display = 'block';
+
+    tornarCartaoClicavel(secao, function () { abrirPainelGuardado(resumo); },
+        'Abrir o painel completo de ' + resumo.nome);
+
+    document.getElementById('resumo-painel-fechar').addEventListener('click', function () {
+        apagarResumoPainel();
+        secao.style.display = 'none';
     });
 })();
 </script>

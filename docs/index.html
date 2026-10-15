@@ -133,12 +133,17 @@
                 <span class="card-status-rotulo">Frequência</span>
                 <span class="card-status-valor" id="resumo-aluno-frequencia">—</span>
             </div>
+            <div class="card-status">
+                <span class="card-status-rotulo">Desempenho</span>
+                <span class="card-status-valor" id="resumo-aluno-desempenho">—</span>
+            </div>
             <div class="card-status card-status-diretoria" id="resumo-aluno-card">
                 <span class="card-status-rotulo">Status</span>
                 <span class="card-status-valor" id="resumo-aluno-status">—</span>
             </div>
         </div>
         <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
+        <p id="resumo-aluno-mensagem" class="resumo-aluno-texto"></p>
         <p class="resumo-aluno-dica"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i>Clique no cartão para abrir seu painel completo</p>
     </section>
 
@@ -770,6 +775,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="comportamento.js"></script>
 <script src="status-aluno.js"></script>
 <script src="resumo-painel.js"></script>
 <script>
@@ -785,6 +791,8 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     document.getElementById('resumo-aluno-nome').textContent = 'Olá, ' + nomeCurtoAluno(resumo.nome);
     document.getElementById('resumo-aluno-media').textContent = formatarMedia(resumo.nota);
     document.getElementById('resumo-aluno-frequencia').textContent = formatarFrequencia(resumo.presenca);
+    document.getElementById('resumo-aluno-desempenho').innerHTML = htmlComportamentoChave(resumo.comportamento);
+    document.getElementById('resumo-aluno-mensagem').textContent = mensagemPainelAluno(resumo);
     secao.style.display = 'block';
 
     // Clicar em QUALQUER parte do cartão (ou no nome) volta pro painel do aluno,
@@ -799,18 +807,13 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
     // Status da Diretoria ao vivo (atualiza se ela decidir com a página aberta).
     escutarStatusAluno(resumo, function (solicitacao) {
-        var info = statusDiretoria(solicitacao);
+        // Mesma função que o dashboard do aluno usa (status-aluno.js).
+        var info = statusPainelAluno(solicitacao, resumo);
         classes.forEach(function (c) { card.classList.remove(c); });
         card.classList.add(info.classe);
         document.getElementById('resumo-aluno-status').textContent = info.rotulo;
-        document.getElementById('resumo-aluno-texto').textContent = info.texto;
-        // Aluno reprovado: o status mostra "Reprovado" e a mesma mensagem do painel.
-        if (resumo.reprovado) {
-            classes.forEach(function (c) { card.classList.remove(c); });
-            card.classList.add('status-recusado');
-            document.getElementById('resumo-aluno-status').textContent = 'Reprovado';
-            document.getElementById('resumo-aluno-texto').textContent = resumo.mensagemReprovacao || '';
-        }
+        // Aluno reprovado: o dashboard esconde a caixa de solicitação (a mensagem de reprovação já vem abaixo).
+        document.getElementById('resumo-aluno-texto').textContent = resumo.reprovado ? '' : info.texto;
     });
 })();
 

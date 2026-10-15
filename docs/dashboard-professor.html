@@ -90,6 +90,14 @@
     <p id="aviso-turma-nova" class="dica-importar" style="display:none; color: var(--cor-dourado);"></p>
     <div id="carregando">Carregando suas turmas...</div>
 
+    <!-- RESPOSTA, HISTÓRICO E OPÇÃO DE REFAZER DO PROFESSOR
+         (fica logo abaixo da área de importar a planilha, sempre visível,
+         com ou sem alunos na turma) -->
+    <section style="margin-top: 24px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+        <h2>Minhas Solicitações Enviadas</h2>
+        <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
+    </section>
+
     <!-- ===== RESULTADO DA TURMA SELECIONADA ===== -->
     <section id="area-turma" style="display:none;">
         <h2 id="titulo-turma">Turma</h2>
@@ -135,12 +143,6 @@
             <button type="button" class="btn-planilha-atalho" id="botao-baixar-planilha">Baixar cópia de segurança desta turma (.xlsx)</button>
             <button type="button" class="btn-planilha-atalho" id="botao-remover-turma" style="margin-left:8px; background:#8b2c2c;">Remover todos os alunos desta turma</button>
         </div>
-    </section>
-
-    <!-- RESPOSTA, HISTÓRICO E OPÇÃO DE REFAZER DO PROFESSOR -->
-    <section style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-        <h2>Minhas Solicitações Enviadas</h2>
-        <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
     </section>
 
     <!--

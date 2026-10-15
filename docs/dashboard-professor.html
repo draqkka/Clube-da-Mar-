@@ -25,8 +25,9 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="resumo-painel.js"></script>
 </head>
-<body>
+<body class="fonte-profissional">
 
 <header>
 <nav class="topnav">
@@ -115,7 +116,7 @@
         <table class="tabela-alunos" id="tabela-aprovados" style="display:none;">
             <thead>
                 <tr>
-                    <th>Nome</th><th>Curso · Turma</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Situação</th><th>Solicitação</th><th>Ação</th>
+                    <th>Aluno</th><th>Curso · Turma</th><th>Média</th><th>Frequência</th><th>Desempenho</th><th>Situação</th><th>Solicitação</th><th>Ação</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-aprovados"></tbody>
@@ -125,7 +126,7 @@
         <details id="detalhe-nao-aprovados" style="margin-top:20px; display:none;">
             <summary id="resumo-nao-aprovados" style="cursor:pointer;">Alunos ativos que não atingiram os critérios</summary>
             <table class="tabela-alunos" style="margin-top:10px;">
-                <thead><tr><th>Nome</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Motivo</th></tr></thead>
+                <thead><tr><th>Aluno</th><th>Média</th><th>Frequência</th><th>Desempenho</th><th>Motivo</th></tr></thead>
                 <tbody id="corpo-tabela-nao-aprovados"></tbody>
             </table>
         </details>
@@ -164,7 +165,7 @@
         <h2 id="modal-solic-titulo">Solicitar participação à Diretoria</h2>
         <div class="modal-solic-resumo" id="modal-solic-resumo"></div>
         <label for="observacao-solicitacao">Observação para a Diretoria (opcional)</label>
-        <textarea id="observacao-solicitacao" class="form-login-campo" rows="3" style="width:100%; resize:vertical;" placeholder="Ex: aluno com ótimo comportamento, participou das atividades..."></textarea>
+        <textarea id="observacao-solicitacao" class="form-login-campo" rows="3" style="width:100%; resize:vertical;" placeholder="Ex: aluno com ótimo desempenho, participou das atividades..."></textarea>
         <div class="modal-solic-botoes">
             <button type="button" class="btn-form-voltar" id="modal-solic-cancelar">Cancelar</button>
             <button type="button" class="btn-planilha-atalho" id="botao-enviar-solicitacao">Enviar para a Diretoria</button>
@@ -181,8 +182,25 @@ if (!sessao || sessao.perfil !== 'professor') {
 
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'professor(a)') + '!';
 
+// "Voltar ao site": guarda um resumo na tela inicial. Clicar nele (em qualquer
+// parte) volta pra este painel (ver resumo-painel.js).
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
+    var cartoes = [];
+    if (dadosTurmaAtual && turmaAtual) {
+        var ativos = dadosTurmaAtual.notas.filter(alunoAtivo);
+        var aprov = ativos.filter(function (a) { return avaliarAluno(a).aprovado; });
+        cartoes.push({ rotulo: 'Turma', valor: turmaAtual });
+        cartoes.push({ rotulo: 'Alunos ativos', valor: ativos.length });
+        cartoes.push({ rotulo: 'Aprovados', valor: aprov.length });
+    } else {
+        cartoes.push({ rotulo: 'Turmas', valor: minhasTurmas.length ? minhasTurmas.join(', ') : '—' });
+    }
+    var c = contarSolicitacoesPorStatus(solicitacoes);
+    cartoes.push({ rotulo: 'Solicitações enviadas', valor: c.total });
+    cartoes.push({ rotulo: 'Confirmadas', valor: c.confirmada });
+    var texto = c.pendente ? c.pendente + ' solicitação(ões) aguardando a direção.' : '';
+    guardarResumoPainel(sessao, cartoes, texto);
     sessionStorage.removeItem('cdm_sessao');
     window.location.href = 'index.html';
 });

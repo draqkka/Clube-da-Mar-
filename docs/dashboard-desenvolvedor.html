@@ -25,6 +25,7 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="resumo-painel.js"></script>
 <!-- Lista de usuários — só é carregada nesta página pra exibir a tabela de
      contas cadastradas (nenhuma outra página do painel precisa dela). -->
 <script src="usuarios.js"></script>
@@ -209,6 +210,15 @@ document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.n
 
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
+    // Guarda na tela inicial os MESMOS cartões que este painel mostra (lidos da tela).
+    var cartoes = [];
+    document.querySelectorAll('#grid-resumo .card-status').forEach(function (c) {
+        cartoes.push({
+            rotulo: c.querySelector('.card-status-rotulo').textContent,
+            valor: c.querySelector('.card-status-valor').textContent
+        });
+    });
+    guardarResumoPainel(sessao, cartoes, '');
     sessionStorage.removeItem('cdm_sessao');
     window.location.href = 'index.html';
 });

@@ -1,3 +1,3683 @@
+/* ==========================================================================
+   CONTROLE CENTRAL DE FONTES E CORES
+   Mude um valor aqui e ele se aplica no site inteiro.
+   ========================================================================== */
+:root {
+
+    /* ===== FONTES — separadas em 4 blocos =====
+       Todas já estão linkadas no <head> dos HTMLs. Pra TROCAR a fonte do site,
+       mude só as DUAS linhas "FONTE ATIVA" logo abaixo: troque o var(...) pelo
+       nome de qualquer fonte dos blocos (ex.: var(--fonte-pacifico)). */
+
+    /* >>> FONTE ATIVA <<< */
+    --fonte-titulos: var(--fonte-PermanentMarker);       /* usada em todos os h1, h2, h3, h4 */
+    --fonte-textos: Permanent Marker, caveat;   /* usada nos parágrafos e textos gerais */
+
+
+
+    /* ===== PALETA VIVA DO SITE =====
+       Azul do mar · Verde-água · Laranja do pôr do sol · Amarelo sol · Rosa · Roxo.
+       Mude um valor aqui e ele muda em todo o site. */
+
+    /* ===== CORES DE BASE ===== */
+    --cor-preto: #000;             /* fundo geral do site (body) */
+    --cor-branco: #fff;            /* texto/fundos claros */
+    --cor-texto-escuro: #333;      /* texto em fundos claros (creme) */
+    --cor-texto-medio: #555;       /* texto secundário, descrições */
+    --cor-cinza: #ccc;             /* texto claro sobre fundo escuro */
+    --cor-cinza-claro: #e0e0e0;    /* texto claro, detalhes */
+
+    /* ===== CORES DE MARCA (vivas) ===== */
+    --cor-azul-escuro: #0a5cff;         /* azul vivo: títulos e ícones (mapa, programação) */
+    --cor-azul-profundo: #0a3d91;       /* azul bem escuro: texto sobre fundos amarelos/claros */
+    --cor-verde-agua: #00bfb3;          /* verde-água vivo: títulos "Quem Somos", eventos */
+    --cor-creme: #fff4dc;               /* fundo dos painéis claros (programação, mapa, legenda) */
+    --cor-laranja: #ff7a00;             /* laranja vivo: botões, bordas e categoria "Esportes" */
+    --cor-dourado: #ffc800;             /* amarelo-sol: detalhes em dourado (ingressos) */
+    --cor-roxo: #8a3ffc;                /* roxo vivo: categoria "Bem-Estar" e evento roxo */
+    --cor-verde-claro: #19d263;         /* verde vivo: destaques (ingressos) */
+
+    /* ===== MENU DO TOPO ===== */
+    --cor-barra-menu: #0a5cff;          /* cor da barra do menu (azul do mar vivo) */
+    --cor-barra-menu-painel: #083fb3;   /* fundo do painel do menu no celular (azul mais fechado) */
+    --cor-menu-texto: #ffffff;          /* cor dos links do menu */
+    --cor-menu-hover: #ffd000;          /* cor dos links ao passar o mouse / sublinhado */
+    --cor-menu-amarelo: #ffd000;        /* (usada em outros pontos do site) */
+
+    /* ===== TÍTULO "EVENTOS DA EXCURSÃO" ===== */
+    --cor-titulo-eventos: #ffd000;      /* amarelo-sol */
+
+    /* ===== WELLNESS ===== */
+    --cor-amarelo-wellness: #ffc800;        /* fundo amarelo dos cards de evento */
+    --cor-wellness: #ff7a00;                /* ícones e título da seção Wellness (laranja vivo, lê bem sobre o creme) */
+    --cor-amarelo-wellness-hover: #00a99d;  /* cor do hover nos itens de Wellness (verde-água) */
+
+    /* ===== CARTÕES DE "PRÓXIMOS EVENTOS" ===== */
+    --cor-evento-rosa: #ff2d87;
+    --cor-evento-laranja: #ff7a00;
+    --cor-evento-azul: #0a84ff;
+
+    /* ===== CATEGORIAS DO MAPA (pontos e legenda) ===== */
+    --cor-cat-lazer: #00a67e;
+    --cor-cat-servico: #3aa800;
+    /* Esportes usa --cor-laranja e Bem-Estar usa --cor-roxo, já definidos acima */
+
+    /* ===== DETALHES ESPECÍFICOS (usados uma única vez) ===== */
+    --cor-gradiente-laranja: #ff8a00;   /* ponta da linha do tempo (timeline) */
+    --cor-hora: #ff7a00;                /* horário na timeline de programação */
+    --cor-amarelo-contato: #ffe81d;     /* cor do texto digitado no formulário de Feedback */
+}
+
+
+/* Resete de Margens Geral */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* Estilo base do site: fundo, cor de texto e fonte padrão */
+body {
+    background: var(--cor-preto);
+    color: var(--cor-branco);
+    font-family: var(--fonte-textos);
+    /* NOVO: rede de segurança contra rolagem horizontal — qualquer elemento
+       que por algum motivo (ex: valor fixo em px) ultrapasse a largura da
+       tela fica cortado em vez de criar uma barra de rolagem lateral */
+    overflow-x: hidden;
+}
+
+/* Todos os títulos do site usam a fonte de destaque definida acima */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--fonte-titulos);
+}
+
+
+/* Esconde a barra de rolagem, mantendo o scroll funcionando */
+html {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* Internet Explorer/Edge antigo */
+}
+
+html::-webkit-scrollbar {
+    display: none;               /* Chrome, Safari, Edge novo */
+}
+
+/* NECESSÁRIO pro menu rolar até a seção escolhida em vez de pular direto —
+   sem isso os links do menu até funcionam, mas sem suavidade nenhuma */
+html {
+    scroll-behavior: smooth;
+}
+
+
+/* NOVO: como o menu virou um ícone fixo no topo, ele ainda cobre um pedaço
+   da tela — esse respiro faz a rolagem até cada seção parar um pouco mais
+   abaixo, sem o título da seção ficar escondido atrás do ícone. */
+#inicio,
+#quem-somos,
+#eventos,
+#mapa,
+#ingressos,
+#feedback {
+    scroll-margin-top: 90px;
+}
+
+/* Menu de Navegação Fixo no Topo — agora é só um ícone no canto direito
+   que abre um painel com os links (em vez da barra com todos os links à
+   mostra). Os links de seção viram âncoras que rolam pela própria página. */
+.topnav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 5%;
+    background: var(--cor-barra-menu);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+    z-index: 1000;
+}
+
+.menu-icone {
+    background: none;
+    border: none;
+    color: var(--cor-menu-texto);
+    font-size: 24px;
+    padding: 6px 10px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.menu-icone:hover {
+    color: var(--cor-menu-hover);
+}
+
+/* NOVO: botão "Sair" visível direto no topo (só nas páginas de login),
+   ao lado do ícone do menu — sem precisar abrir o painel pra achar ele */
+.link-sair-topo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--cor-menu-texto);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.link-sair-topo:hover {
+    color: var(--cor-menu-hover);
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 5%;
+    margin-top: 8px;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--cor-barra-menu-painel);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+.menu-dropdown.aberto {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.menu-dropdown a {
+    color: var(--cor-menu-texto);
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.menu-dropdown a:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--cor-menu-hover);
+}
+
+.menu-dropdown a.link-entrar {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.menu-dropdown a i {
+    margin-right: 6px;
+}
+
+@media (max-width: 480px) {
+    .menu-dropdown {
+        right: 4%;
+        left: 4%;
+        min-width: auto;
+    }
+}
+
+/* ==========================================
+   NAVEGAÇÃO — abas visíveis só no computador
+   Em telas de computador (acima de 900px) a barra mostra todos os links
+   direto, como antigamente, sem precisar clicar no ícone. No celular/tablet
+   continua sendo o ícone de lupa + painel (do jeito que já estava), porque
+   a barra inteira com 6 links não cabe numa tela estreita. A rolagem suave
+   até a seção escolhida (scroll-behavior: smooth, lá em cima) continua
+   funcionando igual nos dois formatos, porque os links continuam sendo as
+   mesmas âncoras (#inicio, #quem-somos etc.) — só muda a aparência do menu.
+========================================== */
+@media (min-width: 901px) {
+
+    .topnav {
+        justify-content: flex-start;
+    }
+
+    .menu-icone {
+        display: none;
+    }
+
+    .menu-dropdown {
+        position: static;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 30px;
+        margin-top: 0;
+        min-width: 0;
+        background: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+    }
+
+    .menu-dropdown a {
+        position: relative;
+        font-size: 17px;
+        padding: 4px 2px;
+        border-radius: 0;
+    }
+
+    .menu-dropdown a:hover {
+        background: none;
+        color: var(--cor-menu-hover);
+    }
+
+    /* sublinhado amarelo que aparece embaixo do link ao passar o mouse */
+    .menu-dropdown a::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        right: 2px;
+        bottom: -4px;
+        height: 2px;
+        background: var(--cor-menu-hover);
+        transform: scaleX(0);
+        transition: transform .25s ease;
+    }
+
+    .menu-dropdown a:hover::after {
+        transform: scaleX(1);
+    }
+
+    .menu-dropdown a.link-entrar {
+        margin-top: 0;
+        padding-top: 4px;
+        border-top: none;
+    }
+
+}
+
+
+/* Imagens das Seções Padrão (Menu 1, 2 e 3) */
+.hero {
+    position: relative;
+}
+
+.hero img {
+    width: 100%;
+    display: block;
+}
+
+/* Logo sobreposta no canto do banner principal (a imagem em si tem fundo
+   transparente — o preto do arquivo original foi removido). Ajuste "width"
+   e "top/left" abaixo se quiser a logo maior/menor ou em outro canto. */
+.hero-logo {
+    position: absolute;
+    top: 110px;
+    left: 3%;
+    width: 22%;
+    max-width: 260px;
+    min-width: 110px;
+    height: auto;
+    z-index: 2;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .hero-logo {
+        width: 34%;
+        top: 90px;
+        left: 4%;
+    }
+}
+
+
+
+
+/* ==========================================================================
+   QUEM SOMOS 
+   ========================================================================== */
+.quemsomos-container {
+    position: relative;
+    width: 100%;
+    padding: 80px 5%;
+    overflow: hidden;
+    color: var(--cor-branco);
+    background: #0aa8d6; /* cor de segurança enquanto a imagem carrega */
+    display: flex;
+    align-items: center;
+    min-height: 46.26vw; /* mesma proporção da imagem (1844x853): as fotos não são cortadas, e a seção cresce se o texto precisar */
+}
+
+.fundo-quemsomos {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center; /* mantém as fotos/palmeira sempre visíveis */
+    z-index: 0;
+}
+
+/* Escurece só o lado do texto pra ele ficar legível sobre a água clara */
+.quemsomos-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(90deg,
+        rgba(0, 45, 80, 0.62) 0%,
+        rgba(0, 45, 80, 0.50) 45%,
+        rgba(0, 45, 80, 0) 68%);
+    pointer-events: none;
+}
+
+.quemsomos-conteudo {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); /* coluna da direita fica livre pras fotos do fundo */
+    gap: 50px;
+    align-items: center;
+    max-width: 1300px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.quemsomos-texto h2 {
+    font-size: 50px;
+    color: var(--cor-branco);
+    margin-bottom: 6px;
+    text-shadow: 0 2px 8px rgba(0, 40, 70, 0.55);
+}
+
+.quemsomos-texto p {
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 40, 70, 0.75);
+}
+
+.quemsomos-fotos-mobile {
+    display: none; /* só aparece no celular */
+}
+
+/* Celular e tablet: fundo vira só a água, as fotos descem pra baixo do texto */
+@media (max-width: 1100px) {
+    .quemsomos-container {
+        padding: 90px max(22px, 6%) 40px;
+        display: block;
+        min-height: 0;
+    }
+    .fundo-quemsomos {
+        object-position: 20% center; /* parte da água sem fotos */
+    }
+    .quemsomos-container::before {
+        background: linear-gradient(180deg,
+            rgba(0, 45, 80, 0.55) 0%,
+            rgba(0, 45, 80, 0.50) 100%);
+    }
+    .quemsomos-conteudo {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .quemsomos-texto h2 {
+        font-size: 34px;
+    }
+    .quemsomos-texto p {
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 18px;
+    }
+    .quemsomos-fotos-mobile {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        margin: 10px auto 70px; /* folga embaixo pro botão flutuante do chat não cobrir */
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(0, 40, 70, 0.35);
+    }
+}
+
+
+
+.secao-home-eventos {
+    margin-top: 0; /* era 5px: deixava uma linha preta entre Quem Somos e Eventos */
+}
+
+/* Espaço extra entre Eventos e Wellness, só na versão de tudo-em-uma-página (index.html) */
+.secao-home-wellness {
+    margin-top: 40px;
+}
+
+/*EVENTOS */
+
+/* ===== Fundo full-width ===== */
+.hero-eventos {
+    width: 100%;
+}
+
+.fundo-hero-eventos {
+
+    width: 100%;
+    height:550px; 
+    object-fit:cover;
+
+    display: block;
+}
+
+
+.hero-eventos{
+
+    position:relative;
+
+    width:100%;
+
+}
+
+.fundo-hero-eventos{
+
+    width:100%;
+    height:550px; 
+
+
+    display:block;
+
+}
+
+.painel-eventos {
+    position: relative;
+    z-index: 10;
+    margin-top: -460px;
+    padding: 40px 5%;
+    color: var(--cor-texto-escuro);
+    background: none;
+}
+
+.painel-eventos h2 {
+    font-size: 46px;
+    margin-bottom: 18px;
+    color: var(--cor-titulo-eventos);
+    text-align: center;
+    margin-top: -60px;
+    /* contorno escuro pra o título aparecer bem sobre o céu e as nuvens */
+    text-shadow: 0 2px 0 var(--cor-azul-profundo), 0 0 10px rgba(10, 61, 145, .75), 0 3px 12px rgba(0, 0, 0, .5);
+}
+    
+
+
+
+/* ===== Grid dos cards ===== */
+.grid-eventos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: relative;
+    z-index: 10;
+    gap: 36px;               /* espaço entre os cards (era 20px) */
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+
+
+.card-evento{
+
+    background: var(--cor-amarelo-wellness);
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    transition:.4s;
+
+    cursor:pointer;
+
+    /* Sem largura fixa aqui: dentro do .grid-eventos (repeat(4,1fr)) o card
+       precisa poder encolher pra caber na coluna. Uma largura fixa (280px)
+       cabia bem numa tela bem larga (≥1920px) ou virava 100% no celular,
+       mas exatamente nas resoluções de notebook (ex.: 1366x768 do Positivo
+       Master N1210) sobrava menos espaço e os cards estouravam a lateral
+       da página — que é justamente a resolução da tela desse notebook. */
+    width: 100%;
+    min-width: 0;
+
+}
+
+
+.card-evento:hover,
+.card-evento.ativo{   /* .ativo = card tocado no celular (ver script no fim do index.html) */
+
+    transform:scale(1.07);
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,.35);
+
+    z-index:20;
+
+}
+
+/* Observação: as regras ".cards-eventos" (com "s") abaixo eram de uma versão
+   anterior do layout (flex, cards de largura fixa) e não são mais usadas no
+   HTML atual — o grid ativo hoje é o ".grid-eventos" acima. Deixei aqui sem
+   mexer pra não afetar nada que já dependa delas, só a largura do card
+   (que valia pras duas classes) foi movida pra cima. */
+.cards-eventos{
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+@media (max-width:768px){
+
+    .cards-eventos{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:15px;
+        padding:15px;
+    }
+
+    .card-evento img{
+        width:100%;
+        height:auto;
+    }
+
+}
+
+
+/* ===== Imagem de cada card ===== */
+.imagem-card-evento {
+    width: 100%;
+    aspect-ratio: 1 /1;
+    object-fit: cover;
+    display: block;
+    background: var(--cor-cinza-claro);
+    border: 2px dashed #b0b0b0;
+    border-radius: 8px 8px 0 0;
+}
+
+.info-evento {
+    padding: 12px;
+}
+
+
+
+.info-evento h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--cor-azul-profundo);   /* azul escuro sobre o amarelo: bem mais legível */
+
+}
+
+
+
+
+/* ==========================
+   WELLNESS
+========================== */
+
+/* ===== Fundo full-width ===== */
+.hero-wellness {
+    margin-top: 0;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.fundo-hero-wellness {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.painel-wellness {
+    position: relative;
+    z-index: 10;
+    padding: 60px 30px;
+    background: none;
+    text-align: center;
+}
+
+#wellness{
+
+    width:100%;
+
+    background:none;
+
+    padding:40px 30px;
+
+    border-radius:0px;
+
+}
+
+.titulo-wellness{
+
+    text-align:center;
+
+    margin-bottom:35px;
+
+}
+
+.titulo-wellness h2{
+
+    color:var(--cor-wellness);
+
+    font-size:38px;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+
+}
+
+.titulo-wellness p{
+
+    color:var(--cor-texto-medio);
+
+    font-size:15px;
+
+    max-width:700px;
+
+    margin:auto;
+
+    line-height:1.5;
+
+}
+
+.wellness-itens{
+
+    display:grid;
+
+    grid-template-columns: repeat(5, 1fr);
+
+    gap:20px;
+
+    max-width: 900px;
+
+    margin: 0 auto;
+
+}
+
+.item-wellness{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    text-align:center;
+
+    cursor:pointer;
+
+}
+
+.item-wellness i{
+
+    font-size:42px;
+
+    color:var(--cor-wellness);
+
+    margin-bottom:15px;
+
+    transition:.3s;
+
+}
+
+.item-wellness h3{
+
+    font-size:14px;
+
+    color:var(--cor-wellness);
+
+    line-height:1.4;
+
+    transition:.3s;
+
+}
+
+.item-wellness:hover i{
+
+    color:var(--cor-amarelo-wellness-hover);
+
+    transform:translateY(-6px) scale(1.1);
+
+}
+
+.item-wellness:hover h3{
+
+    color:var(--cor-amarelo-wellness-hover);
+
+}
+
+/* RESPONSIVO */
+
+@media(max-width:768px){
+
+    .painel-wellness {
+        padding: 30px 15px;
+    }
+
+    .titulo-wellness h2 {
+        font-size: 26px;
+    }
+
+    .wellness-itens{
+
+        gap:10px;
+
+    }
+
+    .item-wellness i{
+
+        font-size:32px;
+
+    }
+
+    .item-wellness h3{
+
+        font-size:12px;
+
+    }
+
+}
+
+
+
+
+/* ===== Fundo full-width Eventos-Programação ===== */
+.hero-eventos-programacao {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.fundo-eventos-programacao {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.eventos-programacao-container {
+    position: relative;
+    z-index: 10;
+    width: 95%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 60px 0;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 30px;
+    align-items: start;
+}
+
+
+/* ========================= */
+/* CONTAINER GERAL */
+/* ========================= */
+
+.evento-item{
+    width:100%;
+    height:115px;
+}
+
+.texto h3{
+    font-size:20px;
+}
+
+.texto p{
+    font-size:17px;
+}
+
+.evento-item i{
+    font-size:42px;
+    margin-left:35px;
+}
+
+/* ========================= */
+/* PROGRAMAÇÃO */
+/* ========================= */
+
+.programacao-dia{
+    width:100%;
+    min-width:0;
+
+    background:var(--cor-creme);
+    border-radius:35px;
+    padding:50px;
+    overflow:hidden;
+}
+
+.titulo-programacao{
+
+    text-align:center;
+
+    font-size:55px;
+
+    font-weight:900;
+
+    color:var(--cor-azul-escuro);
+
+    margin-bottom:70px;
+}
+
+/* LINHA */
+
+.timeline{
+    display:flex;
+    justify-content:space-between;
+    width:100%;
+
+    align-items:flex-start;
+
+    position:relative;
+
+    gap:10px;
+}
+
+.timeline::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:42px;
+
+    left:4%;
+
+    width:92%;
+
+    height:6px;
+
+    border-radius:30px;
+
+    background:linear-gradient(
+        90deg,
+        var(--cor-verde-agua),
+        var(--cor-azul-escuro),
+        var(--cor-gradiente-laranja)
+    );
+
+    z-index:1;
+}
+
+/* AVIÃO */
+
+.timeline::after{
+
+    content:"✈";
+
+    position:absolute;
+
+    top:10px;
+
+    left:0;
+
+    font-size:24px;
+
+    color:var(--cor-azul-escuro);
+
+    animation:voo 15s linear infinite;
+}
+
+@keyframes voo{
+
+    from{
+        left:0;
+    }
+
+    to{
+        left:95%;
+    }
+}
+
+/* ITEM */
+
+.timeline-item{
+
+    width:115px;
+
+    text-align:center;
+
+    position:relative;
+
+    z-index:2;
+}
+
+/* CÍRCULO */
+
+.timeline-icon{
+
+    width:90px;
+
+    height:90px;
+
+    background:var(--cor-branco);
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin:auto;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+    transition:.4s;
+}
+
+.timeline-icon i{
+
+    font-size:36px;
+
+    color:var(--cor-azul-escuro);
+
+    transition:.4s;
+}
+
+/* HOVER */
+
+.timeline-item:hover .timeline-icon{
+
+    transform:translateY(-12px) scale(1.12);
+
+    background:var(--cor-azul-escuro);
+}
+
+.timeline-item:hover .timeline-icon i{
+
+    color:var(--cor-branco);
+}
+
+/* HORA */
+
+.hora{
+
+    display:block;
+
+    margin-top:18px;
+
+    color:var(--cor-hora);
+
+    font-size:18px;
+
+    font-weight:900;
+}
+
+/* TÍTULO */
+
+.timeline-item h4{
+
+    margin-top:10px;
+
+    font-size:15px;
+
+    color:var(--cor-azul-escuro);
+}
+
+/* TEXTO */
+
+.timeline-item p{
+
+    margin-top:8px;
+
+    font-size:13px;
+
+    line-height:1.4;
+
+    color:var(--cor-texto-medio);
+}
+
+/* ========================= */
+/* PRÓXIMOS EVENTOS */
+/* ========================= */
+
+#proximos-eventos h2{
+
+    color:var(--cor-azul-escuro);
+
+    font-size:42px;
+
+    margin-bottom:20px;
+
+
+}
+
+.evento-item{
+
+    display:flex;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    height:120px;
+
+    color:var(--cor-branco);
+
+    transition:.3s;
+}
+
+.evento-item:hover{
+
+    transform:translateX(40px);
+}
+
+.data{
+
+    width:95px;
+
+    text-align:center;
+
+    background:rgba(0,0,0,.15);
+
+    padding:10px;
+}
+
+.data span{
+
+    display:block;
+
+    font-size:42px;
+
+    font-weight:900;
+
+    line-height:1;
+}
+
+.data small{
+
+    font-size:20px;
+
+    font-weight:700;
+}
+
+.texto{
+
+    flex:1;
+
+    padding-left:20px;
+}
+
+.texto h3{
+
+    font-size:18px;
+
+    margin-bottom:5px;
+}
+
+.texto p{
+
+    font-size:15px;
+
+    font-weight:700;
+}
+
+.evento-item i{
+
+    font-size:38px;
+
+    margin-right:50px;
+}
+
+.rosa{
+    background:var(--cor-evento-rosa);
+}
+
+.laranja{
+    background:var(--cor-evento-laranja);
+}
+
+.roxo{
+    background:var(--cor-roxo);
+}
+
+.azul{
+    background:var(--cor-evento-azul);
+}
+
+/* RESPONSIVO */
+
+@media(max-width:1400px){
+
+    .eventos-programacao-container{
+
+        grid-template-columns:1fr;
+    }
+
+    .timeline{
+
+        overflow-x:auto;
+
+        padding-bottom:40px;
+    }
+
+    .timeline-item{
+
+        min-width:130px;
+    }
+}
+
+@media (max-width: 768px) {
+    .programacao-dia {
+        padding: 25px 20px;
+        border-radius: 20px;
+    }
+
+    .titulo-programacao {
+        font-size: 28px;
+        margin-bottom: 35px;
+    }
+
+    #proximos-eventos h2 {
+        font-size: 26px;
+    }
+
+    /* TIMELINE (Programação do Dia) — em fileira única (horizontal) os
+       círculos e a linha ficavam cortados/desalinhados no celular. No celular
+       ela vira uma timeline VERTICAL: ícone à esquerda, hora/título/texto à
+       direita, ligados por uma linha que desce (em vez de ir da esquerda pra
+       direita) — com o aviãozinho subindo por ela. O destaque azul do ícone
+       agora dispara também ao TOCAR (:active), porque :hover sozinho não é
+       confiável em tela de toque. */
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 45px;
+        width: 100%;
+        overflow: visible;
+        padding-bottom: 0;
+    }
+
+    /* LINHA: mesmo gradiente de cores do desktop, só que vertical, ligando
+       o centro do 1º círculo ao centro do último */
+    .timeline::before {
+        top: 37px;
+        left: 37px;
+        width: 5px;
+        height: calc(100% - 74px);
+        background: linear-gradient(
+            180deg,
+            var(--cor-verde-agua),
+            var(--cor-azul-escuro),
+            var(--cor-gradiente-laranja)
+        );
+        transform: translateX(-50%);
+    }
+
+    /* AVIÃOZINHO: sobe e desce a linha vertical em vez de ir da esquerda
+       pra direita */
+    .timeline::after {
+        top: 37px;
+        left: 37px;
+        transform: translateX(-50%) rotate(90deg);
+        font-size: 20px;
+        animation-name: voo-vertical;
+    }
+
+    @keyframes voo-vertical {
+        from { top: 37px; }
+        to   { top: calc(100% - 37px); }
+    }
+
+    .timeline-item {
+        display: grid;
+        grid-template-columns: 74px 1fr;
+        column-gap: 16px;
+        align-items: center;
+        width: auto;
+        min-width: 0;
+        text-align: left;
+    }
+
+    .timeline-icon {
+        width: 74px;
+        height: 74px;
+        grid-column: 1;
+        grid-row: 1 / span 3;
+    }
+
+    .timeline-icon i {
+        font-size: 26px;
+    }
+
+    .timeline-item .hora {
+        grid-column: 2;
+        grid-row: 1;
+        margin-top: 0;
+    }
+
+    .timeline-item h4 {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .timeline-item p {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    /* mesmo efeito azul do desktop, mas disparando ao tocar/segurar o ícone,
+       já que celular não tem :hover de verdade */
+    .timeline-item:active .timeline-icon {
+        transform: scale(1.1);
+        background: var(--cor-azul-escuro);
+    }
+
+    .timeline-item:active .timeline-icon i {
+        color: var(--cor-branco);
+    }
+
+    .evento-item {
+        height: auto;
+        min-height: 90px;
+        padding: 10px 0;
+    }
+
+    .evento-item:hover {
+        transform: translateX(15px);
+    }
+
+    .data {
+        width: 70px;
+        flex-shrink: 0;
+    }
+
+    .data span {
+        font-size: 30px;
+    }
+
+    .data small {
+        font-size: 14px;
+    }
+
+    .texto {
+        padding-left: 12px;
+    }
+
+    .texto h3 {
+        font-size: 15px;
+    }
+
+    .texto p {
+        font-size: 12px;
+    }
+
+    .evento-item i {
+        font-size: 26px;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+}
+
+/* MAPA */
+
+/* ===== HERO MAPA ===== */
+
+.hero-mapa {
+    width: 100%;
+}
+
+.fundo-hero-mapa {
+    margin-top: 0; /* era 5px: deixava uma linha preta entre Programação e Mapa */
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+}
+
+
+/* ===== Titulo MAPA ===== */
+.texto h3{
+
+    font-size:18px;
+
+    margin-bottom:5px;
+}
+
+
+/* ===== Mapa interativo + painel do local ===== */
+.mapa-interativo-container {
+
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 20px;
+    padding: 50px 5%;
+    background: var(--cor-creme);
+    color: var(--cor-texto-escuro);
+}
+
+/* Texto ("¡Importante!") fica entre o título e o mapa */
+.painel-local {
+    order: 1;
+}
+
+#mapa-clube,
+.mapa-container {
+    order: 2;
+    position: relative;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.titulo-mapa-interativo {
+    grid-column: 1 / -1;
+    color: var(--cor-azul-escuro);
+    font-size: 20px;
+    line-height: 1.4;
+    padding: 4px 0;
+    margin-bottom: 5px;
+    overflow: visible;
+}
+
+
+.mapa-base {
+    width: 100%;
+    display: block;
+}
+
+.ponto {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 3px solid var(--cor-branco);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s;
+}
+
+.ponto:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+}
+
+.ponto.c-lazer { background: var(--cor-cat-lazer); }
+.ponto.c-esporte { background: var(--cor-laranja); }
+.ponto.c-bem-estar { background: var(--cor-roxo); }
+.ponto.c-servico { background: var(--cor-cat-servico); }
+
+.ponto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ponto::before {
+    content: attr(data-local);
+    color: var(--cor-branco);
+    font-size: 11px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+
+.ponto .tooltip {
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    font-size: 13px;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.ponto:hover .tooltip {
+    opacity: 1;
+}
+
+.ponto-destaque {
+    animation: pulso-ponto 0.6s ease-in-out 2;
+}
+
+@keyframes pulso-ponto {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.7); }
+}
+
+/* ===== Painel do local (descrição) ===== */
+.painel-local {
+    background: var(--cor-branco);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.painel-local h3 {
+    color: var(--cor-azul-escuro);
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.painel-local p {
+    font-size: 14px;
+    color: var(--cor-texto-medio);
+    line-height: 1.5;
+}
+
+/* Dica de como baixar a imagem do mapa (celular e computador) */
+.titulo-baixar-mapa {
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--cor-azul-escuro);
+    font-size: 16px;
+    line-height: 1.4;
+}
+.dica-baixar-mapa {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+}
+.dica-baixar-mapa li {
+    font-size: 14px;
+    color: var(--cor-texto-medio);
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+.dica-baixar-mapa i {
+    color: var(--cor-azul-escuro);
+    margin-right: 6px;
+}
+
+/* NOVO: aviso de acesso restrito na home (Estudante/Responsável barrados da planilha) */
+.aviso-acesso {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    max-width: 90%;
+    align-items: center;
+    gap: 14px;
+    background: var(--cor-branco);
+    color: var(--cor-texto-escuro);
+    border: 2px solid var(--cor-laranja);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    font-size: 15px;
+}
+
+.aviso-acesso.visivel {
+    display: flex;
+}
+
+.aviso-acesso #aviso-acesso-fechar {
+    background: none;
+    border: none;
+    color: var(--cor-texto-medio);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* NOVO: modal de imagem do local (abre ao clicar no ponto do mapa) */
+.modal-local {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-local.ativo {
+    display: flex;
+}
+
+.modal-local-conteudo {
+    position: relative;
+    max-width: 600px;
+    width: 90%;
+    background: var(--cor-branco);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.modal-local-conteudo img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.modal-local-conteudo h3 {
+    color: var(--cor-azul-escuro);
+    font-size: 20px;
+}
+
+.modal-fechar {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: var(--cor-laranja);
+    color: var(--cor-branco);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+
+ 
+/* ===== Legenda completa ===== */
+.legenda-mapa {
+    padding: 50px 5% 70px;
+    background: var(--cor-creme);
+    color: var(--cor-texto-escuro);
+}
+
+.legenda-mapa h2 {
+    color: var(--cor-azul-escuro);
+    font-size: 26px;
+    margin-bottom: 20px;
+}
+
+.legenda-item{
+
+    display:flex;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    height:100px;
+
+    color:var(--cor-branco);
+
+    transition:.3s;
+}
+
+
+.lista-legenda li {
+    transition: .3s;
+}
+
+.lista-legenda li:hover {
+    transform: translateX(15px);
+}
+
+.lista-legenda li:hover {
+    background-color: #fff59d;
+    color: #1f1f1f;
+}
+
+.legenda-categorias {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.titulo-categoria {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    margin-top: 18px;
+}
+
+.titulo-categoria:first-child {
+    margin-top: 0;
+}
+
+/* Cada bloco de categoria dentro da legenda do mapa */
+.categoria-legenda {
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo-categoria.c-lazer { color: var(--cor-cat-lazer); }
+.titulo-categoria.c-esporte { color: var(--cor-laranja); }
+.titulo-categoria.c-bem-estar { color: var(--cor-roxo); }
+.titulo-categoria.c-servico { color: var(--cor-cat-servico); }
+
+.lista-legenda {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lista-legenda li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    background: var(--cor-branco);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.numero-legenda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: var(--cor-branco);
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.numero-legenda.c-lazer { background: var(--cor-cat-lazer); }
+.numero-legenda.c-esporte { background: var(--cor-laranja); }
+.numero-legenda.c-bem-estar { background: var(--cor-roxo); }
+.numero-legenda.c-servico { background: var(--cor-cat-servico); }
+
+.icones-apoio {
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.icones-apoio h4 {
+    font-size: 15px;
+    color: var(--cor-azul-escuro);
+    margin-bottom: 12px;
+    gap: 45%;
+    text-align: center;
+}
+
+.icones-apoio-lista {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    font-size: 13px;
+    color: var(--cor-azul-escuro);
+}
+
+.icones-apoio-lista i {
+    transition: .3s;
+}
+
+.icones-apoio-lista span:hover i {
+    color: #007bc2;
+    transform: translateY(-4px) scale(1.15);
+    display: inline-block;
+}
+
+.icones-apoio-lista span:hover {
+    color: #007bc2;
+    
+}
+
+
+/* ===== Responsivo ===== */
+@media (max-width: 900px) {
+    .legenda-categorias {
+        grid-template-columns: 1fr 1fr;
+    }
+    .fundo-hero-mapa {
+        height: 260px;
+    }
+    .ponto {
+        width: 30px;
+        height: 30px;
+    }
+    .ponto::before {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 500px) {
+    .legenda-categorias {
+        grid-template-columns: 1fr;
+    }
+    .icones-apoio-lista {
+        gap: 14px;
+    }
+}
+
+/* ==========================================================================
+   SEÇÃO DE INGRESSOS (Menu 4) - Desktop
+   ========================================================================== */
+.pagina-ingressos {
+    position: relative;
+    width: 100%;
+}
+
+.background-ingressos {
+    width: 100%;
+    display: block;
+}
+
+.painel-ingressos {
+    position: absolute;
+    top: 12%;
+    left: 28%;
+    width: 44%; 
+    height: 75%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--cor-branco);
+    z-index: 10;
+}
+
+.bloco-info h3 {
+    font-size: 24px;
+    color: var(--cor-dourado); 
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+}
+
+.bloco-info p {
+    font-size: 15px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    color: var(--cor-cinza-claro);
+}
+
+.grid-detalhes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.item-detalhe {
+    background: rgba(0, 0, 0, 0.6); 
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid var(--cor-laranja); 
+}
+
+.item-detalhe h4 {
+    font-size: 15px;
+    color: var(--cor-verde-claro); 
+    margin-bottom: 4px;
+}
+
+.item-detalhe p {
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--cor-cinza);
+}
+
+.area-botao-planilha {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.btn-planilha-atalho {
+    display: inline-block;
+    padding: 12px 25px;
+    background: var(--cor-laranja);
+    color: var(--cor-branco) !important;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-planilha-atalho:hover {
+    background: #d35400;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   SEÇÃO DE INGRESSOS - Responsivo
+   O painel continua sobreposto e centralizado na imagem (como no desktop),
+   só que em telas estreitas ele passa a ocupar quase a largura toda da
+   imagem, com um fundo escuro translúcido atrás do texto pra garantir
+   contraste e leitura, e a grade de detalhes ajusta pra caber melhor.
+   ========================================================================== */
+@media (max-width: 700px) {
+    /* NOVO: dá altura mínima pra seção — sem isso, a caixa de texto (que é
+       % da altura da imagem) fica curta demais e corta o 4º item. A imagem
+       continua sem esticar: só passa a cobrir (recortar) esse espaço extra,
+       igual uma foto de capa normal. */
+    .pagina-ingressos {
+     min-height:850px;
+
+    }
+    .background-ingressos {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* "puxa" a imagem pra esquerda (aumentando o %, o efeito é a imagem
+           deslizar pra esquerda e revelar mais do lado direito dela) até o
+           texto "INGRESSO DIGITAL" aparecer inteiro, sem cortar o "TAL".
+           Se em algum aparelho ainda cortar um pouco, é só ajustar esse
+           valor (0% = totalmente à esquerda / mais cortado à direita,
+           valores maiores "puxam" mais a imagem, mostrando mais do que
+           fica à direita). */
+        object-position: 6% top;
+    }
+    .painel-ingressos {
+        top: 34%;
+        left: 4%;
+        width: 92%;
+        height: auto;
+        padding: 14px;
+        background: none; /* igual ao desktop — sem caixa preta, só os cards individuais têm fundo */
+        border-radius: 14px;
+    }
+    .bloco-info h3 {
+        font-size: 17px;
+        margin-bottom: 6px;
+    }
+    .bloco-info p {
+        font-size: 12px;
+        margin-bottom: 12px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); /* garante leitura direto em cima da imagem, sem caixa */
+    }
+    .grid-detalhes {
+        gap: 8px;
+    }
+    .item-detalhe {
+        padding: 8px;
+    }
+    .item-detalhe h4 {
+        font-size: 12px;
+    }
+    .item-detalhe p {
+        font-size: 10px;
+    }
+    .area-botao-planilha {
+        margin-top: 12px;
+    }
+    .btn-planilha-atalho {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+
+/* Em telas MUITO estreitas, 2 colunas de detalhe ficam pequenas demais —
+   aí sim vira 1 coluna, mas o painel continua sobreposto na imagem */
+@media (max-width: 380px) {
+    .grid-detalhes {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ==========================================
+   SEÇÃO CONTATO
+========================================== */
+
+.pagina-contato{
+    position:relative;
+    width:100%;
+    overflow:hidden;
+}
+
+.background-contato{
+    width:100%;
+    display:block;
+}
+
+/* ==========================================
+   FORMULÁRIO
+========================================== */
+
+.contato-form{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:10;
+}
+
+/* CAMPOS */
+
+.contato-form input,
+.contato-form textarea{
+    position:absolute;
+
+    border:1px solid rgba(255,210,8,.6);
+
+    background:rgba(0,0,0,.35);
+
+    color:#fff;
+
+    outline:none;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    font-size:16px;
+
+    backdrop-filter:blur(4px);
+}
+
+.contato-form textarea{
+    resize:none;
+}
+
+.contato-form input::placeholder,
+.contato-form textarea::placeholder{
+    color:rgba(255,255,255,.75);
+}
+
+/* ==========================================
+   DESKTOP
+========================================== */
+
+.input-nome{
+    top:42%;
+    left:5%;
+    width:32%;
+    height:7%;
+}
+
+.input-email{
+    top:52%;
+    left:5%;
+    width:32%;
+    height:7%;
+}
+
+.input-assunto{
+    top:62%;
+    left:5%;
+    width:32%;
+    height:7%;
+}
+
+.textarea-mensagem{
+    top:72%;
+    left:5%;
+    width:32%;
+    height:16%;
+}
+
+.btn-enviar{
+    position:absolute;
+
+    top:91%;
+    left:5%;
+
+    width:32%;
+    height:8%;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#e4d400;
+
+    color:#fff;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.btn-enviar:hover{
+
+    background:#f5e400;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+
+/* ==========================================
+   NOTEBOOKS
+========================================== */
+
+@media (max-width:1366px){
+
+    .input-nome,
+    .input-email,
+    .input-assunto,
+    .textarea-mensagem,
+    .btn-enviar{
+        left:5%;
+        width:34%;
+    }
+
+}
+
+/* ==========================================
+   TABLETS
+========================================== */
+
+@media (max-width:1024px){
+
+    .input-nome{
+        top:40%;
+        left:5%;
+        width:42%;
+        height:7%;
+    }
+
+    .input-email{
+        top:50%;
+        left:5%;
+        width:42%;
+        height:7%;
+    }
+
+    .input-assunto{
+        top:60%;
+        left:5%;
+        width:42%;
+        height:7%;
+    }
+
+    .textarea-mensagem{
+        top:70%;
+        left:5%;
+        width:42%;
+        height:14%;
+    }
+
+    .btn-enviar{
+        top:88%;
+        left:5%;
+        width:42%;
+        height:7%;
+    }
+
+}
+
+/* ==========================================
+   CELULARES
+========================================== */
+
+@media (max-width:768px){
+
+    .background-contato{
+        position:absolute;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+
+        object-fit:cover;
+
+        /* MOSTRA MAIS O LADO ESQUERDO DA IMAGEM */
+        object-position:0px center;
+    }
+
+
+
+    .contato-form{
+
+        position:absolute;
+
+        inset:0;
+    }
+
+    .input-nome{
+
+        margin-top:14%;
+        left:5%;
+
+
+        width:82%;
+        height:55px;
+    }
+
+    .input-email{
+
+        margin-top:13%;
+        left:5%;
+
+
+        width:82%;
+        height:55px;
+    }
+
+    .input-assunto{
+
+        margin-top:14%;
+        left:5%;
+
+
+        width:82%;
+        height:55px;
+    }
+
+    .textarea-mensagem{
+
+        margin-top:15%;
+        left:5%;
+
+
+        width:82%;
+        height:140px;
+    }
+
+    .btn-enviar{
+
+        margin-top:10%;
+        left:5%;
+
+
+        width:82%;
+        height:55px;
+
+        font-size:15px;
+    }
+
+}
+
+/* ==========================================
+   CELULARES PEQUENOS
+========================================== */
+
+@media (max-width:480px){
+
+    .pagina-contato{
+
+        min-height:765px;
+    }
+
+    .input-nome{
+
+        top:35%;
+        width:88%;
+    }
+
+    .input-email{
+
+        top:45%;
+        width:88%;
+    }
+
+    .input-assunto{
+
+        top:55%;
+        width:88%;
+    }
+
+    .textarea-mensagem{
+
+        top:65%;
+        width:88%;
+        height:120px;
+    }
+
+    .btn-enviar{
+
+        top:86%;
+        width:88%;
+    }
+
+}
+
+
+
+
+
+
+/* ==========================================================================
+   PÁGINA DE LOGIN
+   ========================================================================== */
+.pagina-login {
+    min-height: 100vh;
+    padding: 100px 5% 60px;
+    background: linear-gradient(160deg, #dfe6f5, #eef1fa);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.login-saudacao {
+    text-align: center;
+    color: var(--cor-texto-medio);
+}
+
+.login-saudacao h1 {
+    font-size: 26px;
+    color: #3b4a63;
+}
+
+.login-saudacao p {
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.login-instrucao {
+    text-align: center;
+    font-size: 14px;
+    color: var(--cor-texto-medio);
+    margin-bottom: 20px;
+}
+
+.login-perfis {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.login-perfil-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--cor-branco);
+    border: 1px solid #e2e6f0;
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: .25s;
+}
+
+.login-perfil-item:hover {
+    transform: translateX(8px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    border-color: var(--cor-azul-escuro);
+}
+
+.login-perfil-rotulo {
+    font-size: 12px;
+    color: #9aa3b5;
+}
+
+.login-perfil-nome {
+    font-size: 20px;
+    font-weight: 700;
+    color: #3b4a63;
+}
+
+.login-perfil-extra {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--cor-texto-medio);
+}
+
+@media (max-width: 600px) {
+    .pagina-login {
+        padding: 90px 4% 40px;
+    }
+    .login-perfil-item {
+        flex-wrap: wrap;
+        gap: 4px 10px;
+    }
+    .login-perfil-extra {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   TELA DE LOGIN/CADASTRO POR PERFIL (login-formulario.html)
+   Usa o mesmo fundo claro e o mesmo cabeçalho "login-saudacao" da página de
+   escolha de perfil — só troca o conteúdo pelo formulário (RA/UF/Senha para
+   Estudante e Responsável, E-mail/Senha para Diretoria e Professor).
+   ========================================================================== */
+.form-login-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #3b4a63;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.form-login-voltar:hover {
+    color: var(--cor-azul-escuro);
+}
+
+.form-login-card {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--cor-branco);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(11, 60, 121, 0.12);
+}
+
+.form-login-linha {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.form-login-campo {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid #d9deea;
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--cor-texto-escuro);
+    background: var(--cor-branco);
+    font-family: var(--fonte-textos);
+}
+
+.form-login-campo:focus {
+    outline: none;
+    border-color: var(--cor-azul-escuro);
+}
+
+select.form-login-campo {
+    flex: 0 0 90px;
+}
+
+.form-login-senha-caixa {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.form-login-senha-caixa .form-login-campo {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.form-login-olho {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9aa3b5;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.form-login-esqueceu {
+    text-align: center;
+    font-size: 13px;
+    color: var(--cor-texto-medio);
+    margin: 12px 0 22px;
+}
+
+.form-login-esqueceu a {
+    color: var(--cor-azul-escuro);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.form-login-esqueceu a:hover {
+    text-decoration: underline;
+}
+
+.form-login-botoes {
+    display: flex;
+    gap: 14px;
+    margin-top: 24px; /* espaço entre o campo de senha e os botões */
+}
+
+.btn-form-voltar,
+.btn-form-acessar {
+    flex: 1;
+    padding: 14px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid var(--cor-azul-escuro);
+    font-family: var(--fonte-textos);
+}
+
+.btn-form-voltar {
+    background: var(--cor-branco);
+    color: var(--cor-azul-escuro);
+    text-decoration: none;
+}
+
+.btn-form-voltar:hover {
+    background: #f0f3fa;
+}
+
+.btn-form-acessar {
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+}
+
+.btn-form-acessar:hover {
+    background: #092c5c;
+}
+
+@media (max-width: 480px) {
+    .form-login-card {
+        padding: 22px 18px;
+    }
+    .form-login-botoes {
+        flex-direction: column;
+    }
+    .form-login-linha {
+        flex-wrap: wrap;
+    }
+    .form-login-linha input[placeholder="RA"] {
+        flex: 1 1 100%;
+    }
+}
+
+/* RESPONSIVIDADE GERAL */
+*{
+    box-sizing: border-box;
+}
+
+img{
+    max-width: 100%;
+    height: auto;
+}
+
+body{
+    overflow-x: hidden;
+}
+
+/* MENU */
+@media (max-width: 768px){
+
+    nav ul{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    nav ul li{
+        margin: 5px;
+    }
+
+    nav ul li a{
+        font-size: 1rem;
+    }
+
+}
+/* =========================================================================
+   PAINÉIS (Professor / Diretoria / Aluno) — passo 2 do sistema de login
+   ========================================================================= */
+.painel-dashboard{
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    padding: 130px 20px 0;   /* empurra o conteúdo pra baixo do menu fixo (antes 40px, não bastava) */
+    position: relative;
+}
+
+/* Fundo com um leve gradiente colorido atrás do conteúdo (em vez de preto
+   chapado) — dá profundidade sem brigar com o tema escuro do site. */
+.painel-dashboard::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(ellipse 900px 500px at 15% 0%, rgba(11, 60, 121, .35), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 100% 20%, rgba(109, 52, 187, .25), transparent 60%),
+        var(--cor-preto);
+}
+
+/* A ".login-saudacao" foi feita pro fundo CLARO da tela de login — aqui,
+   nos painéis de fundo preto, precisa de cores claras/vivas, senão o texto
+   fica praticamente invisível (era o "sem cor" do título). */
+.painel-dashboard .login-saudacao{
+    text-align: left;
+    color: var(--cor-cinza-claro);
+    border-left: 4px solid var(--cor-dourado);
+    padding-left: 16px;
+}
+.painel-dashboard .login-saudacao h1{
+    font-size: 2rem;
+    background: linear-gradient(90deg, var(--cor-dourado), var(--cor-laranja));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.painel-dashboard .login-saudacao p{
+    color: var(--cor-cinza);
+    margin-top: 6px;
+}
+
+.lista-turmas-chip{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 20px; }
+.chip-turma{
+    background: linear-gradient(135deg, var(--cor-azul-escuro), var(--cor-roxo));
+    color: var(--cor-branco);
+    padding: 5px 16px;
+    border-radius: 20px;
+    font-size: .9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
+.area-importar{ display:flex; align-items:center; gap:14px; margin: 20px 0 6px; }
+.botao-mais-importar{
+    width: 46px; height: 46px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cor-laranja), var(--cor-dourado));
+    color: var(--cor-branco);
+    border: none; font-size: 1.2rem; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(230, 126, 34, .45);
+    transition: transform .2s, box-shadow .2s;
+}
+.botao-mais-importar:hover{ transform: scale(1.08); box-shadow: 0 6px 18px rgba(255, 215, 0, .5); }
+.dica-importar{ font-size:.85rem; color: var(--cor-cinza); margin-bottom: 14px; }
+#status-importacao{ margin: 6px 0 20px; color: var(--cor-verde-claro); font-size:.9rem; }
+
+.tabela-alunos{
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--cor-creme);
+    color: var(--cor-texto-escuro);
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.tabela-alunos th, .tabela-alunos td{
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--cor-cinza-claro);
+    text-align: left;
+    font-size: .9rem;
+}
+.tabela-alunos th{
+    background: linear-gradient(90deg, var(--cor-azul-escuro), var(--cor-verde-agua));
+    color: var(--cor-branco);
+}
+.tabela-alunos tbody tr:hover{ background: #ece4d0; }
+
+.grid-status{ display:flex; gap:16px; flex-wrap:wrap; margin: 20px 0; }
+.card-status{
+    background: var(--cor-creme); color: var(--cor-texto-escuro);
+    border-radius: 12px; padding: 18px 24px; min-width: 140px; text-align:center;
+    border-top: 4px solid var(--cor-azul-escuro);
+    box-shadow: 0 6px 18px rgba(0,0,0,.3);
+}
+.card-status:nth-child(2){ border-top-color: var(--cor-verde-agua); }
+.card-status:nth-child(3){ border-top-color: var(--cor-roxo); }
+.card-status-rotulo{ display:block; font-size:.8rem; color: var(--cor-texto-medio); }
+.card-status-valor{ display:block; font-family: var(--fonte-titulos); font-size:1.6rem; }
+
+.caixa-mensagem-resultado{ border-radius: 12px; padding: 18px 22px; margin: 20px 0; font-family: var(--fonte-titulos); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+.caixa-aprovado{ background: linear-gradient(135deg, var(--cor-verde-claro), #17a86b); color: var(--cor-preto); }
+.caixa-reprovado{ background: linear-gradient(135deg, #4a1010, #6e1a1a); color: var(--cor-branco); border: 1px solid #a33; }
+
+.caixa-status-solicitacao{ border-radius: 10px; padding: 14px 18px; margin: 10px 0 20px; font-size: .95rem; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+.status-pendente{ background: #4a3d10; color: var(--cor-branco); border: 1px solid var(--cor-dourado); }
+.status-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
+.status-recusado{ background: #4a1010; color: var(--cor-branco); border: 1px solid #a33; }
+/* Aprovado pela Diretoria, mas ainda falta a confirmação final do
+   Desenvolvedor — status intermediário do fluxo em duas etapas. */
+.status-aguardando-dev{ background: #0f2d4a; color: var(--cor-branco); border: 1px solid var(--cor-evento-azul); }
+
+.area-avaliacao-professores{
+    margin-top: 40px; background: var(--cor-creme); color: var(--cor-texto-escuro);
+    border-radius: 12px; padding: 20px;
+    border-top: 4px solid var(--cor-dourado);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.area-avaliacao-professores h2{ color: var(--cor-azul-escuro); }
+
+.btn-solicitar-participacao{
+    background: linear-gradient(135deg, var(--cor-azul-escuro), var(--cor-verde-agua));
+    color: var(--cor-branco);
+    border: none; border-radius: 6px; padding: 6px 10px; font-size: .8rem; cursor: pointer;
+    transition: transform .15s;
+}
+.btn-solicitar-participacao:hover{ transform: translateY(-2px); }
+
+.card-solicitacao{
+    background: var(--cor-branco); border: 1px solid var(--cor-cinza-claro);
+    border-left: 4px solid var(--cor-dourado);
+    border-radius: 10px; padding: 14px 16px; margin: 12px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.detalhe-solicitacao{ font-size: .85rem; color: var(--cor-texto-medio); margin: 2px 0; }
+.botoes-solicitacao{ display: flex; gap: 10px; margin-top: 10px; }
+.btn-aprovar-solicitacao, .btn-recusar-solicitacao{
+    border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-family: var(--fonte-titulos);
+    transition: transform .15s, box-shadow .15s;
+}
+.btn-aprovar-solicitacao{ background: linear-gradient(135deg, var(--cor-verde-claro), #17a86b); color: var(--cor-preto); }
+.btn-recusar-solicitacao{ background: linear-gradient(135deg, #c0392b, #a33); color: var(--cor-branco); }
+.btn-aprovar-solicitacao:hover, .btn-recusar-solicitacao:hover{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+
+@media (max-width: 600px){
+    .painel-dashboard{ padding-top: 110px; }
+}
+
+/* =========================================================================
+   FOOTER — passo 3
+   ========================================================================= */
+.rodape-site{
+    background: #0a0a0a;
+    color: var(--cor-cinza);
+    padding: 40px 20px 20px;
+    margin-top: 0;   /* sem faixa preta entre a seção de Contato e o rodapé */
+}
+.rodape-conteudo{
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+}
+.rodape-bloco h4{
+    color: var(--cor-branco);
+    font-family: var(--fonte-titulos);
+    margin-bottom: 10px;
+}
+.rodape-bloco p, .rodape-bloco a{
+    color: var(--cor-cinza);
+    text-decoration: none;
+    font-size: .9rem;
+    display: block;
+    margin-bottom: 6px;
+}
+.rodape-bloco a:hover{ color: var(--cor-menu-amarelo); }
+.rodape-nav{ display:flex; flex-direction:column; }
+.rodape-linha{
+    text-align: center;
+    font-size: .8rem;
+    color: var(--cor-cinza);
+    margin-top: 30px;
+    border-top: 1px solid #222;
+    padding-top: 16px;
+}
+
+/* =========================================================================
+   ÍCONE / BALÃO FLUTUANTE DO ASSISTENTE VIRTUAL — passo 3
+   O botão (<button>) fica fixo no canto; o <img> dentro dele só preenche
+   o círculo. Clicar nele abre o modal do chatbot (ver bloco seguinte).
+   ========================================================================= */
+.botao-assistente-flutuante-wrapper{
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    cursor: pointer;
+    z-index: 999;
+    transition: transform .2s ease;
+    background: var(--cor-branco); /* aparece se a imagem tiver fundo transparente */
+    overflow: hidden;
+}
+.botao-assistente-flutuante-wrapper:hover{ transform: scale(1.08); }
+
+.botao-assistente-flutuante{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 600px){
+    .botao-assistente-flutuante-wrapper{ width: 54px; height: 54px; right: 14px; bottom: 14px; }
+}
+
+/* =========================================================================
+   MODAL DO CHATBOT — abre centralizado por cima do site ao clicar no ícone
+   ========================================================================= */
+.modal-chatbot-fundo{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-chatbot-fundo.aberto{ display: flex; }
+
+.modal-chatbot{
+    background: var(--cor-branco);
+    width: min(480px, 100%);
+    height: min(640px, 90vh);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,.5);
+}
+
+.chat-frame-bar{
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    padding: 14px 18px;
+    font-size: 14px;
+    font-family: var(--fonte-titulos);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.chat-frame-bar .dot{
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--cor-dourado);
+    display: inline-block;
+}
+.modal-chatbot-fechar{
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--cor-branco);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+.modal-chatbot-fechar:hover{ color: var(--cor-menu-amarelo); }
+
+.chat-frame{
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--cor-branco);
+}
+
+/* Chat próprio (troca o antigo iframe de terceiro) — mensagens + campo de
+   digitar, respondido pela função /api/chat (Claude). */
+.chat-mensagens{
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--cor-creme);
+}
+.chat-bolha{
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.chat-bolha-assistente{
+    align-self: flex-start;
+    background: var(--cor-branco);
+    color: var(--cor-texto-escuro);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.chat-bolha-usuario{
+    align-self: flex-end;
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    border-bottom-right-radius: 4px;
+}
+.chat-bolha-erro{
+    align-self: flex-start;
+    background: #4a1010;
+    color: var(--cor-branco);
+    border: 1px solid #a33;
+}
+.chat-digitando{
+    align-self: flex-start;
+    font-size: 13px;
+    color: var(--cor-texto-medio);
+    font-style: italic;
+    padding: 0 4px;
+}
+.chat-formulario{
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: var(--cor-branco);
+    border-top: 1px solid rgba(0,0,0,.08);
+}
+.chat-input{
+    flex: 1;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+}
+.chat-input:focus{ border-color: var(--cor-azul-escuro); }
+.chat-botao-enviar{
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .15s;
+}
+.chat-botao-enviar:hover{ opacity: .85; }
+.chat-botao-enviar:disabled{ opacity: .5; cursor: default; }
+
+.chat-fallback{
+    padding: 24px;
+    font-size: 14px;
+    color: var(--cor-texto-medio);
+    background: var(--cor-branco);
+}
+.chat-fallback code{
+    display: block;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--cor-creme);
+    border-radius: 6px;
+    font-size: 12.5px;
+    word-break: break-all;
+    color: var(--cor-texto-escuro);
+}
+
+@media (max-width: 600px){
+    .modal-chatbot{ width: 100%; height: 100%; border-radius: 0; }
+}
+
+/* ---- Status da Diretoria no cartão do aluno ---- */
+.card-status-diretoria{ border-top-color: var(--cor-dourado); }
+.card-status-diretoria.status-pendente{ background: #4a3d10; color: var(--cor-branco); }
+.card-status-diretoria.status-aprovado{ background: var(--cor-verde-claro); color: var(--cor-preto); }
+.card-status-diretoria.status-recusado{ background: #4a1010; color: var(--cor-branco); }
+.card-status-diretoria.status-aguardando-dev{ background: #0f2d4a; color: var(--cor-branco); }
+.card-status-diretoria .card-status-rotulo{ color: inherit; opacity: .8; }
+
+/* ---- Resumo do aluno na tela inicial (depois do "Sair") ---- */
+.resumo-aluno{
+    position: relative;
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 24px 28px;
+    background: #0b0b0b;
+    border-left: 5px solid var(--cor-dourado);
+    border-radius: 12px;
+    color: var(--cor-branco);
+    box-shadow: 0 6px 18px rgba(0,0,0,.4);
+}
+.resumo-aluno h2{ color: var(--cor-dourado); margin: 0 0 6px; font-size: 1.8rem; }
+.resumo-aluno-texto{ margin: 4px 0 0; color: var(--cor-cinza); }
+.resumo-aluno-fechar{
+    position: absolute; top: 10px; right: 14px;
+    background: none; border: 0; color: var(--cor-cinza);
+    font-size: 1.6rem; cursor: pointer; line-height: 1;
+}
+.resumo-aluno-fechar:hover{ color: var(--cor-branco); }
+@media (max-width: 768px){ .resumo-aluno{ margin: 20px 12px; padding: 20px; } }
+
+/* ---- Resumo do aluno: logo abaixo do menu, no alto da tela inicial ---- */
+.resumo-aluno.resumo-topo{
+    margin: 76px auto 16px;   /* 76px = altura do menu fixo + respiro */
+    padding: 16px 24px;
+}
+.resumo-aluno.resumo-topo h2{ font-size: 1.5rem; }
+.resumo-aluno.resumo-topo .grid-status{ margin: 12px 0; }
+@media (max-width: 768px){ .resumo-aluno.resumo-topo{ margin: 70px 12px 12px; padding: 14px 16px; } }
+
+/* ---- Comportamento automático: emoji amarelo + legenda ---- */
+.comp-selo{
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 10px 2px 4px; border-radius: 999px;
+    font-family: var(--fonte-textos); font-size: .85rem; font-weight: 700;
+    white-space: nowrap; vertical-align: middle;
+}
+.comp-emoji{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #ffd21f; font-size: 1.05rem; line-height: 1;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+}
+.comp-bom{ background: #d6f5dc; color: #14532d; }
+.comp-regular{ background: #fff3c4; color: #7a5b00; }
+.comp-ruim{ background: #fcd9d9; color: #7f1d1d; }
+.card-status-valor .comp-selo{ font-size: 1rem; }
+.comp-legenda-geral{
+    margin: 10px 0; padding: 8px 12px; border-radius: 8px;
+    background: rgba(255,210,31,.12); font-size: .85rem; line-height: 2;
+}
+
+/* =========================================================================
+   STATUS DA SOLICITAÇÃO — trilha de etapas + pop-up de aviso
+   (ver status-solicitacao.js; usado nos painéis de professor, direção,
+   aluno e desenvolvedor)
+   ========================================================================= */
+.trilha-status-solic{ display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px; vertical-align:middle; }
+.chip-etapa-solic{
+    font-size:.82rem; padding:3px 10px; border-radius:999px;
+    background: rgba(128,128,128,.16); color: inherit; border: 1px solid rgba(128,128,128,.45);
+}
+.seta-etapa-solic{ opacity:.6; font-size:1rem; }
+.btn-status-solic{
+    font-family: inherit; font-size:.88rem; font-weight:bold; cursor:pointer;
+    padding:4px 12px; border-radius:999px; border-width:1px; border-style:solid;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3); transition: transform .15s, box-shadow .15s;
+}
+.btn-status-solic:hover{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+.btn-status-solic:focus-visible{ outline: 3px solid var(--cor-dourado); outline-offset: 2px; }
+/* as classes status-* já existem (pendente / aprovado / recusado / aguardando-dev) */
+.btn-status-solic.status-aprovado{ border-color:#17a86b; }
+
+.popup-aviso{
+    position: fixed; inset: 0; z-index: 10000; display:flex; align-items:center; justify-content:center;
+    background: rgba(0,0,0,.7); padding: 16px;
+}
+.popup-aviso[hidden]{ display:none; }
+.popup-aviso-caixa{
+    width:100%; max-width:480px; max-height:92vh; overflow-y:auto; text-align:center;
+    background:#12324f; color:#fff; border-radius:16px; padding:28px 24px 24px;
+    border-top: 6px solid var(--cor-dourado); box-shadow: 0 12px 44px rgba(0,0,0,.6);
+}
+.popup-aviso-caixa.popup-aprovado{ border-top-color: var(--cor-verde-claro); }
+.popup-aviso-caixa.popup-reprovado{ border-top-color:#e74c3c; }
+.popup-aviso-caixa.popup-esperando-contato{ border-top-color: var(--cor-evento-azul); }
+.popup-aviso-emoji{ font-size:3rem; line-height:1; margin-bottom:8px; }
+.popup-aviso-caixa h2{ margin:0 0 10px; font-size:1.4rem; }
+.popup-aviso-mensagem{ margin:0 0 14px; line-height:1.5; }
+.popup-aviso-detalhes{
+    text-align:left; background: rgba(0,0,0,.25); border-radius:10px; padding:10px 14px;
+    font-size:.9rem; line-height:1.5; margin-bottom:16px;
+}
+.popup-aviso-detalhes:empty{ display:none; }
+.popup-aviso-detalhes p{ margin:4px 0; }
+.popup-aviso-ok{
+    border:none; border-radius:8px; padding:10px 28px; cursor:pointer; font-family: var(--fonte-titulos);
+    font-size:1rem; background: linear-gradient(135deg, var(--cor-dourado), var(--cor-laranja)); color:#000;
+}
+
+/* Tabelas largas (ex: painel do desenvolvedor, 14 colunas): rolam dentro do
+   próprio quadro em vez de serem cortadas. */
+.tabela-rolagem{
+    width:100%; overflow-x:auto; margin-top:10px; border-radius:12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35); -webkit-overflow-scrolling: touch;
+}
+.tabela-rolagem .tabela-alunos{ margin-top:0; box-shadow:none; border-radius:0; overflow:visible; min-width:1500px; }
+.tabela-rolagem .tabela-alunos th{ white-space:nowrap; }
+/* Painel mais largo que o padrão (1100px) pra tabelas com muitas colunas */
+.painel-dashboard.painel-largo{ max-width: min(1700px, 96vw); }
+
+/* Linha da tabela do professor: aguardando a equipe Clube da Maré */
+.tabela-alunos tr.linha-aguardando td{ background: rgba(25, 118, 210, .22) !important; }
+
+.caixa-status-solicitacao .btn-status-solic{ box-shadow: 0 0 0 2px rgba(255,255,255,.55); }
+
+/* Textos de dica dentro de painéis CLAROS (creme): o cinza-claro padrão quase
+   sumia no fundo — aqui usa o cinza escuro de texto secundário. */
+.area-avaliacao-professores .dica-importar{ color: var(--cor-texto-medio); }
+
+
+/* ---- Resumo do aluno POR CIMA do banner, no lugar da logo ------------------
+   O cartão fica dentro do .hero e se sobrepõe à logo (na mesma posição dela).
+   Para mover: ajuste top/left. Para o tamanho: width. Fecha no "×".
+   No celular (até 768px) o banner é pequeno, então o cartão volta a ficar
+   logo abaixo dele, em tamanho normal. */
+.hero .resumo-aluno{
+    position: absolute;
+    top: 100px;
+    left: 3%;
+    width: min(560px, 60%);
+    margin: 0;
+    padding: 16px 22px;
+    z-index: 5;               /* acima da logo (z-index 2) e do menu do banner */
+    box-sizing: border-box;
+}
+.hero .resumo-aluno h2{ font-size: 1.4rem; padding-right: 28px; }
+.hero .resumo-aluno .grid-status{ margin: 10px 0; }
+@media (max-width: 768px){
+    .hero .resumo-aluno{
+        position: relative;
+        top: auto; left: auto;
+        width: auto;
+        margin: 12px;
+    }
+}
+
+
+/* =========================================================================
+   AJUSTES DE RESPONSIVIDADE NO CELULAR (index.html)
+   Este bloco fica no FINAL do arquivo de propósito: assim ele vale por cima
+   das regras anteriores, só em telas estreitas. No computador nada muda.
+   ========================================================================= */
+@media (max-width: 768px) {
+
+    /* ---- Menu do topo: mais opaco, pra o conteúdo não aparecer por trás
+            do ícone quando a página rola (ex.: formulário de contato) ---- */
+    .topnav {
+        background: var(--cor-barra-menu);
+        padding: 10px 5%;
+    }
+
+    /* ---- Banner de abertura: o menu fixo (~56px) cobria o topo da imagem
+            e a logo ficava por cima do texto do banner. Agora o banner
+            começa abaixo do menu, fica mais alto (recorta as laterais em
+            vez de encolher) e a logo diminui e fica no canto. ---- */
+    #inicio.hero {
+        padding-top: 56px;
+        background: #000;
+    }
+    #inicio.hero > img:first-child {
+        height: 240px;
+        object-fit: cover;
+        object-position: 38% center;
+    }
+    #inicio .hero-logo {
+        top: 66px;
+        left: 3%;
+        width: 28%;
+        min-width: 0;
+        max-width: 120px;
+    }
+
+    /* ---- Eventos: 4 cards numa linha ficavam espremidos e o texto
+            vazava. No celular viram 2 por linha. A imagem de fundo ganha
+            altura pra acompanhar as 2 linhas de cards. ---- */
+    .fundo-hero-eventos {
+        height: 800px;
+        object-fit: cover;
+    }
+    .painel-eventos {
+        margin-top: -710px;
+        padding: 40px 4% 30px;
+    }
+    .painel-eventos h2 {
+        font-size: 32px;
+        margin-top: -40px;
+    }
+    .grid-eventos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px 20px;     /* mais espaço entre os cards (era 14px) */
+    }
+    /* O efeito de "zoom" voltou no celular, mais suave pra não estourar a tela:
+       aparece ao tocar no card (e some ao tocar fora). */
+    .card-evento:hover,
+    .card-evento.ativo {
+        transform: scale(1.04);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, .4);
+    }
+    .info-evento h3 {
+        font-size: 15px;
+        overflow-wrap: anywhere;
+    }
+
+    /* ---- Wellness: 5 itens em 1 linha ficavam ilegíveis. Agora são 3 por
+            linha (3 em cima, 2 embaixo, centralizados). ---- */
+    .wellness-itens {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 22px 10px;
+    }
+    .item-wellness {
+        width: 30%;
+        min-width: 90px;
+    }
+
+    /* ---- Ingressos: o fundo era esticado pra cobrir a seção toda e
+            cortava o título "INGRESSO DIGITAL". Agora a imagem aparece
+            inteira no topo (com a base esmaecida) e o painel fica logo
+            abaixo, com altura que acompanha o conteúdo. ---- */
+    .pagina-ingressos {
+        min-height: 0;
+        background: #001020;
+        padding-bottom: 30px;
+    }
+    .background-ingressos {
+        position: static;
+        width: 100%;
+        height: auto;
+        object-fit: initial;
+        -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+        mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    }
+    .painel-ingressos {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 92%;
+        height: auto;
+        /* Sobe o painel pra ficar logo ABAIXO de "INGRESSO DIGITAL / Seu acesso
+           começa aqui", centralizado. A imagem tem proporção 3:2 (altura =
+           66,7% da largura) e o subtítulo termina a ~37% dessa altura — por
+           isso -42vw funciona em qualquer largura de celular. */
+        margin: -42vw auto 0;
+        padding: 14px;
+        background: rgba(0, 12, 26, .72);   /* fundo escuro suave: o texto não briga com o celular/catraca da imagem */
+        border-radius: 14px;
+    }
+    /* Os 4 cards de detalhe não podem passar da largura do painel (em ~430px
+       o da direita encostava/vazava pela borda) */
+    .pagina-ingressos .grid-detalhes {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .pagina-ingressos .item-detalhe {
+        min-width: 0;
+        box-sizing: border-box;
+        overflow-wrap: break-word;
+    }
+
+    /* ---- Rodapé: espaço extra embaixo pra o botão flutuante do chat
+            não cobrir o texto de direitos reservados. ---- */
+    .rodape-site {
+        margin-top: 0;            /* tira a faixa preta vazia acima do rodapé */
+        padding: 32px 5% 24px;
+    }
+    .rodape-conteudo {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 24px 20px;
+    }
+    .rodape-nav {
+        grid-column: 1 / -1;      /* Navegação ocupa a linha toda */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0 12px;
+    }
+    .rodape-nav h4 {
+        grid-column: 1 / -1;
+    }
+    .rodape-bloco p,
+    .rodape-bloco a {
+        overflow-wrap: break-word;  /* só quebra o e-mail se realmente não couber */
+        font-size: .85rem;
+    }
+    /* O botão flutuante do chat fica no canto direito: o texto de direitos
+       reservados ganha folga desse lado em vez de empurrar o rodapé pra baixo */
+    .rodape-linha {
+        padding-right: 76px;
+        padding-left: 4px;
+        text-align: left;
+        min-height: 44px;
+    }
+}
+
+/* Telas bem pequenas (ex.: iPhone SE antigo, 320px) */
+@media (max-width: 360px) {
+    #inicio.hero > img:first-child { height: 210px; }
+    .fundo-hero-eventos { height: 860px; }
+    .painel-eventos { margin-top: -770px; }
+    .info-evento h3 { font-size: 14px; }
+    .rodape-conteudo { grid-template-columns: 1fr; }   /* Endereço e Contato um embaixo do outro */
+}
+
+
+/* =========================================================================
+   CARTÕES DE STATUS DO ALUNO NO CELULAR (painel do aluno + resumo da tela inicial)
+   Média / Frequência (/ Comportamento) lado a lado em 2 colunas e o Status
+   ocupando a largura toda embaixo, sem estourar a tela.
+   ========================================================================= */
+@media (max-width: 600px) {
+    .grid-status {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+    .grid-status .card-status {
+        min-width: 0;
+        padding: 14px 10px;
+    }
+    .grid-status .card-status-diretoria {
+        grid-column: 1 / -1;
+    }
+    .card-status-valor { font-size: 1.4rem; }
+    .card-status-diretoria .card-status-valor { font-size: 1.5rem; overflow-wrap: anywhere; }
+
+    .resumo-aluno h2,
+    .hero .resumo-aluno h2 { font-size: 1.3rem; padding-right: 30px; overflow-wrap: anywhere; }
+    .resumo-aluno-texto { font-size: .95rem; line-height: 1.45; }
+
+    .painel-dashboard .login-saudacao h1 { font-size: 1.9rem; overflow-wrap: anywhere; }
+}
+
+
+/* Resumo do aluno no celular: sobe e cobre a parte de baixo do banner
+   (como no computador), em vez de ficar todo abaixo dele.
+   Para subir mais/menos, mude o margin-top (mais negativo = mais alto). Com -230px o painel começa na altura da logo. */
+@media (max-width: 768px) {
+    .hero .resumo-aluno {
+        margin: -230px 16px 12px;
+        padding: 8px 12px;
+        z-index: 5;
+    }
+    .hero .resumo-aluno h2 { font-size: 1.1rem; margin-bottom: 2px; padding-right: 26px; }
+    .hero .resumo-aluno-fechar { top: 6px; right: 10px; font-size: 1.3rem; }
+    .hero .resumo-aluno .grid-status { gap: 6px; margin: 6px 0; }
+    .hero .resumo-aluno .grid-status .card-status { padding: 6px 6px; border-radius: 10px; }
+    .hero .resumo-aluno .card-status-rotulo { font-size: .7rem; }
+    .hero .resumo-aluno .card-status-valor { font-size: 1.05rem; }
+    .hero .resumo-aluno .card-status-diretoria .card-status-valor { font-size: 1.15rem; }
+    .hero .resumo-aluno-texto { margin: 2px 0 0; font-size: .8rem; line-height: 1.35; }
+}
+
+
+/* =========================================================================
+   BOTÃO FLUTUANTE DO YOUTUBE (canto ESQUERDO — espelho do botão do chat)
+   Mesmo tamanho e mesma distância das bordas do botão do chat (direito).
+   Pra ajustar a distância/tamanho, mude as 3 variáveis abaixo.
+   ========================================================================= */
+:root {
+    --youtube-distancia: 22px;   /* distância da borda esquerda e de baixo */
+    --youtube-tamanho: 64px;     /* diâmetro do botão */
+}
+.botao-youtube-flutuante {
+    position: fixed;
+    left: var(--youtube-distancia);
+    bottom: var(--youtube-distancia);
+    width: var(--youtube-tamanho);
+    height: var(--youtube-tamanho);
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--cor-branco);
+    color: #ff0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    cursor: pointer;
+    z-index: 999;
+    transition: transform .2s ease;
+}
+/* Título "Comece Aqui" em cima do botão do YouTube (com setinha apontando pro botão) */
+.youtube-titulo {
+    position: fixed;
+    left: var(--youtube-distancia);
+    bottom: calc(var(--youtube-distancia) + var(--youtube-tamanho) + 12px);
+    background: var(--cor-menu-amarelo);
+    color: var(--cor-azul-profundo);
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    white-space: nowrap;
+    pointer-events: none;      /* o clique passa direto; só o botão abre o vídeo */
+    z-index: 999;
+}
+.youtube-titulo::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: calc(var(--youtube-tamanho) / 2 - 7px);
+    border: 7px solid transparent;
+    border-top-color: var(--cor-menu-amarelo);
+}
+.botao-youtube-flutuante svg { width: 58%; height: auto; display: block; }
+.botao-youtube-flutuante:hover { transform: scale(1.08); }
+.botao-youtube-flutuante:focus-visible { outline: 3px solid var(--cor-menu-amarelo); outline-offset: 3px; }
+
+/* Modal do vídeo */
+.modal-video-fundo {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-video-fundo.aberto { display: flex; }
+.modal-video {
+    width: min(900px, 100%);
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+}
+.modal-video-barra {
+    background: var(--cor-azul-escuro);
+    color: var(--cor-branco);
+    padding: 12px 16px;
+    font-family: var(--fonte-titulos);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.modal-video-fechar {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--cor-branco);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+.modal-video-fechar:hover { color: var(--cor-menu-amarelo); }
+.modal-video-corpo {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+}
+.modal-video-corpo iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.modal-video-aviso {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--cor-branco);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+    .modal-video-fundo { padding: 10px; }
+    .modal-video-barra { font-size: .9rem; padding: 10px 12px; }
+}
+
+
+/* ==========================================================================
+   LOGIN (login.html e login-formulario.html) — visual vivo + responsivo
+   Antes o formulário era empurrado pro rodapé da tela (space-between) e no
+   celular ficava um buraco enorme entre o título e os campos. Agora o
+   conteúdo fica centralizado na tela, em qualquer tamanho.
+   ========================================================================== */
+.pagina-login {
+    min-height: 100vh;
+    min-height: 100dvh;              /* celular: considera a barra do navegador */
+    padding: 96px 5% 40px;           /* 96px = espaço do menu fixo no topo */
+    background:
+        radial-gradient(circle at 85% 6%, rgba(255, 255, 255, .28) 0, rgba(255, 255, 255, 0) 40%),   /* brilho de luz no canto */
+        linear-gradient(165deg, var(--cor-azul-escuro) 0%, #0a8fe8 50%, var(--cor-verde-agua) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+}
+.pagina-login > div {
+    width: 100%;
+    max-width: 520px;
+}
+
+/* Textos sobre o fundo azul */
+.pagina-login .login-saudacao { color: #fff; }
+.pagina-login .login-saudacao h1 {
+    color: #fff;
+    font-size: clamp(28px, 6vw, 40px);
+    text-shadow: 0 2px 10px rgba(0, 40, 110, .45);
+}
+.pagina-login .login-saudacao p {
+    color: rgba(255, 255, 255, .95);
+    font-size: 16px;
+    margin-top: 6px;
+    text-shadow: 0 1px 6px rgba(0, 40, 110, .45);
+}
+.login-instrucao {
+    color: rgba(255, 255, 255, .95);
+    font-size: 15px;
+    margin: 14px 0 18px;
+}
+
+/* "Voltar ao site" vira um botãozinho fácil de tocar */
+.form-login-voltar {
+    color: #fff;
+    background: rgba(255, 255, 255, .18);
+    padding: 9px 16px;
+    border-radius: 24px;
+    margin-bottom: 22px;
+    min-height: 40px;
+}
+.form-login-voltar:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, .3);
+}
+
+/* Escolha de perfil */
+.login-perfis { max-width: 100%; gap: 14px; }
+.login-perfil-item {
+    align-items: center;
+    padding: 18px 22px;
+    min-height: 64px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 40, 110, .22);
+}
+.login-perfil-item:hover { border-color: var(--cor-laranja); }
+.login-perfil-rotulo { color: var(--cor-texto-medio); }
+.login-perfil-nome { color: var(--cor-azul-profundo); font-size: 22px; }
+.login-perfil-extra { color: var(--cor-laranja); font-size: 16px; }
+
+/* Cartão do formulário */
+.form-login-card {
+    max-width: 520px;
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: 0 14px 38px rgba(0, 40, 110, .3);
+}
+.form-login-campo {
+    font-size: 16px;                 /* 16px evita o zoom automático do iPhone ao tocar no campo */
+    min-height: 48px;
+    border: 2px solid #d9e4f5;
+}
+.form-login-campo:focus {
+    border-color: var(--cor-azul-escuro);
+    box-shadow: 0 0 0 3px rgba(10, 92, 255, .18);
+}
+.form-login-olho { padding: 10px; right: 6px; font-size: 18px; }
+.btn-form-voltar,
+.btn-form-acessar { min-height: 50px; display: flex; align-items: center; justify-content: center; }
+.btn-form-voltar { border-color: var(--cor-azul-escuro); color: var(--cor-azul-escuro); }
+.btn-form-acessar {
+    background: var(--cor-laranja);
+    border-color: var(--cor-laranja);
+    color: #fff;
+}
+.btn-form-acessar:hover { background: #e66a00; border-color: #e66a00; }
+
+/* Só movimenta o item de perfil quando existe mouse (no toque isso estourava a tela) */
+@media (hover: none) {
+    .login-perfil-item:hover { transform: none; }
+    .login-perfil-item:active { transform: scale(.98); border-color: var(--cor-laranja); }
+}
+
+/* Tablet e celular */
+@media (max-width: 600px) {
+    .pagina-login {
+        padding: 84px 16px 28px;
+        gap: 18px;
+    }
+    .login-perfil-item {
+        flex-wrap: nowrap;             /* a setinha fica na mesma linha, à direita */
+        gap: 10px;
+    }
+    .login-perfil-extra { margin-left: auto; width: auto; }
+    .form-login-card { padding: 22px 16px; }
+    .form-login-botoes {
+        flex-direction: column-reverse; /* "Acessar" fica em cima, mais perto do polegar */
+        gap: 12px;
+        margin-top: 20px;
+    }
+}
+
+/* Celular deitado / telas baixas: não força altura de tela inteira */
+@media (max-height: 520px) {
+    .pagina-login { justify-content: flex-start; min-height: 0; }
+}
+
+
+/* =========================================================================
+   AJUSTES FINAIS (outubro/2026)
+   Este bloco fica no FINAL do arquivo de propósito: vale por cima das regras
+   anteriores. Cada item abaixo tem um comentário dizendo o que muda e onde
+   ajustar.
+   ========================================================================= */
+
+/* ---- 1) PROGRAMAÇÃO DO DIA: caixa menor e sem cortar os ícones ------------
+   Antes: a caixa tinha overflow:hidden (e, abaixo de 1400px de largura, a
+   timeline virava overflow-x:auto), o que CORTAVA o ícone quando ele sobe e
+   cresce ao passar o mouse/selecionar. Agora a caixa não corta nada e a
+   timeline ganha um respiro em cima (padding-top) pro ícone ter espaço.
+   Pra deixar a caixa ainda menor/maior, mexa no "padding" de
+   .programacao-dia e no "margin-bottom" de .titulo-programacao. */
+.programacao-dia {
+    padding: 30px 36px 34px;
+    overflow: visible;
+}
+.titulo-programacao {
+    font-size: 44px;
+    margin-bottom: 36px;
+}
+.timeline {
+    padding-top: 26px;        /* espaço pro ícone subir (-12px) e crescer (x1.12) */
+    padding-bottom: 6px;
+}
+/* a linha e o aviãozinho acompanham o novo respiro em cima (42px + 26px) */
+.timeline::before { top: 68px; }
+.timeline::after  { top: 36px; }
+.timeline-icon {
+    width: 78px;
+    height: 78px;
+}
+.timeline-icon i { font-size: 32px; }
+
+@media (min-width: 769px) and (max-width: 1400px) {
+    /* em tela de notebook cabe tudo sem barra de rolagem, então a timeline
+       deixa de cortar o ícone (overflow-x:auto também cortava na vertical) */
+    .timeline { overflow: visible; padding-bottom: 6px; }
+    .timeline-item { min-width: 0; width: 12%; }
+    .timeline-item h4 { font-size: 14px; }
+    .timeline-item p  { font-size: 12px; }
+}
+@media (max-width: 768px) {
+    .programacao-dia { padding: 22px 16px; overflow: visible; }
+    .titulo-programacao { font-size: 26px; margin-bottom: 26px; }
+    .timeline { padding-top: 0; }
+}
+
+
+/* ---- 2) DEGRADÊ DE TRANSIÇÃO ENTRE AS SEÇÕES/PÁGINAS ----------------------
+   Uma faixa de degradê suaviza a "emenda" entre o banner e a seção seguinte
+   (e entre as demais seções). "height" controla o tamanho do degradê e a
+   cor final de cada faixa foi tirada da imagem da seção seguinte. */
+#inicio.hero::after,
+.quemsomos-container::after,
+.hero-eventos::after,
+.hero-eventos-programacao::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 12vw, 170px);
+    pointer-events: none;
+    z-index: 1;               /* acima da imagem, abaixo dos textos/cartões */
+}
+/* banner -> Quem Somos (azul da água, no topo da imagem do Quem Somos) */
+#inicio.hero::after {
+    background: linear-gradient(to bottom, rgba(10, 174, 190, 0) 0%, #0aaebe 100%);
+}
+/* Quem Somos -> Eventos (parte de baixo da água escurece pro palco) */
+.quemsomos-container::after {
+    background: linear-gradient(to bottom, rgba(5, 185, 208, 0) 0%, rgba(55, 108, 138, .9) 100%);
+}
+/* Eventos -> Programação */
+.hero-eventos::after {
+    background: linear-gradient(to bottom, rgba(77, 113, 59, 0) 0%, rgba(100, 168, 189, .85) 100%);
+}
+/* Programação -> Próximos eventos/Mapa */
+.hero-eventos-programacao::after {
+    background: linear-gradient(to bottom, rgba(154, 106, 50, 0) 0%, rgba(178, 133, 104, .85) 100%);
+}
+/* o cartão do aluno/professor/diretoria e a logo ficam acima do degradê */
+#inicio .hero-logo, #inicio .resumo-aluno { z-index: 5; }
+.hero-eventos-programacao .eventos-programacao-container { z-index: 10; }
+
+/* Suaviza também a troca de página: a página nova aparece com um fade */
+@keyframes cdm-fade-pagina { from { opacity: 0; } to { opacity: 1; } }
+body { animation: cdm-fade-pagina .45s ease-out backwards; }
+@media (prefers-reduced-motion: reduce) { body { animation: none; } }
+
+
+/* ---- 3) FONTE PROFISSIONAL no login e nos painéis --------------------------
+   Pra mudar de fonte, troque só a linha "font-family" abaixo. As páginas de
+   login e os 4 painéis têm <body class="fonte-profissional">. Os ícones
+   (Font Awesome) e os blocos de código ficam de fora. */
+body.fonte-profissional,
+body.fonte-profissional *:not(i):not([class^="fa-"]):not([class*=" fa-"]):not(pre):not(code) {
+    font-family: Arial, Helvetica, sans-serif !important;
+    letter-spacing: normal;
+}
+body.fonte-profissional pre,
+body.fonte-profissional code {
+    font-family: Consolas, "Courier New", monospace !important;
+}
+/* Arial é mais larga que a fonte antiga: deixa o texto respirar */
+body.fonte-profissional { line-height: 1.5; }
+body.fonte-profissional h1, body.fonte-profissional h2,
+body.fonte-profissional h3, body.fonte-profissional h4 { line-height: 1.25; }
+
+
+/* ---- 4) FILTRO DE TURMA (Diretoria e Desenvolvedor) -----------------------
+   Mesmos botões de turma do painel do professor. */
+.chip-turma-selecionavel {
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: rgba(255, 255, 255, .10);
+    color: var(--cor-branco);
+    transition: transform .15s, background .15s, border-color .15s;
+}
+.chip-turma-selecionavel:hover { transform: translateY(-1px); border-color: var(--cor-dourado); }
+.chip-turma-selecionavel:focus-visible { outline: 3px solid var(--cor-dourado); outline-offset: 2px; }
+.chip-turma-selecionavel.chip-turma-ativa {
+    background: linear-gradient(135deg, var(--cor-azul-escuro), var(--cor-roxo));
+    border-color: var(--cor-dourado);
+    font-weight: 700;
+}
+.filtro-turma { margin: 8px 0 4px; }
+.filtro-turma-rotulo { display: block; font-size: .9rem; color: var(--cor-cinza); margin-bottom: 4px; }
 
 
 /* ---- 5) CARTÃO CLICÁVEL NA TELA INICIAL (aluno, professor e diretoria) -----
@@ -35,78 +3715,93 @@
     background: rgba(255, 215, 0, .15);
     color: var(--cor-dourado);
     font-size: .8rem;
+}\n\n/* =========================================================================
+   ADIÇÃO COMPLEMENTAR — GRADIENTES DE TRANSIÇÃO ATÉ CONTATO
+   Este bloco é somente aditivo: mantém todas as regras anteriores do projeto.
+   Os gradientes ficam nas bordas das seções e não bloqueiam cliques.
+   ========================================================================= */
+
+/* Hero do Mapa -> conteúdo do mapa */
+.hero-mapa {
+    position: relative;
+    overflow: hidden;
+}
+.hero-mapa::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: clamp(55px, 9vw, 130px);
+    background: linear-gradient(to bottom, rgba(20, 92, 112, 0) 0%, rgba(20, 92, 112, .88) 100%);
+    pointer-events: none;
+    z-index: 2;
 }
 
-
-/* === Transições suaves entre seções, navegação e rodapé === */
-html { scroll-behavior: smooth; scroll-padding-top: 96px; }
-main > section, .conteudo-pagina > section, .area-avaliacao-professores, .rodape-site {
-  transition: opacity .45s ease, transform .45s ease, filter .45s ease, box-shadow .3s ease;
-}
-.topnav a, .menu-dropdown a, .rodape-site a, .rodape-nav a {
-  transition: color .25s ease, background-color .25s ease, transform .25s ease, text-shadow .25s ease;
-}
-.topnav a:hover, .menu-dropdown a:hover, .rodape-site a:hover, .rodape-nav a:hover {
-  transform: translateY(-2px); text-shadow: 0 4px 14px rgba(255, 205, 35, .38);
-}
-.area-avaliacao-professores:hover, .rodape-site:hover {
-  box-shadow: 0 14px 34px rgba(0, 35, 70, .16);
-}
-.filtro-escola-dev { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0 18px; }
-.filtro-escola-dev label { font-weight:700; }
-.filtro-escola-dev select { min-width:min(100%, 320px); padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); background:#fff; color:#18314c; font:inherit; box-shadow:0 5px 16px rgba(0,0,0,.08); }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } *, *::before, *::after { transition-duration:.01ms !important; animation-duration:.01ms !important; } }
-
-/* Revelação suave ao entrar em cena durante a rolagem */
-.mare-revelar { opacity: 0; transform: translateY(22px); filter: saturate(.88); }
-.mare-revelar.mare-visivel { opacity: 1; transform: translateY(0); filter: saturate(1); }
-body { animation: mareEntrada .45s ease both; }
-@keyframes mareEntrada { from { opacity: .65; } to { opacity: 1; } }
-
-
-/* ==========================================================================
-   COMPLEMENTO DAS TRANSIÇÕES EM GRADIENTE — MENU INICIAL ATÉ CONTATO
-   Mantém intactas as regras anteriores e acrescenta apenas os pontos que
-   faltavam: Mapa, Ingressos e Contato/Feedback.
-   ========================================================================== */
-.hero-mapa,
-.pagina-ingressos,
-.pagina-contato {
+/* Conteúdo do mapa -> Ingressos: faixa suave no fim do bloco do mapa */
+.mapa-interativo-container {
     position: relative;
     isolation: isolate;
 }
+.mapa-interativo-container::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: clamp(45px, 7vw, 105px);
+    background: linear-gradient(to bottom, rgba(10, 70, 85, 0) 0%, rgba(10, 70, 85, .72) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+.mapa-interativo-container > * {
+    position: relative;
+    z-index: 1;
+}
 
-.hero-mapa::after,
-.pagina-ingressos::after,
+/* Ingressos -> Contato: o degradê acompanha a imagem de fundo dos ingressos */
+.pagina-ingressos {
+    isolation: isolate;
+}
+.pagina-ingressos::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: clamp(60px, 10vw, 145px);
+    background: linear-gradient(to bottom, rgba(10, 70, 85, 0) 0%, rgba(8, 45, 58, .88) 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Contato -> rodapé */
+.pagina-contato {
+    isolation: isolate;
+}
 .pagina-contato::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
-    height: clamp(70px, 12vw, 170px);
+    height: clamp(55px, 9vw, 130px);
+    background: linear-gradient(to bottom, rgba(8, 45, 58, 0) 0%, rgba(8, 45, 58, .92) 100%);
     pointer-events: none;
     z-index: 2;
 }
 
-/* Programação/Mapa -> Ingressos: o fim do mapa se dissolve suavemente. */
-.hero-mapa::after {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .82) 100%);
+/* Respeita usuários que preferem menos movimento; os gradientes continuam visíveis. */
+@media (prefers-reduced-motion: reduce) {
+    #inicio.hero::after,
+    .quemsomos-container::after,
+    .hero-eventos::after,
+    .hero-eventos-programacao::after,
+    .hero-mapa::after,
+    .mapa-interativo-container::after,
+    .pagina-ingressos::after,
+    .pagina-contato::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }
-
-/* Ingressos -> Feedback/Contato: transição escura sem cobrir os cartões. */
-.pagina-ingressos::after {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .88) 100%);
-}
-
-/* Feedback/Contato -> rodapé: encerra o fundo da imagem gradualmente. */
-.pagina-contato::after {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 100%);
-}
-
-/* Mantém textos, formulário e controles acima das faixas decorativas. */
-.pagina-ingressos .painel-ingressos,
-.pagina-contato .contato-form {
-    z-index: 3;
-}
-

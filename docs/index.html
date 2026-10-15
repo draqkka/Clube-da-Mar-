@@ -820,7 +820,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     if (!resumo || !resumo.nome || lerResumoAluno()) return;   // só um cartão por vez
 
     var secao = document.getElementById('resumo-painel');
-    var rotulos = { professor: 'Professor(a)', diretoria: 'Diretoria' };
+    var rotulos = { professor: 'Professor(a)', diretoria: 'Diretoria', desenvolvedor: 'Desenvolvedor' };
 
     document.getElementById('resumo-painel-perfil').textContent = rotulos[resumo.perfil] || 'Painel';
     document.getElementById('resumo-painel-nome').textContent = 'Olá, ' + resumo.nome + '!';
@@ -850,6 +850,22 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         apagarResumoPainel();
         secao.style.display = 'none';
     });
+})();
+</script>
+
+<script>
+// Transição de entrada para cada seção durante a rolagem, incluindo o rodapé.
+(function () {
+    var seletores = 'main > section, .conteudo-pagina > section, .rodape-site';
+    var secoes = Array.prototype.slice.call(document.querySelectorAll(seletores));
+    secoes.forEach(function (secao) { secao.classList.add('mare-revelar'); });
+    if (!('IntersectionObserver' in window)) { secoes.forEach(function (s) { s.classList.add('mare-visivel'); }); return; }
+    var observador = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (entrada) {
+            if (entrada.isIntersecting) { entrada.target.classList.add('mare-visivel'); observador.unobserve(entrada.target); }
+        });
+    }, { threshold: 0.08, rootMargin: '0px 0px -35px 0px' });
+    secoes.forEach(function (secao) { observador.observe(secao); });
 })();
 </script>
 

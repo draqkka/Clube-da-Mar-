@@ -90,17 +90,13 @@
         <div id="filtro-turmas" class="lista-turmas-chip" role="group" aria-labelledby="rotulo-filtro-turma"></div>
     </div>
 
-    <!-- Dados brutos salvos no navegador — útil pra depuração -->
-    <section class="area-avaliacao-professores" style="margin-top: 30px;">
-        <h2>Dados Brutos no Navegador</h2>
-        <p class="dica-importar">
-            "Solicitações" ficam no <strong>banco</strong> (tabela <code>solicitacoes</code>, a mesma lista pra todo mundo); abaixo está a cópia que esta página está usando agora.
-        </p>
-
-        <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
-        <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
-
-    </section>
+    <!-- Filtro por escola: permite localizar solicitações de uma escola específica. -->
+    <div class="filtro-escola-dev" style="margin: 16px 0 24px; display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+        <label for="filtro-escola" style="font-weight:bold;">Selecionar escola:</label>
+        <select id="filtro-escola" style="min-width:240px; max-width:100%; padding:10px 12px; border-radius:8px;">
+            <option value="">Todas as escolas</option>
+        </select>
+    </div>
 
     <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
     <section class="area-avaliacao-professores">
@@ -145,9 +141,19 @@
         </div>
     </section>
 
+    <!-- Dados brutos no navegador — fica abaixo de Usuários Cadastrados para facilitar a auditoria. -->
+    <!-- Dados brutos salvos no navegador — útil pra depuração -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Dados Brutos no Navegador</h2>
+        <p class="dica-importar">
+            "Solicitações" ficam no <strong>banco</strong> (tabela <code>solicitacoes</code>, a mesma lista pra todo mundo); abaixo está a cópia que esta página está usando agora.
+        </p>
 
+        <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
+        <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
 
-    
+    </section>
+
 
 </main>
 
@@ -333,6 +339,7 @@ function carregarAlunosDev() {
             document.getElementById('carregando-alunos').style.display = 'none';
             dadosAlunos = dados;
             renderizarFiltroTurmas();
+            renderizarFiltroEscolas();
             renderizarAlunos();
             renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         })
@@ -387,6 +394,38 @@ function solicitacoesDoDev() {
     return todasSolicitacoes.slice();
 }
 
+function nomeEscolaDaSolicitacaoDev(s) {
+    var escola = (typeof escolaDaSolicitacao === 'function') ? escolaDaSolicitacao(s) : '';
+    if (escola) return escola;
+    if (!dadosAlunos || !Array.isArray(dadosAlunos.notas)) return '';
+    var aluno = dadosAlunos.notas.filter(function (a) {
+        return mesmoRa(a.ra, s.ra) && mesmaTurma(a.turma, s.turma);
+    })[0];
+    return aluno ? (dadosDaEscola([aluno]).escola || '') : '';
+}
+
+function renderizarFiltroEscolas() {
+    var seletor = document.getElementById('filtro-escola');
+    if (!seletor) return;
+    var atual = seletor.value;
+    var escolas = [];
+    function incluir(nome) {
+        nome = String(nome || '').trim();
+        if (nome && escolas.indexOf(nome) === -1) escolas.push(nome);
+    }
+    if (dadosAlunos && Array.isArray(dadosAlunos.notas)) {
+        dadosAlunos.notas.forEach(function (aluno) { incluir(dadosDaEscola([aluno]).escola); });
+    }
+    todasSolicitacoes.forEach(function (solicitacao) { incluir(nomeEscolaDaSolicitacaoDev(solicitacao)); });
+    escolas.sort(function (a, b) { return a.localeCompare(b, 'pt-BR'); });
+    seletor.innerHTML = '<option value="">Todas as escolas</option>' + escolas.map(function (escola) {
+        return '<option value="' + escaparHtml(escola) + '">' + escaparHtml(escola) + '</option>';
+    }).join('');
+    if (escolas.indexOf(atual) !== -1) seletor.value = atual;
+}
+
+document.getElementById('filtro-escola').addEventListener('change', renderizarSolicitacoes);
+
 function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
@@ -395,9 +434,12 @@ function renderizarSolicitacoes() {
     document.getElementById('resumo-total-solicitacoes').textContent = visiveis.length;
     document.getElementById('resumo-aguardando-dev').textContent =
         visiveis.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
-    var filtradas = visiveis.filter(function (s) { return passaNoFiltro(s.turma); });
-    document.getElementById('sem-solicitacoes').textContent = (turmaFiltro && visiveis.length)
-        ? 'Nenhuma solicitação encontrada para a turma ' + turmaFiltro + '.'
+    var escolaFiltro = document.getElementById('filtro-escola').value;
+    var filtradas = visiveis.filter(function (s) {
+        return passaNoFiltro(s.turma) && (!escolaFiltro || nomeEscolaDaSolicitacaoDev(s) === escolaFiltro);
+    });
+    document.getElementById('sem-solicitacoes').textContent = (turmaFiltro || escolaFiltro)
+        ? 'Nenhuma solicitação encontrada com os filtros selecionados.'
         : 'Nenhuma solicitação encontrada.';
     document.getElementById('sem-solicitacoes').style.display = filtradas.length ? 'none' : 'block';
 
@@ -436,6 +478,7 @@ function renderizarSolicitacoes() {
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
     renderizarFiltroTurmas();  // uma turma nova pode ter aparecido numa solicitação
+    renderizarFiltroEscolas();
     renderizarAlunos();        // atualiza a coluna "Solicitação" dos alunos
     renderizarSolicitacoes();
     if (typeof atualizarDadosBrutos === 'function') atualizarDadosBrutos();
@@ -490,12 +533,11 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
 
 // ---- Dados brutos (localStorage / sessionStorage) ------------------------
 function atualizarDadosBrutos() {
-    var solicitacoesBrutas = localStorage.getItem('cdm_solicitacoes') || '[]';
-    try {
-        document.getElementById('json-solicitacoes').textContent = JSON.stringify(JSON.parse(solicitacoesBrutas), null, 2);
-    } catch (e) {
-        document.getElementById('json-solicitacoes').textContent = solicitacoesBrutas;
-    }
+    // Exibe a cópia que esta página recebeu da camada de solicitações/banco.
+    // Assim o painel não mostra um localStorage antigo diferente da lista exibida acima.
+    var caixa = document.getElementById('json-solicitacoes');
+    if (!caixa) return;
+    caixa.textContent = JSON.stringify(Array.isArray(todasSolicitacoes) ? todasSolicitacoes : [], null, 2);
 }
 atualizarDadosBrutos();
 

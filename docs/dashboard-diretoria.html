@@ -25,8 +25,9 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="resumo-painel.js"></script>
 </head>
-<body>
+<body class="fonte-profissional">
 
 <header>
 <nav class="topnav">
@@ -41,6 +42,22 @@
         <p>Visão geral de turmas e gerenciamento de solicitações dos professores.</p>
     </div>
 
+    <!-- FILTRO DE TURMA — igual ao do painel do professor: escolhe uma turma
+         (ou "Todas") e a página inteira (solicitações e lista de alunos) mostra só ela. -->
+    <div class="filtro-turma">
+        <span class="filtro-turma-rotulo" id="rotulo-filtro-turma">Escolha a turma:</span>
+        <div id="filtro-turmas" class="lista-turmas-chip" role="group" aria-labelledby="rotulo-filtro-turma"></div>
+    </div>
+
+    <!-- Área de solicitações dos professores — agora logo no começo, ANTES da
+         lista de alunos, pra ser um dos primeiros campos da tela. -->
+    <section class="area-avaliacao-professores" style="margin-top: 10px;">
+        <h2>Gerenciar Solicitações dos Professores</h2>
+
+        <div id="lista-solicitacoes"></div>
+        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
+    </section>
+
     <div id="carregando">Carregando todas as turmas...</div>
 
     <div id="info-turmas"></div>
@@ -49,19 +66,11 @@
     <table class="tabela-alunos" id="tabela-alunos" style="display:none;">
         <thead>
             <tr>
-                <th>Nome</th><th>Turma</th><th>Curso</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Comportamento</th>
+                <th>Aluno</th><th>Turma</th><th>Curso</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Desempenho</th>
             </tr>
         </thead>
         <tbody id="corpo-tabela-alunos"></tbody>
     </table>
-
-    <!-- Área de solicitações dos professores -->
-    <section class="area-avaliacao-professores" style="margin-top: 30px;">
-        <h2>Gerenciar Solicitações dos Professores</h2>
-        
-        <div id="lista-solicitacoes"></div>
-        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
-    </section>
 
     <!--
         Formulário da Diretoria — troque o link abaixo pelo Google Forms de
@@ -86,8 +95,19 @@ if (!sessao || sessao.perfil !== 'diretoria') {
 
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.nome || 'Diretoria') + '!';
 
+// "Voltar ao site": guarda um resumo na tela inicial. Clicar nele (em qualquer
+// parte) volta pra este painel (ver resumo-painel.js).
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
+    var c = contarSolicitacoesPorStatus(todasSolicitacoes);
+    var cartoes = [
+        { rotulo: 'Aguardando sua análise', valor: c.pendente },
+        { rotulo: 'Encaminhadas à equipe', valor: c.esperando },
+        { rotulo: 'Confirmadas', valor: c.confirmada },
+        { rotulo: 'Recusadas', valor: c.recusada }
+    ];
+    var texto = dadosAlunos ? dadosAlunos.notas.length + ' aluno(s) nas turmas.' : '';
+    guardarResumoPainel(sessao, cartoes, texto);
     sessionStorage.removeItem('cdm_sessao');
     window.location.href = 'index.html';
 });
@@ -106,40 +126,96 @@ window.resolverEscolaSolicitacao = function (s) {
     return e || dadosDaEscola(alunos).escola || '';
 };
 
+// Turma escolhida no filtro ('' = todas)
+var turmaFiltro = '';
+
+function passaNoFiltro(turma) {
+    return !turmaFiltro || mesmaTurma(turma, turmaFiltro);
+}
+
+// Botões de turma ("Todas as turmas" + uma por turma conhecida)
+function renderizarFiltroTurmas() {
+    var turmas = [];
+    function juntar(t) {
+        var c = turmaCanonica(t);
+        if (c && turmas.indexOf(c) === -1) turmas.push(c);
+    }
+    TURMAS_DO_SISTEMA.forEach(juntar);
+    if (dadosAlunos) dadosAlunos.porTurma.forEach(function (t) { juntar(t.turma); });
+    todasSolicitacoes.forEach(function (s) { juntar(s.turma); });
+    turmas.sort(function (a, b) { return String(a).localeCompare(String(b), 'pt-BR'); });
+
+    var caixa = document.getElementById('filtro-turmas');
+    caixa.innerHTML = '';
+    [''].concat(turmas).forEach(function (t) {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaFiltro ? ' chip-turma-ativa' : '');
+        chip.textContent = t || 'Todas as turmas';
+        chip.dataset.turma = t;
+        chip.setAttribute('aria-pressed', t === turmaFiltro ? 'true' : 'false');
+        caixa.appendChild(chip);
+    });
+}
+
+document.getElementById('filtro-turmas').addEventListener('click', function (evento) {
+    var chip = evento.target.closest('.chip-turma-selecionavel');
+    if (!chip) return;
+    turmaFiltro = chip.dataset.turma;
+    renderizarFiltroTurmas();
+    renderizarTabelaAlunos();
+    renderizarInfoTurmas();
+    renderizarSolicitacoes();
+});
+
+function renderizarTabelaAlunos() {
+    if (!dadosAlunos) return;
+    var corpo = document.getElementById('corpo-tabela-alunos');
+    corpo.innerHTML = '';
+    var alunos = dadosAlunos.notas.filter(function (a) { return passaNoFiltro(a.turma); });
+    alunos.forEach(function (a) {
+        var linha = document.createElement('tr');
+        linha.innerHTML = '<td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.turma) +
+            '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') + '</td><td>' + escaparHtml(situacaoDoAluno(a)) +
+            '</td><td>' + escaparHtml(a.nota === '' || a.nota == null ? '—' : a.nota) +
+            '</td><td>' + (a.presenca === '' || a.presenca == null ? '—' : escaparHtml(a.presenca) + '%') +
+            '</td><td>' + htmlComportamento(a) + '</td>';
+        corpo.appendChild(linha);
+    });
+    document.getElementById('tabela-alunos').style.display = alunos.length ? 'table' : 'none';
+}
+
+// Escola, Diretoria, Diretor e Bimestre de cada turma (vêm do topo da planilha)
+function renderizarInfoTurmas() {
+    if (!dadosAlunos) return;
+    var infoTurmas = document.getElementById('info-turmas');
+    infoTurmas.innerHTML = '';
+    dadosAlunos.porTurma.forEach(function (t) {
+        if (!t.notas.length || !passaNoFiltro(t.turma)) return;
+        var d = dadosDaEscola(t.notas);
+        var partes = [];
+        if (d.escola) partes.push('<strong>Escola:</strong> ' + escaparHtml(d.escola));
+        if (d.diretoria) partes.push('<strong>Diretoria:</strong> ' + escaparHtml(d.diretoria));
+        if (d.diretor) partes.push('<strong>Diretor:</strong> ' + escaparHtml(d.diretor));
+        if (d.bimestre) partes.push('<strong>Bimestre:</strong> ' + escaparHtml(d.bimestre));
+        if (!partes.length) return;
+        var p = document.createElement('p');
+        p.className = 'dica-importar';
+        p.innerHTML = '<strong>' + escaparHtml(t.turma) + '</strong> — ' + partes.join(' · ');
+        infoTurmas.appendChild(p);
+    });
+}
+
+renderizarFiltroTurmas();
+
 carregarTodasAsTurmas()
     .then(function (dados) {
         dadosAlunos = dados;
-        renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         document.getElementById('carregando').style.display = 'none';
-        var corpo = document.getElementById('corpo-tabela-alunos');
-        dados.notas.forEach(function (a) {
-            var linha = document.createElement('tr');
-            linha.innerHTML = '<td>' + escaparHtml(a.nome) + '</td><td>' + escaparHtml(a.turma) +
-                '</td><td>' + escaparHtml(cursoDoAluno(a) || '—') + '</td><td>' + escaparHtml(situacaoDoAluno(a)) +
-                '</td><td>' + escaparHtml(a.nota === '' || a.nota == null ? '—' : a.nota) +
-                '</td><td>' + (a.presenca === '' || a.presenca == null ? '—' : escaparHtml(a.presenca) + '%') +
-                '</td><td>' + htmlComportamento(a) + '</td>';
-            corpo.appendChild(linha);
-        });
-        document.getElementById('tabela-alunos').style.display = dados.notas.length ? 'table' : 'none';
-
-        // Escola, Diretoria, Diretor e Bimestre de cada turma (vêm do topo da planilha)
-        var infoTurmas = document.getElementById('info-turmas');
-        infoTurmas.innerHTML = '';
-        dados.porTurma.forEach(function (t) {
-            if (!t.notas.length) return;
-            var d = dadosDaEscola(t.notas);
-            var partes = [];
-            if (d.escola) partes.push('<strong>Escola:</strong> ' + escaparHtml(d.escola));
-            if (d.diretoria) partes.push('<strong>Diretoria:</strong> ' + escaparHtml(d.diretoria));
-            if (d.diretor) partes.push('<strong>Diretor:</strong> ' + escaparHtml(d.diretor));
-            if (d.bimestre) partes.push('<strong>Bimestre:</strong> ' + escaparHtml(d.bimestre));
-            if (!partes.length) return;
-            var p = document.createElement('p');
-            p.className = 'dica-importar';
-            p.innerHTML = '<strong>' + escaparHtml(t.turma) + '</strong> — ' + partes.join(' · ');
-            infoTurmas.appendChild(p);
-        });
+        renderizarFiltroTurmas();
+        renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
+        renderizarTabelaAlunos();
+        renderizarInfoTurmas();
     })
     .catch(function (erro) {
         document.getElementById('carregando').textContent = 'Erro ao ler planilha (' + erro.message + ').';
@@ -150,9 +226,12 @@ carregarTodasAsTurmas()
 function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
-    var solicitacoes = todasSolicitacoes;
+    var solicitacoes = todasSolicitacoes.filter(function (s) { return passaNoFiltro(s.turma); });
 
     if (!solicitacoes.length) {
+        document.getElementById('sem-solicitacoes').textContent = turmaFiltro
+            ? 'Nenhuma solicitação encontrada para a turma ' + turmaFiltro + '.'
+            : 'Nenhuma solicitação encontrada.';
         document.getElementById('sem-solicitacoes').style.display = 'block';
         return;
     }
@@ -196,6 +275,7 @@ function renderizarSolicitacoes() {
 
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
+    renderizarFiltroTurmas();   // uma turma nova pode ter aparecido numa solicitação
     renderizarSolicitacoes();
 });
 

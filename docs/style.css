@@ -3745,144 +3745,154 @@ body { animation: mareEntrada .45s ease both; }
 
 
 /* ==========================================================================
-   TRANSIÇÕES EM DEGRADÊ ENTRE AS SEÇÕES (versão suave)
-   Como funciona: em cada emenda, uma faixa centrada na linha entre duas seções
-   "derrete" uma na outra.
-     - a COR da faixa vem da própria imagem da seção de baixo (5 cores lidas da
-       borda de cima dela, da esquerda pra direita), então a emenda casa certinho;
-     - a OPACIDADE usa uma curva suave (smoothstep) em vez de reta, que some com
-       a "linha" que se via entre as seções.
-   Pra deixar o degradê mais alto/baixo, mude o "height" de cada faixa.
-   Pra tirar uma transição, apague o bloco dela.
+   TRANSIÇÕES EM DEGRADÊ ENTRE AS SEÇÕES — DOS DOIS LADOS DA EMENDA
+   Cada seção do site é uma "caixa" independente (a animação de entrada faz
+   isso), então um degradê não consegue atravessar de uma pra outra. Por isso
+   cada emenda tem DUAS metades que se encontram na MESMA cor:
+     - ::after  da seção de CIMA  -> a imagem vai escurecendo/clareando até a cor do meio;
+     - ::before da seção de BAIXO -> começa nessa mesma cor e vai revelando a imagem.
+   A cor do meio é uma mistura da borda de baixo de uma imagem com a borda de
+   cima da outra (lidas da esquerda pra direita), e a opacidade usa uma curva
+   suave (não reta). Pra mudar o tamanho de todas, edite o "height" abaixo.
    ========================================================================== */
 
-/* banner → Quem Somos */
+/* banner → Quem Somos — metade de cima (fim de #inicio.hero) */
 #inicio.hero::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(120px, 20vw, 300px);
-    bottom: calc(clamp(120px, 20vw, 300px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: linear-gradient(to right, #00a5c7, #03b4ce, #04b8d0, #04b9d0, #2d8b64);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #1a898c, #1a898c, #1a898c, #1a898c, #1a898c);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
 }
-/* Quem Somos → Eventos */
+/* banner → Quem Somos — metade de baixo (começo de .quemsomos-container): camada extra no ::before que já existia */
+.quemsomos-container { --q-topo: linear-gradient(to bottom, rgba(26,137,140,1.000) 0%, rgba(26,137,140,0.972) 10%, rgba(26,137,140,0.896) 20%, rgba(26,137,140,0.784) 30%, rgba(26,137,140,0.648) 40%, rgba(26,137,140,0.500) 50%, rgba(26,137,140,0.352) 60%, rgba(26,137,140,0.216) 70%, rgba(26,137,140,0.104) 80%, rgba(26,137,140,0.028) 90%, rgba(26,137,140,0.000) 100%); }
+.quemsomos-container::before {
+    background: var(--q-topo),
+        linear-gradient(90deg, rgba(0, 45, 80, 0.62) 0%, rgba(0, 45, 80, 0.50) 45%, rgba(0, 45, 80, 0) 68%);
+    background-size: 100% clamp(70px, 10vw, 150px), 100% 100%;
+    background-repeat: no-repeat;
+    background-position: top, 0 0;
+}
+@media (max-width: 1100px) {
+    .quemsomos-container::before {
+        background: var(--q-topo),
+            linear-gradient(180deg, rgba(0, 45, 80, 0.55) 0%, rgba(0, 45, 80, 0.50) 100%);
+        background-size: 100% clamp(70px, 10vw, 150px), 100% 100%;
+        background-repeat: no-repeat;
+        background-position: top, 0 0;
+    }
+}
+/* Quem Somos → Eventos — metade de cima (fim de .quemsomos-container) */
 .quemsomos-container::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(120px, 20vw, 300px);
-    bottom: calc(clamp(120px, 20vw, 300px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: linear-gradient(to right, #625510, #aa9f82, #0f78bd, #0162b8, #004fa6);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #2b7e6e, #5eb09c, #48bfda, #3bb2cd, #18a0c4);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
 }
-/* Eventos → Wellness */
+/* Quem Somos → Eventos — metade de baixo (começo de .hero-eventos) */
+.hero-eventos::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #2b7e6e, #5eb09c, #48bfda, #3bb2cd, #18a0c4);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+}
+/* Eventos → Wellness — metade de cima (fim de .hero-eventos) */
 .hero-eventos::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(120px, 18vw, 280px);
-    bottom: calc(clamp(120px, 18vw, 280px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: linear-gradient(to right, #948f60, #f8ebda, #f9ecdb, #f8ebd9, #f8ead7);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #aa9e74, #c6b895, #99d8b8, #7ed1c2, #7db6b3);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
 }
-/* Programação → Mapa */
-.hero-eventos-programacao::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(120px, 18vw, 280px);
-    bottom: calc(clamp(120px, 18vw, 280px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: linear-gradient(to right, #ba764f, #de975f, #aa867a, #977769, #ae8e6b);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+/* Eventos → Wellness — metade de baixo (começo de .hero-wellness) */
+.hero-wellness::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #aa9e74, #c6b895, #99d8b8, #7ed1c2, #7db6b3);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
 }
-/* Mapa (foto) → painel claro */
-.hero-mapa::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(100px, 14vw, 220px);
-    bottom: calc(clamp(100px, 14vw, 220px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: #fff4dc;
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-}
-/* Legenda (clara) → Ingressos */
-.legenda-mapa::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(140px, 22vw, 320px);
-    bottom: calc(clamp(140px, 22vw, 320px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: linear-gradient(to right, #000b1b, #000c1b, #000f1f, #000e1a, #070a0c);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-}
-/* Ingressos → Contato */
-.pagina-ingressos::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(100px, 14vw, 220px);
-    bottom: calc(clamp(100px, 14vw, 220px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: linear-gradient(to right, #001424, #001527, #00172a, #001526, #00182c);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-}
-/* Contato → rodapé */
-.pagina-contato::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(90px, 10vw, 160px);
-    bottom: calc(clamp(90px, 10vw, 160px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo dos textos/cartões (z-index 5 e 10) */
-    background: #0a0a0a;
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-}
-/* Wellness → Programação: faixa centrada NA EMENDA (metade em cada seção), como as demais.
-   A seção Wellness cortava o que passava do limite dela (overflow: hidden), por isso liberei aqui. */
-.hero-wellness { overflow: visible; }
+/* Wellness → Programação — metade de cima (fim de .hero-wellness) */
 .hero-wellness::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: clamp(120px, 18vw, 280px);
-    bottom: calc(clamp(120px, 18vw, 280px) / -2);
-    pointer-events: none;
-    z-index: 3;               /* acima das imagens, abaixo do texto e dos ícones (z-index 10) */
-    background: linear-gradient(to right, #0e717f, #36a3dd, #d3dad4, #91bfda, #2d8b91);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0.0%, rgba(0,0,0,0.043) 6.2%, rgba(0,0,0,0.156) 12.5%, rgba(0,0,0,0.316) 18.8%, rgba(0,0,0,0.500) 25.0%, rgba(0,0,0,0.684) 31.2%, rgba(0,0,0,0.844) 37.5%, rgba(0,0,0,0.957) 43.8%, rgba(0,0,0,1.000) 50.0%, rgba(0,0,0,0.957) 56.2%, rgba(0,0,0,0.844) 62.5%, rgba(0,0,0,0.684) 68.8%, rgba(0,0,0,0.500) 75.0%, rgba(0,0,0,0.316) 81.2%, rgba(0,0,0,0.156) 87.5%, rgba(0,0,0,0.043) 93.8%, rgba(0,0,0,0.000) 100.0%);
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #87bdc3, #aad4e5, #e8e2d4, #d0dddc, #7aa795);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+}
+/* Wellness → Programação — metade de baixo (começo de .hero-eventos-programacao) */
+.hero-eventos-programacao::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #87bdc3, #aad4e5, #e8e2d4, #d0dddc, #7aa795);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+}
+/* Programação → Mapa — metade de cima (fim de .hero-eventos-programacao) */
+.hero-eventos-programacao::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #805c48, #b2845b, #9c7654, #90623a, #855429);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+}
+/* Programação → Mapa — metade de baixo (começo de .hero-mapa) */
+.hero-mapa::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #805c48, #b2845b, #9c7654, #90623a, #855429);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+}
+/* Legenda do mapa → Ingressos — metade de cima (fim de .legenda-mapa) */
+.legenda-mapa::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #4d5155, #4d5255, #4d5458, #4d5354, #51504a);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+}
+/* Legenda do mapa → Ingressos — metade de baixo (começo de .pagina-ingressos) */
+.pagina-ingressos::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #4d5155, #4d5255, #4d5458, #4d5354, #51504a);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+}
+/* Ingressos → Contato — metade de cima (fim de .pagina-ingressos) */
+.pagina-ingressos::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #07121c, #04121e, #001424, #071623, #0c141c);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+}
+/* Ingressos → Contato — metade de baixo (começo de .pagina-contato) */
+.pagina-contato::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: linear-gradient(to right, #07121c, #04121e, #001424, #071623, #0c141c);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1.000) 0%, rgba(0,0,0,0.972) 10%, rgba(0,0,0,0.896) 20%, rgba(0,0,0,0.784) 30%, rgba(0,0,0,0.648) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.352) 60%, rgba(0,0,0,0.216) 70%, rgba(0,0,0,0.104) 80%, rgba(0,0,0,0.028) 90%, rgba(0,0,0,0.000) 100%);
+}
+/* Mapa (foto) → painel claro (a seção de baixo é de cor lisa) */
+.hero-mapa::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: #fff4dc;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+}
+/* Contato → rodapé (a seção de baixo é de cor lisa) */
+.pagina-contato::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 3;
+    background: #0a0a0a;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.000) 0%, rgba(0,0,0,0.028) 10%, rgba(0,0,0,0.104) 20%, rgba(0,0,0,0.216) 30%, rgba(0,0,0,0.352) 40%, rgba(0,0,0,0.500) 50%, rgba(0,0,0,0.648) 60%, rgba(0,0,0,0.784) 70%, rgba(0,0,0,0.896) 80%, rgba(0,0,0,0.972) 90%, rgba(0,0,0,1.000) 100%);
 }
 .hero-mapa, .legenda-mapa { position: relative; }
 /* o cartão do aluno/professor/diretoria, a logo e os painéis ficam acima do degradê */

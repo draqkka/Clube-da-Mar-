@@ -51,10 +51,10 @@ function _quemRespondeu(s) {
 function infoStatusSolicitacao(s) {
     if (!s) {
         return {
-            chave: 'sem-solicitacao', classe: 'status-pendente', emoji: '⚪', rotulo: 'Ainda não solicitada',
-            titulo: 'Ainda não solicitada',
-            mensagem: 'O professor ainda não enviou esta participação para a direção.',
-            etapas: [{ emoji: '⚪', texto: 'Ainda não solicitada' }]
+            chave: 'sem-solicitacao', classe: 'status-pendente', emoji: '🟡', rotulo: 'Solicitação não feita pelo professor',
+            titulo: 'Solicitação não feita pelo professor',
+            mensagem: 'O professor ainda não enviou esta participação para análise da direção.',
+            etapas: [{ emoji: '🟡', texto: 'Solicitação não feita pelo professor' }]
         };
     }
     var prof = { emoji: '🟢', texto: 'Enviada pelo professor' };

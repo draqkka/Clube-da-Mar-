@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!caixa) return;
     caixa.className = 'comp-legenda-geral';
     caixa.innerHTML =
-        '<strong>Comportamento (calculado pela presença e pela nota — vale a pior das duas):</strong><br>' +
+        '<strong>Desempenho (calculado pela presença e pela nota — vale a pior das duas):</strong><br>' +
         '<span class="comp-selo comp-bom"><span class="comp-emoji" aria-hidden="true">😄</span>Bom: presença ' + COMP_PRESENCA_BOM + '% ou mais e nota ' + COMP_NOTA_BOM + ' ou mais</span> ' +
         '<span class="comp-selo comp-regular"><span class="comp-emoji" aria-hidden="true">😐</span>Regular: presença ' + COMP_PRESENCA_REGULAR + '% a ' + (COMP_PRESENCA_BOM - 1) + '% ou nota ' + COMP_NOTA_REGULAR + ' a ' + (COMP_NOTA_BOM - 0.1).toFixed(1).replace('.', ',') + '</span> ' +
         '<span class="comp-selo comp-ruim"><span class="comp-emoji" aria-hidden="true">😟</span>Péssimo: presença abaixo de ' + COMP_PRESENCA_REGULAR + '% ou nota abaixo de ' + COMP_NOTA_REGULAR + '</span>';

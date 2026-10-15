@@ -42,11 +42,11 @@
         <p>Visão geral de turmas e gerenciamento de solicitações dos professores.</p>
     </div>
 
-    <!-- FILTRO DE TURMA — igual ao do painel do professor: escolhe uma turma
-         (ou "Todas") e a página inteira (solicitações e lista de alunos) mostra só ela. -->
-    <div class="filtro-turma">
-        <span class="filtro-turma-rotulo" id="rotulo-filtro-turma">Escolha a turma:</span>
-        <div id="filtro-turmas" class="lista-turmas-chip" role="group" aria-labelledby="rotulo-filtro-turma"></div>
+    <!-- FILTRO DE TURMA — dropdown: a Diretoria escolhe uma turma e a página
+         inteira (solicitações e lista de alunos) mostra só ela. -->
+    <div class="filtro-turma-dir" style="margin: 16px 0 8px; display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+        <label for="filtro-turma-select" style="font-weight:bold;">Selecionar turma:</label>
+        <select id="filtro-turma-select" style="min-width:240px; max-width:100%; padding:10px 12px; border-radius:8px;"></select>
     </div>
 
     <!-- Área de solicitações dos professores — agora logo no começo, ANTES da
@@ -126,44 +126,38 @@ window.resolverEscolaSolicitacao = function (s) {
     return e || dadosDaEscola(alunos).escola || '';
 };
 
-// Turma selecionada: sempre uma das turmas disponíveis (sem opção 'todas').
-var turmaFiltro = '';
+// Turmas que a Diretora pode escolher, nesta ordem. Só 2ºA e 3ºA têm alunos de
+// verdade; as outras são fictícias (ficam vazias). Pra mudar a lista, edite aqui.
+var TURMAS_DIRETORIA = ['1ºA', '1ºB', '1ºC', '1ºD', '2ºA', '2ºB', '2ºC', '3ºA'];
+
+// Turma selecionada: sempre uma das turmas do dropdown (sem opção 'todas').
+var turmaFiltro = '2ºA';
 
 function passaNoFiltro(turma) {
     return !!turmaFiltro && mesmaTurma(turma, turmaFiltro);
 }
 
-// Botões de turma ("Todas as turmas" + uma por turma conhecida)
+// Dropdown de turmas: a lista fixa acima + qualquer turma extra que apareça no banco ou nas solicitações.
 function renderizarFiltroTurmas() {
     var turmas = [];
     function juntar(t) {
         var c = turmaCanonica(t);
         if (c && turmas.indexOf(c) === -1) turmas.push(c);
     }
-    TURMAS_DO_SISTEMA.forEach(juntar);
+    TURMAS_DIRETORIA.forEach(juntar);
     if (dadosAlunos) dadosAlunos.porTurma.forEach(function (t) { juntar(t.turma); });
     todasSolicitacoes.forEach(function (s) { juntar(s.turma); });
-    turmas.sort(function (a, b) { return String(a).localeCompare(String(b), 'pt-BR'); });
 
-    var caixa = document.getElementById('filtro-turmas');
-    caixa.innerHTML = '';
-    if (!turmaFiltro && turmas.length) turmaFiltro = turmas[0];
-    turmas.forEach(function (t) {
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaFiltro ? ' chip-turma-ativa' : '');
-        chip.textContent = t;
-        chip.dataset.turma = t;
-        chip.setAttribute('aria-pressed', t === turmaFiltro ? 'true' : 'false');
-        caixa.appendChild(chip);
-    });
+    var seletor = document.getElementById('filtro-turma-select');
+    seletor.innerHTML = turmas.map(function (t) {
+        return '<option value="' + escaparHtml(t) + '">' + escaparHtml(t) + '</option>';
+    }).join('');
+    if (turmas.indexOf(turmaFiltro) === -1) turmaFiltro = turmas[0] || '';
+    seletor.value = turmaFiltro;
 }
 
-document.getElementById('filtro-turmas').addEventListener('click', function (evento) {
-    var chip = evento.target.closest('.chip-turma-selecionavel');
-    if (!chip) return;
-    turmaFiltro = chip.dataset.turma;
-    renderizarFiltroTurmas();
+document.getElementById('filtro-turma-select').addEventListener('change', function () {
+    turmaFiltro = this.value;
     renderizarTabelaAlunos();
     renderizarInfoTurmas();
     renderizarSolicitacoes();
@@ -191,6 +185,13 @@ function renderizarInfoTurmas() {
     if (!dadosAlunos) return;
     var infoTurmas = document.getElementById('info-turmas');
     infoTurmas.innerHTML = '';
+    var turmaComAlunos = dadosAlunos.porTurma.some(function (t) { return t.notas.length && passaNoFiltro(t.turma); });
+    if (!turmaComAlunos) {
+        var aviso = document.createElement('p');
+        aviso.className = 'dica-importar';
+        aviso.textContent = 'A turma ' + turmaFiltro + ' ainda não tem alunos cadastrados.';
+        infoTurmas.appendChild(aviso);
+    }
     dadosAlunos.porTurma.forEach(function (t) {
         if (!t.notas.length || !passaNoFiltro(t.turma)) return;
         var d = dadosDaEscola(t.notas);

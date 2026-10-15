@@ -83,11 +83,11 @@
         </div>
     </div>
 
-    <!-- FILTRO DE TURMA — igual ao do painel do professor: escolhe uma turma
-         (ou "Todas") e as solicitações e a lista de alunos mostram só ela. -->
-    <div class="filtro-turma">
-        <span class="filtro-turma-rotulo" id="rotulo-filtro-turma">Escolha a turma:</span>
-        <div id="filtro-turmas" class="lista-turmas-chip" role="group" aria-labelledby="rotulo-filtro-turma"></div>
+    <!-- FILTRO DE TURMA — dropdown: escolhe uma turma e as solicitações e a
+         lista de alunos mostram só ela. -->
+    <div class="filtro-turma-dev" style="margin: 16px 0 8px; display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+        <label for="filtro-turma-select" style="font-weight:bold;">Selecionar turma:</label>
+        <select id="filtro-turma-select" style="min-width:240px; max-width:100%; padding:10px 12px; border-radius:8px;"></select>
     </div>
 
     <!-- Filtro por escola: permite localizar solicitações de uma escola específica. -->
@@ -108,8 +108,8 @@
 
     <!-- Todos os alunos, de todas as turmas -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
-        <h2>Todos os Alunos (todas as turmas)</h2>
-        <p class="dica-importar">Mostra tudo que está salvo no banco, de todos os professores: aprovados, quem não atingiu os critérios (com o motivo), quem está fora da sala e o status da solicitação de cada um.</p>
+        <h2>Alunos da turma selecionada</h2>
+        <p class="dica-importar">Mostra o que está salvo no banco para a turma escolhida acima: aprovados, quem não atingiu os critérios (com o motivo), quem está fora da sala e o status da solicitação de cada um.</p>
         <div id="info-turmas"></div>
         <div id="carregando-alunos">Carregando planilha...</div>
         <div id="legenda-comportamento"></div>
@@ -152,6 +152,9 @@
         <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
         <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
 
+        <button type="button" id="btn-apagar-tudo" class="btn-apagar-banco">Apagar todas as solicitações e alunos do banco (teste)</button>
+        <p id="msg-apagar-tudo" class="dica-importar" style="margin-top:8px;"></p>
+
     </section>
 
 
@@ -172,6 +175,19 @@
     white-space: pre-wrap;
     word-break: break-word;
 }
+.btn-apagar-banco {
+    margin-top: 10px;
+    background: #ff7a00;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,.35);
+}
+.btn-apagar-banco:disabled { opacity: .6; cursor: wait; }
 .btn-mostrar-senha {
     background: none;
     border: 1px solid var(--cor-dourado, #d9a441);
@@ -201,13 +217,14 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 var dadosAlunos = null;        // { porTurma, notas } vindo do banco
 var todasSolicitacoes = [];    // vem do localStorage (mais recentes primeiro)
 
-// Turma escolhida no filtro ('' = todas)
+// Turma escolhida no dropdown (sempre uma turma; não existe mais "todas")
 var turmaFiltro = '';
+var turmaEscolhidaPeloUsuario = false;
 function passaNoFiltro(turma) {
     return !turmaFiltro || mesmaTurma(turma, turmaFiltro);
 }
 
-// Botões de turma ("Todas as turmas" + uma por turma conhecida)
+// Dropdown de turmas (uma opção por turma conhecida)
 function renderizarFiltroTurmas() {
     var turmas = [];
     function juntar(t) {
@@ -219,24 +236,23 @@ function renderizarFiltroTurmas() {
     todasSolicitacoes.forEach(function (s) { juntar(s.turma); });
     turmas.sort(function (a, b) { return String(a).localeCompare(String(b), 'pt-BR'); });
 
-    var caixa = document.getElementById('filtro-turmas');
-    caixa.innerHTML = '';
-    [''].concat(turmas).forEach(function (t) {
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaFiltro ? ' chip-turma-ativa' : '');
-        chip.textContent = t || 'Todas as turmas';
-        chip.dataset.turma = t;
-        chip.setAttribute('aria-pressed', t === turmaFiltro ? 'true' : 'false');
-        caixa.appendChild(chip);
-    });
+    // Sem escolha do usuário: começa na primeira turma que tem alunos (ou na primeira da lista).
+    if (!turmaEscolhidaPeloUsuario) {
+        var comAlunos = dadosAlunos ? dadosAlunos.porTurma.filter(function (t) { return t.notas.length; })[0] : null;
+        turmaFiltro = comAlunos ? turmaCanonica(comAlunos.turma) : (turmas[0] || '');
+    }
+    if (turmas.indexOf(turmaFiltro) === -1) turmaFiltro = turmas[0] || '';
+
+    var seletor = document.getElementById('filtro-turma-select');
+    seletor.innerHTML = turmas.map(function (t) {
+        return '<option value="' + escaparHtml(t) + '">' + escaparHtml(t) + '</option>';
+    }).join('');
+    seletor.value = turmaFiltro;
 }
 
-document.getElementById('filtro-turmas').addEventListener('click', function (evento) {
-    var chip = evento.target.closest('.chip-turma-selecionavel');
-    if (!chip) return;
-    turmaFiltro = chip.dataset.turma;
-    renderizarFiltroTurmas();
+document.getElementById('filtro-turma-select').addEventListener('change', function () {
+    turmaFiltro = this.value;
+    turmaEscolhidaPeloUsuario = true;
     renderizarAlunos();
     renderizarSolicitacoes();
 });
@@ -541,7 +557,37 @@ function atualizarDadosBrutos() {
 }
 atualizarDadosBrutos();
 
-// A limpeza de solicitações agora é feita junto ao botão da turma, para evitar ações separadas.
+// Botão de teste: apaga TODAS as solicitações do banco E todos os alunos de todas as turmas.
+document.getElementById('btn-apagar-tudo').addEventListener('click', function () {
+    var botao = this;
+    var msg = document.getElementById('msg-apagar-tudo');
+    if (!confirm('Isso apaga TODAS as solicitações e TODOS os alunos salvos no banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
+    botao.disabled = true;
+    msg.textContent = 'Apagando...';
+
+    // Usa as turmas que o banco devolveu (pode haver turmas fora de TURMAS_DO_SISTEMA).
+    var turmas = (dadosAlunos && dadosAlunos.porTurma ? dadosAlunos.porTurma : [])
+        .filter(function (t) { return t.notas && t.notas.length; })
+        .map(function (t) { return t.turma; });
+    var removidos = 0;
+
+    limparTodasSolicitacoes()
+        .then(function () {
+            return Promise.all(turmas.map(function (turma) {
+                return removerTurma(turma).then(function (r) { removidos += r.removidos; });
+            }));
+        })
+        .then(carregarAlunosDev)
+        .then(function () {
+            botao.disabled = false;
+            msg.textContent = 'Pronto: solicitações apagadas e ' + removidos + ' aluno(s) removido(s).';
+        })
+        .catch(function (erro) {
+            botao.disabled = false;
+            msg.textContent = '';
+            alert('Não consegui apagar tudo: ' + erro.message);
+        });
+});
 
 </script>
 

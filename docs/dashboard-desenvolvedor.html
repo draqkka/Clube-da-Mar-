@@ -29,7 +29,7 @@
      contas cadastradas (nenhuma outra página do painel precisa dela). -->
 <script src="usuarios.js"></script>
 </head>
-<body>
+<body class="fonte-profissional">
 
 <header>
 <nav class="topnav">
@@ -83,8 +83,23 @@
         </div>
     </div>
 
-    <!-- Todos os alunos, de todas as turmas -->
+    <!-- FILTRO DE TURMA — igual ao do painel do professor: escolhe uma turma
+         (ou "Todas") e as solicitações e a lista de alunos mostram só ela. -->
+    <div class="filtro-turma">
+        <span class="filtro-turma-rotulo" id="rotulo-filtro-turma">Escolha a turma:</span>
+        <div id="filtro-turmas" class="lista-turmas-chip" role="group" aria-labelledby="rotulo-filtro-turma"></div>
+    </div>
+
+    <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
     <section class="area-avaliacao-professores">
+        <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
+        <p class="dica-importar">Aqui aparecem só as solicitações que a <strong>Direção já aprovou</strong> e encaminhou pra você — as solicitações dos professores que ainda estão com a Direção não aparecem. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
+        <div id="lista-solicitacoes"></div>
+        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
+    </section>
+
+    <!-- Todos os alunos, de todas as turmas -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
         <h2>Todos os Alunos (todas as turmas)</h2>
         <p class="dica-importar">Mostra tudo que está salvo no banco, de todos os professores: aprovados, quem não atingiu os critérios (com o motivo), quem está fora da sala e o status da solicitação de cada um.</p>
         <div id="info-turmas"></div>
@@ -94,20 +109,12 @@
         <table class="tabela-alunos" id="tabela-alunos">
             <thead>
                 <tr>
-                    <th>Nome</th><th>Turma</th><th>Curso</th><th>Escola</th><th>Diretoria</th><th>Diretor</th><th>Bimestre</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Comportamento</th><th>Resultado</th><th>Motivo</th><th>Solicitação</th>
+                    <th>Aluno</th><th>Turma</th><th>Curso</th><th>Escola</th><th>Diretoria</th><th>Diretor</th><th>Bimestre</th><th>Situação</th><th>Média</th><th>Frequência</th><th>Desempenho</th><th>Resultado</th><th>Motivo</th><th>Solicitação</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-alunos"></tbody>
         </table>
         </div>
-    </section>
-
-    <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
-    <section class="area-avaliacao-professores" style="margin-top: 30px;">
-        <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
-        <p class="dica-importar">Aqui aparecem só as solicitações que a <strong>Direção já aprovou</strong> e encaminhou pra você — as solicitações dos professores que ainda estão com a Direção não aparecem. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
-        <div id="lista-solicitacoes"></div>
-        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
     </section>
 
     <!-- Usuários cadastrados no sistema (usuarios.js) -->
@@ -118,7 +125,7 @@
         <table class="tabela-alunos" id="tabela-usuarios" style="min-width:0;">
             <thead>
                 <tr>
-                    <th>Login</th><th>Perfil</th><th>Nome</th><th>Turmas</th><th>Senha</th>
+                    <th>Login</th><th>Perfil</th><th>Aluno</th><th>Turmas</th><th>Senha</th>
                 </tr>
             </thead>
             <tbody id="corpo-tabela-usuarios"></tbody>
@@ -131,18 +138,12 @@
         <h2>Dados Brutos no Navegador</h2>
         <p class="dica-importar">
             "Solicitações" ficam no <strong>banco</strong> (tabela <code>solicitacoes</code>, a mesma lista pra todo mundo); abaixo está a cópia que esta página está usando agora.
-            "Sessão atual" fica em <code>sessionStorage</code> (some ao fechar a aba).
         </p>
 
         <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
         <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
         <button type="button" class="btn-planilha-atalho" id="botao-limpar-solicitacoes">Apagar todas as solicitações do banco (teste)</button>
 
-        <h3 style="margin-top:24px;">Alunos (banco de dados — /api/alunos)</h3>
-        <pre id="json-alunos" class="caixa-dados-brutos"></pre>
-
-        <h3 style="margin-top:24px;">Sessão atual (sessionStorage)</h3>
-        <pre id="json-sessao" class="caixa-dados-brutos"></pre>
     </section>
 
     
@@ -193,6 +194,47 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 var dadosAlunos = null;        // { porTurma, notas } vindo do banco
 var todasSolicitacoes = [];    // vem do localStorage (mais recentes primeiro)
 
+// Turma escolhida no filtro ('' = todas)
+var turmaFiltro = '';
+function passaNoFiltro(turma) {
+    return !turmaFiltro || mesmaTurma(turma, turmaFiltro);
+}
+
+// Botões de turma ("Todas as turmas" + uma por turma conhecida)
+function renderizarFiltroTurmas() {
+    var turmas = [];
+    function juntar(t) {
+        var c = turmaCanonica(t);
+        if (c && turmas.indexOf(c) === -1) turmas.push(c);
+    }
+    TURMAS_DO_SISTEMA.forEach(juntar);
+    if (dadosAlunos) dadosAlunos.porTurma.forEach(function (t) { juntar(t.turma); });
+    todasSolicitacoes.forEach(function (s) { juntar(s.turma); });
+    turmas.sort(function (a, b) { return String(a).localeCompare(String(b), 'pt-BR'); });
+
+    var caixa = document.getElementById('filtro-turmas');
+    caixa.innerHTML = '';
+    [''].concat(turmas).forEach(function (t) {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaFiltro ? ' chip-turma-ativa' : '');
+        chip.textContent = t || 'Todas as turmas';
+        chip.dataset.turma = t;
+        chip.setAttribute('aria-pressed', t === turmaFiltro ? 'true' : 'false');
+        caixa.appendChild(chip);
+    });
+}
+
+document.getElementById('filtro-turmas').addEventListener('click', function (evento) {
+    var chip = evento.target.closest('.chip-turma-selecionavel');
+    if (!chip) return;
+    turmaFiltro = chip.dataset.turma;
+    renderizarFiltroTurmas();
+    renderizarAlunos();
+    renderizarSolicitacoes();
+});
+renderizarFiltroTurmas();
+
 function solicitacaoDoAlunoDev(a) {
     for (var i = 0; i < todasSolicitacoes.length; i++) {
         if (mesmoRa(todasSolicitacoes[i].ra, a.ra) && mesmaTurma(todasSolicitacoes[i].turma, a.turma)) return todasSolicitacoes[i];
@@ -226,11 +268,12 @@ function renderizarAlunos() {
     infoTurmas.innerHTML = '';
     var turmasComAlunos = 0, totalAprovados = 0;
     dadosAlunos.porTurma.forEach(function (t) {
+        var mostrar = passaNoFiltro(t.turma);   // os totais do topo contam todas as turmas
         var p = document.createElement('p');
         p.className = 'dica-importar';
         if (!t.notas.length) {
             p.innerHTML = '<strong>' + escaparHtml(t.turma) + '</strong> — sem alunos salvos.';
-            infoTurmas.appendChild(p);
+            if (mostrar) infoTurmas.appendChild(p);
             return;
         }
         turmasComAlunos++;
@@ -252,11 +295,11 @@ function renderizarAlunos() {
             (ativos.length - aprovados.length) + ' não atingiram · ' + (t.notas.length - ativos.length) + ' fora da sala' +
             (partes.length ? '<br>' + partes.join(' · ') : '') +
             ' <button type="button" class="btn-remover-turma" data-turma="' + escaparHtml(t.turma) + '" style="margin-left:8px;">Remover alunos desta turma</button>';
-        infoTurmas.appendChild(p);
+        if (mostrar) infoTurmas.appendChild(p);
     });
 
     // Tabela com todos os alunos (por turma, depois por nome)
-    var ordenados = todos.slice().sort(function (a, b) {
+    var ordenados = todos.filter(function (a) { return passaNoFiltro(a.turma); }).sort(function (a, b) {
         return String(a.turma).localeCompare(String(b.turma), 'pt-BR') || String(a.nome).localeCompare(String(b.nome), 'pt-BR');
     });
     var corpo = document.getElementById('corpo-tabela-alunos');
@@ -277,11 +320,10 @@ function renderizarAlunos() {
             '</td><td>' + escaparHtml(textoSolicitacaoDev(solicitacaoDoAlunoDev(a))) + '</td>';
         corpo.appendChild(linha);
     });
-    document.getElementById('rolagem-alunos').style.display = todos.length ? 'block' : 'none';
+    document.getElementById('rolagem-alunos').style.display = ordenados.length ? 'block' : 'none';
     document.getElementById('resumo-alunos').textContent = todos.length;
     document.getElementById('resumo-turmas').textContent = turmasComAlunos;
     document.getElementById('resumo-aprovados').textContent = totalAprovados;
-    document.getElementById('json-alunos').textContent = JSON.stringify(todos, null, 2);
 }
 
 function carregarAlunosDev() {
@@ -289,6 +331,7 @@ function carregarAlunosDev() {
         .then(function (dados) {
             document.getElementById('carregando-alunos').style.display = 'none';
             dadosAlunos = dados;
+            renderizarFiltroTurmas();
             renderizarAlunos();
             renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         })
@@ -351,9 +394,13 @@ function renderizarSolicitacoes() {
     document.getElementById('resumo-total-solicitacoes').textContent = visiveis.length;
     document.getElementById('resumo-aguardando-dev').textContent =
         visiveis.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
-    document.getElementById('sem-solicitacoes').style.display = visiveis.length ? 'none' : 'block';
+    var filtradas = visiveis.filter(function (s) { return passaNoFiltro(s.turma); });
+    document.getElementById('sem-solicitacoes').textContent = (turmaFiltro && visiveis.length)
+        ? 'Nenhuma solicitação encontrada para a turma ' + turmaFiltro + '.'
+        : 'Nenhuma solicitação encontrada.';
+    document.getElementById('sem-solicitacoes').style.display = filtradas.length ? 'none' : 'block';
 
-    visiveis.forEach(function (s) {
+    filtradas.forEach(function (s) {
         var card = document.createElement('div');
         card.className = 'card-solicitacao';
 
@@ -387,6 +434,7 @@ function renderizarSolicitacoes() {
 
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
+    renderizarFiltroTurmas();  // uma turma nova pode ter aparecido numa solicitação
     renderizarAlunos();        // atualiza a coluna "Solicitação" dos alunos
     renderizarSolicitacoes();
     if (typeof atualizarDadosBrutos === 'function') atualizarDadosBrutos();
@@ -447,7 +495,6 @@ function atualizarDadosBrutos() {
     } catch (e) {
         document.getElementById('json-solicitacoes').textContent = solicitacoesBrutas;
     }
-    document.getElementById('json-sessao').textContent = JSON.stringify(sessao, null, 2);
 }
 atualizarDadosBrutos();
 

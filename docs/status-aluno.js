@@ -66,3 +66,38 @@ function nomeCurtoAluno(nomeCompleto) {
     var partes = n.split(/\s+/);
     return partes.length > 1 ? partes[0] + ' ' + partes[partes.length - 1] : n;
 }
+
+
+// ==========================================================================
+// LÓGICA ÚNICA DO PAINEL DO ALUNO — usada por dashboard-aluno.html E pelo
+// cartão da tela inicial (index.html), pra os dois mostrarem sempre o mesmo.
+// "resumo" é o objeto que o dashboard guarda (encontradoNaPlanilha, reprovado,
+// mensagemReprovacao...).
+// ==========================================================================
+var MSG_ALUNO_APROVADO = 'Parabéns! Gosto assim, se superando, continue assim! :)';
+var MSG_ALUNO_SEM_DADOS = 'Não encontramos sua média e frequência na planilha ainda. Fale com a secretaria da escola.';
+
+// Status que aparece no card "Status" (e o texto da caixa de solicitação).
+function statusPainelAluno(solicitacao, resumo) {
+    resumo = resumo || {};
+    var info = statusDiretoria(solicitacao);
+    if (!solicitacao && !resumo.encontradoNaPlanilha) {
+        info = { chave: 'aguardando-professor', classe: 'status-pendente', rotulo: 'Aguardando o professor',
+                 texto: 'Aguardando o professor: ainda não há cadastro deste aluno no Clube da Maré.' };
+    } else if (!solicitacao) {
+        info = { chave: 'sem-solicitacao', classe: 'status-pendente', rotulo: 'Solicitação não feita pelo professor',
+                 texto: 'O professor já cadastrou este aluno, mas ainda não solicitou a participação à Diretoria.' };
+    }
+    // Aluno reprovado: "Reprovado" no card e a mesma mensagem do painel.
+    if (resumo.reprovado) {
+        info = { chave: 'reprovado', classe: 'status-recusado', rotulo: 'Reprovado', texto: resumo.mensagemReprovacao || '' };
+    }
+    return info;
+}
+
+// Mensagem de resultado (aprovado / reprovado / sem dados na planilha).
+function mensagemPainelAluno(resumo) {
+    resumo = resumo || {};
+    if (!resumo.encontradoNaPlanilha) return MSG_ALUNO_SEM_DADOS;
+    return resumo.reprovado ? (resumo.mensagemReprovacao || '') : MSG_ALUNO_APROVADO;
+}

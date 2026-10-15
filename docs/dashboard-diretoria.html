@@ -126,11 +126,11 @@ window.resolverEscolaSolicitacao = function (s) {
     return e || dadosDaEscola(alunos).escola || '';
 };
 
-// Turma escolhida no filtro ('' = todas)
+// Turma selecionada: sempre uma das turmas disponíveis (sem opção 'todas').
 var turmaFiltro = '';
 
 function passaNoFiltro(turma) {
-    return !turmaFiltro || mesmaTurma(turma, turmaFiltro);
+    return !!turmaFiltro && mesmaTurma(turma, turmaFiltro);
 }
 
 // Botões de turma ("Todas as turmas" + uma por turma conhecida)
@@ -147,11 +147,12 @@ function renderizarFiltroTurmas() {
 
     var caixa = document.getElementById('filtro-turmas');
     caixa.innerHTML = '';
-    [''].concat(turmas).forEach(function (t) {
+    if (!turmaFiltro && turmas.length) turmaFiltro = turmas[0];
+    turmas.forEach(function (t) {
         var chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaFiltro ? ' chip-turma-ativa' : '');
-        chip.textContent = t || 'Todas as turmas';
+        chip.textContent = t;
         chip.dataset.turma = t;
         chip.setAttribute('aria-pressed', t === turmaFiltro ? 'true' : 'false');
         caixa.appendChild(chip);

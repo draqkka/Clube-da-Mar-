@@ -25,7 +25,6 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
-<script src="resumo-painel.js"></script>
 <!-- Lista de usuários — só é carregada nesta página pra exibir a tabela de
      contas cadastradas (nenhuma outra página do painel precisa dela). -->
 <script src="usuarios.js"></script>
@@ -79,24 +78,8 @@
             <span class="card-status-valor" id="resumo-aguardando-dev">-</span>
         </div>
         <div class="card-status">
-            <span class="card-status-rotulo">Solicitações visíveis</span>
+            <span class="card-status-rotulo">Solicitações da direção</span>
             <span class="card-status-valor" id="resumo-total-solicitacoes">-</span>
-        </div>
-        <div class="card-status">
-            <span class="card-status-rotulo">Aguardando a Direção</span>
-            <span class="card-status-valor" id="resumo-pendentes">-</span>
-        </div>
-        <div class="card-status">
-            <span class="card-status-rotulo">Confirmadas pela equipe</span>
-            <span class="card-status-valor" id="resumo-confirmadas">-</span>
-        </div>
-        <div class="card-status">
-            <span class="card-status-rotulo">Recusadas</span>
-            <span class="card-status-valor" id="resumo-recusadas">-</span>
-        </div>
-        <div class="card-status">
-            <span class="card-status-rotulo">Escolas identificadas</span>
-            <span class="card-status-valor" id="resumo-escolas">-</span>
         </div>
     </div>
 
@@ -107,16 +90,22 @@
         <div id="filtro-turmas" class="lista-turmas-chip" role="group" aria-labelledby="rotulo-filtro-turma"></div>
     </div>
 
-    <!-- Filtro por escola: as opções são descobertas nos dados importados pelos professores. -->
-    <div class="filtro-escola-dev">
-        <label for="filtro-escola">Escola:</label>
-        <select id="filtro-escola"><option value="">Carregando escolas...</option></select>
-    </div>
+    <!-- Dados brutos salvos no navegador — útil pra depuração -->
+    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+        <h2>Dados Brutos no Navegador</h2>
+        <p class="dica-importar">
+            "Solicitações" ficam no <strong>banco</strong> (tabela <code>solicitacoes</code>, a mesma lista pra todo mundo); abaixo está a cópia que esta página está usando agora.
+        </p>
 
-    <!-- Solicitações de todos os status para facilitar o suporte e a auditoria. -->
+        <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
+        <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
+
+    </section>
+
+    <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
     <section class="area-avaliacao-professores">
-        <h2>Solicitações de Participação (todos os status)</h2>
-        <p class="dica-importar">Visualize solicitações pendentes, aprovadas pela Direção, aguardando a equipe, confirmadas e recusadas. Use o filtro de escola e turma para localizar um registro. Só solicitações encaminhadas pela Direção podem ser confirmadas ou recusadas pela equipe.</p>
+        <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
+        <p class="dica-importar">Aqui aparecem as solicitações em todos os estágios, inclusive as que aguardam o professor ou a Diretoria, para que o Desenvolvedor acompanhe o andamento completo. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
         <div id="lista-solicitacoes"></div>
         <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
     </section>
@@ -156,18 +145,7 @@
         </div>
     </section>
 
-    <!-- Dados brutos salvos no navegador — útil pra depuração -->
-    <section class="area-avaliacao-professores" style="margin-top: 30px;">
-        <h2>Dados Brutos no Navegador</h2>
-        <p class="dica-importar">
-            "Solicitações" ficam no <strong>banco</strong> (tabela <code>solicitacoes</code>, a mesma lista pra todo mundo); abaixo está a cópia que esta página está usando agora.
-        </p>
 
-        <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
-        <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
-        <button type="button" class="btn-planilha-atalho" id="botao-limpar-solicitacoes">Apagar todas as solicitações do banco (teste)</button>
-
-    </section>
 
     
 
@@ -209,18 +187,6 @@ document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + (sessao.n
 
 document.getElementById('link-sair').addEventListener('click', function (e) {
     e.preventDefault();
-    var c = contarSolicitacoesPorStatus(todasSolicitacoes);
-    var escolas = document.getElementById('filtro-escola').options.length - 1;
-    guardarResumoPainel(sessao, [
-        { rotulo: 'Alunos na planilha', valor: dadosAlunos ? dadosAlunos.notas.length : 0 },
-        { rotulo: 'Turmas com alunos', valor: dadosAlunos ? dadosAlunos.porTurma.filter(function(t){return t.notas.length;}).length : 0 },
-        { rotulo: 'Usuários cadastrados', valor: USUARIOS.length },
-        { rotulo: 'Solicitações pendentes', valor: c.pendente },
-        { rotulo: 'Aguardando equipe', valor: c.esperando },
-        { rotulo: 'Confirmadas', valor: c.confirmada },
-        { rotulo: 'Recusadas', valor: c.recusada },
-        { rotulo: 'Escolas identificadas', valor: Math.max(0, escolas) }
-    ], 'Resumo geral do sistema, incluindo alunos, turmas, usuários, escolas e todos os status de solicitações.');
     sessionStorage.removeItem('cdm_sessao');
     window.location.href = 'index.html';
 });
@@ -229,10 +195,10 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 var dadosAlunos = null;        // { porTurma, notas } vindo do banco
 var todasSolicitacoes = [];    // vem do localStorage (mais recentes primeiro)
 
-// Turma selecionada: uma turma por vez, sem opção 'todas'.
+// Turma escolhida no filtro ('' = todas)
 var turmaFiltro = '';
 function passaNoFiltro(turma) {
-    return !!turmaFiltro && mesmaTurma(turma, turmaFiltro);
+    return !turmaFiltro || mesmaTurma(turma, turmaFiltro);
 }
 
 // Botões de turma ("Todas as turmas" + uma por turma conhecida)
@@ -249,12 +215,11 @@ function renderizarFiltroTurmas() {
 
     var caixa = document.getElementById('filtro-turmas');
     caixa.innerHTML = '';
-    if (!turmaFiltro && turmas.length) turmaFiltro = turmas[0];
-    turmas.forEach(function (t) {
+    [''].concat(turmas).forEach(function (t) {
         var chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'chip-turma chip-turma-selecionavel' + (t === turmaFiltro ? ' chip-turma-ativa' : '');
-        chip.textContent = t;
+        chip.textContent = t || 'Todas as turmas';
         chip.dataset.turma = t;
         chip.setAttribute('aria-pressed', t === turmaFiltro ? 'true' : 'false');
         caixa.appendChild(chip);
@@ -281,8 +246,8 @@ function solicitacaoDoAlunoDev(a) {
 // Na coluna "Solicitação" o Desenvolvedor só vê o que a Direção encaminhou
 // (solicitações ainda com a Direção, ou recusadas por ela, aparecem como "—").
 function textoSolicitacaoDev(s) {
-    if (!s) return '—';
-    return textoStatusSolicitacao(s, { semProfessor: true });
+    if (!s) return '🟡 Solicitação não feita pelo professor';
+    return textoStatusSolicitacao(s, { semProfessor: false });
 }
 
 // Escola de uma solicitação antiga (sem "escola" gravada): procura nos
@@ -330,7 +295,7 @@ function renderizarAlunos() {
             t.notas.length + ' aluno(s): ' + ativos.length + ' ativos · ' + aprovados.length + ' aprovados · ' +
             (ativos.length - aprovados.length) + ' não atingiram · ' + (t.notas.length - ativos.length) + ' fora da sala' +
             (partes.length ? '<br>' + partes.join(' · ') : '') +
-            ' <button type="button" class="btn-remover-turma" data-turma="' + escaparHtml(t.turma) + '" style="margin-left:8px;">Remover alunos desta turma</button>';
+            ' <button type="button" class="btn-remover-turma" data-turma="' + escaparHtml(t.turma) + '" style="margin-left:8px;">Remover alunos desta turma + solicitações</button>';
         if (mostrar) infoTurmas.appendChild(p);
     });
 
@@ -368,7 +333,6 @@ function carregarAlunosDev() {
             document.getElementById('carregando-alunos').style.display = 'none';
             dadosAlunos = dados;
             renderizarFiltroTurmas();
-            renderizarFiltroEscolas();
             renderizarAlunos();
             renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         })
@@ -384,10 +348,10 @@ document.getElementById('info-turmas').addEventListener('click', function (event
     var botao = evento.target.closest('.btn-remover-turma');
     if (!botao) return;
     var turma = botao.dataset.turma;
-    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' e TODAS as solicitações dessa turma. Confirma?')) return;
+    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' e TODAS as solicitações do banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
     botao.disabled = true;
     removerTurma(turma)
-        .then(function () { return cancelarSolicitacoesDaTurma(turma); })
+        .then(function () { return limparTodasSolicitacoes(); })
         .then(carregarAlunosDev)
         .catch(function (erro) {
             botao.disabled = false;
@@ -418,35 +382,10 @@ corpoUsuarios.addEventListener('click', function (evento) {
 });
 
 // ---- Solicitações encaminhadas pela Direção --------------------------------
-// O Desenvolvedor só vê o que a Direção já aprovou (Aguardando Desenvolvedor)
-// e o que ele mesmo já decidiu. As "Pendente" dos professores NÃO aparecem.
+// O Desenvolvedor acompanha todos os status, inclusive os que aguardam professor ou Diretoria.
 function solicitacoesDoDev() {
-    // O painel de desenvolvedor precisa permitir auditoria de todos os estados.
     return todasSolicitacoes.slice();
 }
-
-function nomeEscolaDaSolicitacaoDev(s) {
-    var escola = escolaDaSolicitacao(s);
-    if (escola) return escola;
-    if (!dadosAlunos) return '';
-    var aluno = dadosAlunos.notas.filter(function (a) { return mesmoRa(a.ra, s.ra) && mesmaTurma(a.turma, s.turma); })[0];
-    return aluno ? (dadosDaEscola([aluno]).escola || '') : '';
-}
-
-function renderizarFiltroEscolas() {
-    var seletor = document.getElementById('filtro-escola');
-    if (!seletor) return;
-    var atual = seletor.value;
-    var escolas = [];
-    function incluir(nome) { nome = String(nome || '').trim(); if (nome && escolas.indexOf(nome) < 0) escolas.push(nome); }
-    if (dadosAlunos) dadosAlunos.notas.forEach(function (a) { incluir(dadosDaEscola([a]).escola); });
-    todasSolicitacoes.forEach(function (s) { incluir(nomeEscolaDaSolicitacaoDev(s)); });
-    escolas.sort(function (a,b) { return a.localeCompare(b, 'pt-BR'); });
-    seletor.innerHTML = '<option value="">Todas as escolas</option>' + escolas.map(function (e) { return '<option value="' + escaparHtml(e) + '">' + escaparHtml(e) + '</option>'; }).join('');
-    if (escolas.indexOf(atual) >= 0) seletor.value = atual;
-}
-
-document.getElementById('filtro-escola').addEventListener('change', renderizarSolicitacoes);
 
 function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
@@ -456,15 +395,10 @@ function renderizarSolicitacoes() {
     document.getElementById('resumo-total-solicitacoes').textContent = visiveis.length;
     document.getElementById('resumo-aguardando-dev').textContent =
         visiveis.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
-    document.getElementById('resumo-pendentes').textContent = visiveis.filter(function (s) { return s.status === 'Pendente'; }).length;
-    document.getElementById('resumo-confirmadas').textContent = visiveis.filter(function (s) { return s.status === 'Aprovado'; }).length;
-    document.getElementById('resumo-recusadas').textContent = visiveis.filter(function (s) { return s.status === 'Recusado'; }).length;
-    document.getElementById('resumo-escolas').textContent = Math.max(0, document.getElementById('filtro-escola').options.length - 1);
-    var escolaFiltro = document.getElementById('filtro-escola').value;
-    var filtradas = visiveis.filter(function (s) {
-        return passaNoFiltro(s.turma) && (!escolaFiltro || nomeEscolaDaSolicitacaoDev(s) === escolaFiltro);
-    });
-    document.getElementById('sem-solicitacoes').textContent = 'Nenhuma solicitação encontrada com os filtros selecionados.';
+    var filtradas = visiveis.filter(function (s) { return passaNoFiltro(s.turma); });
+    document.getElementById('sem-solicitacoes').textContent = (turmaFiltro && visiveis.length)
+        ? 'Nenhuma solicitação encontrada para a turma ' + turmaFiltro + '.'
+        : 'Nenhuma solicitação encontrada.';
     document.getElementById('sem-solicitacoes').style.display = filtradas.length ? 'none' : 'block';
 
     filtradas.forEach(function (s) {
@@ -490,7 +424,7 @@ function renderizarSolicitacoes() {
                 '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">Confirmar aprovação (final)</button> ' +
                 '<button type="button" class="btn-recusar-solicitacao" data-id="' + escaparHtml(s.id) + '">Recusar</button>' +
                 '</div></div>';
-        } else if (s.status !== 'Pendente') {
+        } else if (s.status === 'Aprovado' || (s.status === 'Recusado' && solicitacaoPassouDirecao(s))) {
             html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + escaparHtml(s.id) + '" style="margin-top:10px;">Reabrir (volta pra sua fila)</button>';
         }
 
@@ -502,7 +436,6 @@ function renderizarSolicitacoes() {
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
     renderizarFiltroTurmas();  // uma turma nova pode ter aparecido numa solicitação
-    renderizarFiltroEscolas();
     renderizarAlunos();        // atualiza a coluna "Solicitação" dos alunos
     renderizarSolicitacoes();
     if (typeof atualizarDadosBrutos === 'function') atualizarDadosBrutos();
@@ -566,10 +499,8 @@ function atualizarDadosBrutos() {
 }
 atualizarDadosBrutos();
 
-document.getElementById('botao-limpar-solicitacoes').addEventListener('click', function () {
-    if (!confirm('Isso apaga TODAS as solicitações do banco, para todos os usuários (não afeta a planilha de notas). Confirma?')) return;
-    limparTodasSolicitacoes().then(atualizarDadosBrutos);
-});
+// A limpeza de solicitações agora é feita junto ao botão da turma, para evitar ações separadas.
+
 </script>
 
 <script src="menu.js"></script>

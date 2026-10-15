@@ -22,7 +22,8 @@ var CHAVE_RESUMO_ALUNO_LIMPAR = 'cdm_resumo_aluno';   // o do aluno (status-alun
 var DESTINO_PAINEL = {
     estudante: 'dashboard-aluno.html',
     professor: 'dashboard-professor.html',
-    diretoria: 'dashboard-diretoria.html'
+    diretoria: 'dashboard-diretoria.html',
+    desenvolvedor: 'dashboard-desenvolvedor.html'
 };
 
 function lerResumoPainel() {

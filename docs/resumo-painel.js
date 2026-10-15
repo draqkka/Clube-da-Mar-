@@ -67,7 +67,7 @@ function tornarCartaoClicavel(secao, aoAbrir, rotuloAcessivel) {
     secao.setAttribute('tabindex', '0');
     secao.setAttribute('aria-label', rotuloAcessivel);
     secao.addEventListener('click', function (evento) {
-        if (evento.target.closest('.resumo-aluno-fechar')) return;
+        if (evento.target.closest('.resumo-aluno-fechar, a, button')) return;
         aoAbrir();
     });
     secao.addEventListener('keydown', function (evento) {

@@ -342,14 +342,15 @@ function carregarAlunosDev() {
 }
 carregarAlunosDev();
 
-// Esvazia uma turma (ex: alunos salvos na turma errada). Não mexe nas solicitações.
+// Esvazia uma turma (ex: alunos salvos na turma errada) e apaga as solicitações dela.
 document.getElementById('info-turmas').addEventListener('click', function (evento) {
     var botao = evento.target.closest('.btn-remover-turma');
     if (!botao) return;
     var turma = botao.dataset.turma;
-    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' (as solicitações não são afetadas). Confirma?')) return;
+    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' e TODAS as solicitações dessa turma. Confirma?')) return;
     botao.disabled = true;
     removerTurma(turma)
+        .then(function () { return cancelarSolicitacoesDaTurma(turma); })
         .then(carregarAlunosDev)
         .catch(function (erro) {
             botao.disabled = false;

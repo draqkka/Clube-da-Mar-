@@ -3548,3 +3548,171 @@ body{
 @media (max-height: 520px) {
     .pagina-login { justify-content: flex-start; min-height: 0; }
 }
+
+
+/* =========================================================================
+   AJUSTES FINAIS (outubro/2026)
+   Este bloco fica no FINAL do arquivo de propósito: vale por cima das regras
+   anteriores. Cada item abaixo tem um comentário dizendo o que muda e onde
+   ajustar.
+   ========================================================================= */
+
+/* ---- 1) PROGRAMAÇÃO DO DIA: caixa menor e sem cortar os ícones ------------
+   Antes: a caixa tinha overflow:hidden (e, abaixo de 1400px de largura, a
+   timeline virava overflow-x:auto), o que CORTAVA o ícone quando ele sobe e
+   cresce ao passar o mouse/selecionar. Agora a caixa não corta nada e a
+   timeline ganha um respiro em cima (padding-top) pro ícone ter espaço.
+   Pra deixar a caixa ainda menor/maior, mexa no "padding" de
+   .programacao-dia e no "margin-bottom" de .titulo-programacao. */
+.programacao-dia {
+    padding: 30px 36px 34px;
+    overflow: visible;
+}
+.titulo-programacao {
+    font-size: 44px;
+    margin-bottom: 36px;
+}
+.timeline {
+    padding-top: 26px;        /* espaço pro ícone subir (-12px) e crescer (x1.12) */
+    padding-bottom: 6px;
+}
+/* a linha e o aviãozinho acompanham o novo respiro em cima (42px + 26px) */
+.timeline::before { top: 68px; }
+.timeline::after  { top: 36px; }
+.timeline-icon {
+    width: 78px;
+    height: 78px;
+}
+.timeline-icon i { font-size: 32px; }
+
+@media (min-width: 769px) and (max-width: 1400px) {
+    /* em tela de notebook cabe tudo sem barra de rolagem, então a timeline
+       deixa de cortar o ícone (overflow-x:auto também cortava na vertical) */
+    .timeline { overflow: visible; padding-bottom: 6px; }
+    .timeline-item { min-width: 0; width: 12%; }
+    .timeline-item h4 { font-size: 14px; }
+    .timeline-item p  { font-size: 12px; }
+}
+@media (max-width: 768px) {
+    .programacao-dia { padding: 22px 16px; overflow: visible; }
+    .titulo-programacao { font-size: 26px; margin-bottom: 26px; }
+    .timeline { padding-top: 0; }
+}
+
+
+/* ---- 2) DEGRADÊ DE TRANSIÇÃO ENTRE AS SEÇÕES/PÁGINAS ----------------------
+   Uma faixa de degradê suaviza a "emenda" entre o banner e a seção seguinte
+   (e entre as demais seções). "height" controla o tamanho do degradê e a
+   cor final de cada faixa foi tirada da imagem da seção seguinte. */
+#inicio.hero::after,
+.quemsomos-container::after,
+.hero-eventos::after,
+.hero-eventos-programacao::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 12vw, 170px);
+    pointer-events: none;
+    z-index: 1;               /* acima da imagem, abaixo dos textos/cartões */
+}
+/* banner -> Quem Somos (azul da água, no topo da imagem do Quem Somos) */
+#inicio.hero::after {
+    background: linear-gradient(to bottom, rgba(10, 174, 190, 0) 0%, #0aaebe 100%);
+}
+/* Quem Somos -> Eventos (parte de baixo da água escurece pro palco) */
+.quemsomos-container::after {
+    background: linear-gradient(to bottom, rgba(5, 185, 208, 0) 0%, rgba(55, 108, 138, .9) 100%);
+}
+/* Eventos -> Programação */
+.hero-eventos::after {
+    background: linear-gradient(to bottom, rgba(77, 113, 59, 0) 0%, rgba(100, 168, 189, .85) 100%);
+}
+/* Programação -> Próximos eventos/Mapa */
+.hero-eventos-programacao::after {
+    background: linear-gradient(to bottom, rgba(154, 106, 50, 0) 0%, rgba(178, 133, 104, .85) 100%);
+}
+/* o cartão do aluno/professor/diretoria e a logo ficam acima do degradê */
+#inicio .hero-logo, #inicio .resumo-aluno { z-index: 5; }
+.hero-eventos-programacao .eventos-programacao-container { z-index: 10; }
+
+/* Suaviza também a troca de página: a página nova aparece com um fade */
+@keyframes cdm-fade-pagina { from { opacity: 0; } to { opacity: 1; } }
+body { animation: cdm-fade-pagina .45s ease-out backwards; }
+@media (prefers-reduced-motion: reduce) { body { animation: none; } }
+
+
+/* ---- 3) FONTE PROFISSIONAL no login e nos painéis --------------------------
+   Pra mudar de fonte, troque só a linha "font-family" abaixo. As páginas de
+   login e os 4 painéis têm <body class="fonte-profissional">. Os ícones
+   (Font Awesome) e os blocos de código ficam de fora. */
+body.fonte-profissional,
+body.fonte-profissional *:not(i):not([class^="fa-"]):not([class*=" fa-"]):not(pre):not(code) {
+    font-family: Arial, Helvetica, sans-serif !important;
+    letter-spacing: normal;
+}
+body.fonte-profissional pre,
+body.fonte-profissional code {
+    font-family: Consolas, "Courier New", monospace !important;
+}
+/* Arial é mais larga que a fonte antiga: deixa o texto respirar */
+body.fonte-profissional { line-height: 1.5; }
+body.fonte-profissional h1, body.fonte-profissional h2,
+body.fonte-profissional h3, body.fonte-profissional h4 { line-height: 1.25; }
+
+
+/* ---- 4) FILTRO DE TURMA (Diretoria e Desenvolvedor) -----------------------
+   Mesmos botões de turma do painel do professor. */
+.chip-turma-selecionavel {
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: rgba(255, 255, 255, .10);
+    color: var(--cor-branco);
+    transition: transform .15s, background .15s, border-color .15s;
+}
+.chip-turma-selecionavel:hover { transform: translateY(-1px); border-color: var(--cor-dourado); }
+.chip-turma-selecionavel:focus-visible { outline: 3px solid var(--cor-dourado); outline-offset: 2px; }
+.chip-turma-selecionavel.chip-turma-ativa {
+    background: linear-gradient(135deg, var(--cor-azul-escuro), var(--cor-roxo));
+    border-color: var(--cor-dourado);
+    font-weight: 700;
+}
+.filtro-turma { margin: 8px 0 4px; }
+.filtro-turma-rotulo { display: block; font-size: .9rem; color: var(--cor-cinza); margin-bottom: 4px; }
+
+
+/* ---- 5) CARTÃO CLICÁVEL NA TELA INICIAL (aluno, professor e diretoria) -----
+   Depois do "Sair"/"Voltar ao site" o cartão fica na tela inicial; clicar em
+   QUALQUER parte dele (ou no nome) abre o painel inteiro de novo.
+   O fundo ficou semitransparente (a foto do banner aparece por trás) mas
+   com desfoque, pra o texto continuar legível. Pra mais/menos transparência
+   mude o último número do rgba (0.78). */
+.resumo-aluno.resumo-clicavel {
+    cursor: pointer;
+    background: rgba(8, 12, 24, .78);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: transform .15s, box-shadow .15s, background .15s;
+}
+.resumo-aluno.resumo-clicavel:hover,
+.resumo-aluno.resumo-clicavel:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(8, 12, 24, .88);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
+    outline: none;
+}
+.resumo-aluno.resumo-clicavel:focus-visible { box-shadow: 0 0 0 3px var(--cor-dourado); }
+.resumo-aluno-dica {
+    margin: 8px 0 0;
+    font-size: .8rem;
+    color: var(--cor-dourado);
+}
+.resumo-aluno-dica i { margin-right: 6px; }
+.resumo-aluno-perfil {
+    display: inline-block;
+    margin: 0 0 6px;
+    padding: 1px 10px;
+    border-radius: 12px;
+    background: rgba(255, 215, 0, .15);
+    color: var(--cor-dourado);
+    font-size: .8rem;
+}

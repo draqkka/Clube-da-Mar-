@@ -376,6 +376,20 @@ function cancelarSolicitacao(id) {
     return _enviarAoServidor(_chamarApi('DELETE', URL_SOLICITACOES + '?id=' + encodeURIComponent(id))).catch(function () {});
 }
 
+// ---- Remover os alunos de uma turma: apaga também as solicitações dela ----
+// Usado pelos botões "Remover todos os alunos desta turma" (professor e
+// desenvolvedor). Devolve uma Promise com a quantidade apagada.
+function cancelarSolicitacoesDaTurma(turma) {
+    var chave = _turmaChaveSolic(turma);
+    var lista = _lerSolicitacoes();
+    var apagar = lista.filter(function (s) { return _turmaChaveSolic(s.turma) === chave; });
+    if (!apagar.length) return Promise.resolve(0);
+    _salvarSolicitacoes(lista.filter(function (s) { return _turmaChaveSolic(s.turma) !== chave; }));
+    return Promise.all(apagar.map(function (s) {
+        return _enviarAoServidor(_chamarApi('DELETE', URL_SOLICITACOES + '?id=' + encodeURIComponent(s.id))).catch(function () {});
+    })).then(function () { return apagar.length; });
+}
+
 // ---- Desenvolvedor: apaga TODAS as solicitações do banco (uso em testes) --
 function limparTodasSolicitacoes() {
     _salvarSolicitacoes([]);

@@ -30,7 +30,7 @@
 <script src="usuarios.js"></script>
 <script src="status-aluno.js"></script>
 </head>
-<body>
+<body class="fonte-profissional">
 
 <header>
 <nav class="topnav">
@@ -68,7 +68,7 @@
                 <span class="card-status-valor" id="valor-presenca">-</span>
             </div>
             <div class="card-status">
-                <span class="card-status-rotulo">Comportamento</span>
+                <span class="card-status-rotulo">Desempenho</span>
                 <span class="card-status-valor" id="valor-comportamento">-</span>
             </div>
             <div class="card-status card-status-diretoria" id="card-diretoria">
@@ -142,9 +142,17 @@ var resumo = {
     turma: sessao && sessao.turmas ? (sessao.turmas[0] || '') : '',
     nome: sessao ? (sessao.nome || '') : '',
     nota: '', presenca: '', comportamento: '',
-    statusChave: 'sem-solicitacao'
+    statusChave: 'sem-solicitacao',
+    // Dados da sessão: é o que permite clicar no cartão da tela inicial e
+    // voltar direto pra este painel (ver resumo-painel.js).
+    sessao: sessao,
+    destino: 'dashboard-aluno.html'
 };
-function guardarResumo() { salvarResumoAluno(resumo); }
+function guardarResumo() {
+    salvarResumoAluno(resumo);
+    // só um cartão por vez na tela inicial: o do professor/diretoria sai
+    try { localStorage.removeItem('cdm_resumo_painel'); } catch (e) {}
+}
 guardarResumo();
 
 document.getElementById('link-sair').addEventListener('click', function (e) {

@@ -69,6 +69,14 @@ function htmlComportamento(aluno) {
            c.texto + '</span>';
 }
 
+// Mesmo selo, mas a partir da chave guardada ('bom' | 'regular' | 'ruim').
+// Usado pela tela inicial (index.html), que só guarda a chave do aluno.
+function htmlComportamentoChave(chave) {
+    var c = COMPORTAMENTOS[chave];
+    if (!c || !c.chave) return '—';
+    return htmlComportamento({ comportamento: c.texto });
+}
+
 // Legenda geral: preenche qualquer <div id="legenda-comportamento"> da página.
 document.addEventListener('DOMContentLoaded', function () {
     var caixa = document.getElementById('legenda-comportamento');

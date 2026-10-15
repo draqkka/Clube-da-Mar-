@@ -427,20 +427,24 @@ document.getElementById('botao-baixar-planilha').addEventListener('click', funct
 });
 
 // Apaga os alunos salvos nesta turma (ex: alunos de outra turma que foram
-// salvos aqui por engano). Não mexe nas solicitações já enviadas.
+// salvos aqui por engano) e, junto, TODAS as solicitações dessa turma.
 document.getElementById('botao-remover-turma').addEventListener('click', function () {
     if (!turmaAtual || !dadosTurmaAtual) return;
     var turma = turmaAtual;
     var total = dadosTurmaAtual.notas.length;
-    if (!confirm('Isso remove TODOS os ' + total + ' aluno(s) salvos na turma ' + turma + ' (as solicitações já enviadas não são afetadas). ' +
+    if (!confirm('Isso remove TODOS os ' + total + ' aluno(s) salvos na turma ' + turma + ' e TODAS as solicitações enviadas dessa turma. ' +
         'Depois você pode adicionar a planilha certa de novo. Confirma?')) return;
 
     var status = document.getElementById('status-importacao');
     status.textContent = 'Removendo os alunos da turma ' + turma + '...';
+    var qtdSolic = 0;
     removerTurma(turma)
         .then(function (resp) {
-            status.textContent = '✅ Turma ' + turma + ' esvaziada' + (resp && resp.removidos != null ? ' (' + resp.removidos + ' removido(s))' : '') + '.';
-            return recarregarPlanilha(turma);
+            return cancelarSolicitacoesDaTurma(turma).then(function (n) {
+                qtdSolic = n;
+                status.textContent = '✅ Turma ' + turma + ' esvaziada' + (resp && resp.removidos != null ? ' (' + resp.removidos + ' aluno(s) removido(s)' + (n ? ' e ' + n + ' solicitação(ões) apagada(s)' : '') + ')' : '') + '.';
+                return recarregarPlanilha(turma);
+            });
         })
         .then(function () { return selecionarTurma(turma); })
         .catch(function (erro) {

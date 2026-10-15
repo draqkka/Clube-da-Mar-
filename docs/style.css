@@ -3716,3 +3716,147 @@ body.fonte-profissional h3, body.fonte-profissional h4 { line-height: 1.25; }
     color: var(--cor-dourado);
     font-size: .8rem;
 }
+
+
+/* === Transições suaves entre seções, navegação e rodapé === */
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+main > section, .conteudo-pagina > section, .area-avaliacao-professores, .rodape-site {
+  transition: opacity .45s ease, transform .45s ease, filter .45s ease, box-shadow .3s ease;
+}
+.topnav a, .menu-dropdown a, .rodape-site a, .rodape-nav a {
+  transition: color .25s ease, background-color .25s ease, transform .25s ease, text-shadow .25s ease;
+}
+.topnav a:hover, .menu-dropdown a:hover, .rodape-site a:hover, .rodape-nav a:hover {
+  transform: translateY(-2px); text-shadow: 0 4px 14px rgba(255, 205, 35, .38);
+}
+.area-avaliacao-professores:hover, .rodape-site:hover {
+  box-shadow: 0 14px 34px rgba(0, 35, 70, .16);
+}
+.filtro-escola-dev { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0 18px; }
+.filtro-escola-dev label { font-weight:700; }
+.filtro-escola-dev select { min-width:min(100%, 320px); padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); background:#fff; color:#18314c; font:inherit; box-shadow:0 5px 16px rgba(0,0,0,.08); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } *, *::before, *::after { transition-duration:.01ms !important; animation-duration:.01ms !important; } }
+
+/* Revelação suave ao entrar em cena durante a rolagem */
+.mare-revelar { opacity: 0; transform: translateY(22px); filter: saturate(.88); }
+.mare-revelar.mare-visivel { opacity: 1; transform: translateY(0); filter: saturate(1); }
+body { animation: mareEntrada .45s ease both; }
+@keyframes mareEntrada { from { opacity: .65; } to { opacity: 1; } }
+
+
+/* ==========================================================================
+   TRANSIÇÕES EM GRADIENTE ENTRE AS SEÇÕES
+   Inclui também Ingressos e Contato para manter a continuidade visual.
+   ========================================================================== */
+
+/* Banner -> Quem Somos (azul da água, no topo da imagem do Quem Somos) */
+#inicio.hero::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 3;
+    background: linear-gradient(to bottom, rgba(10, 174, 190, 0) 0%, #0aaebe 100%);
+}
+
+/* Quem Somos -> Eventos (parte de baixo da água escurece para o palco) */
+.quemsomos-container::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(to bottom, rgba(5, 185, 208, 0) 0%, rgba(55, 108, 138, .9) 100%);
+}
+
+/* Eventos -> Programação */
+.hero-eventos::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(to bottom, rgba(77, 113, 59, 0) 0%, rgba(100, 168, 189, .85) 100%);
+}
+
+/* Programação -> Próximos eventos/Mapa */
+.hero-eventos-programacao::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(to bottom, rgba(154, 106, 50, 0) 0%, rgba(178, 133, 104, .85) 100%);
+}
+
+/* Mapa -> Ingressos: transição da área clara para os tons quentes dos ingressos */
+.hero-mapa::after,
+.legenda-mapa::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 120px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255, 244, 220, 0) 0%, rgba(178, 133, 104, .78) 100%);
+    z-index: 3;
+}
+.hero-mapa,
+.legenda-mapa {
+    position: relative;
+}
+
+/* Ingressos -> Contato */
+.pagina-ingressos::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 3;
+    background: linear-gradient(to bottom, rgba(20, 20, 24, 0) 0%, rgba(10, 35, 48, .9) 100%);
+}
+
+/* Final da área de Contato: suaviza a passagem para o rodapé/fundo seguinte */
+.pagina-contato::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 120px;
+    pointer-events: none;
+    z-index: 3;
+    background: linear-gradient(to bottom, rgba(10, 35, 48, 0) 0%, rgba(0, 0, 0, .9) 100%);
+}
+
+/* Respeita usuários que preferem menos movimento; os gradientes permanecem estáticos. */
+@media (prefers-reduced-motion: reduce) {
+    #inicio.hero::after,
+    .quemsomos-container::after,
+    .hero-eventos::after,
+    .hero-eventos-programacao::after,
+    .hero-mapa::after,
+    .legenda-mapa::after,
+    .pagina-ingressos::after,
+    .pagina-contato::after {
+        animation: none;
+        transition: none;
+    }
+}

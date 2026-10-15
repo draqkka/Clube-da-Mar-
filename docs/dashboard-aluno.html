@@ -141,7 +141,7 @@ var resumo = {
     ra: sessao ? sessao.ra : '',
     turma: sessao && sessao.turmas ? (sessao.turmas[0] || '') : '',
     nome: sessao ? (sessao.nome || '') : '',
-    nota: '', presenca: '', comportamento: '',
+    nota: '', presenca: '', comportamento: '', encontradoNaPlanilha: false,
     statusChave: 'sem-solicitacao',
     // Dados da sessão: é o que permite clicar no cartão da tela inicial e
     // voltar direto pra este painel (ver resumo-painel.js).
@@ -170,14 +170,20 @@ carregarAlunoPorEmail(resumo.email)
     document.getElementById('carregando').style.display = 'none';
 
     if (!aluno || aluno.origem === 'usuarios') {
+        resumo.encontradoNaPlanilha = false;
+        guardarResumo();
         // Sem dados na planilha: o nome e o status da Diretoria continuam aparecendo.
         document.getElementById('erro-sem-dados').style.display = 'block';
+        document.getElementById('texto-solicitacao').textContent = 'Aguardando o professor: ainda não há cadastro deste aluno no Clube da Maré.';
+        document.getElementById('valor-diretoria').textContent = 'Aguardando o professor';
         document.getElementById('valor-nota').textContent = '—';
         document.getElementById('valor-presenca').textContent = '—';
         document.getElementById('valor-comportamento').textContent = '—';
         return;
     }
 
+    resumo.encontradoNaPlanilha = true;
+    guardarResumo();
     document.getElementById('info-aluno').textContent =
         (aluno.serie ? 'Série: ' + aluno.serie + ' · ' : '') + 'Turma: ' + aluno.turma;
 
@@ -247,6 +253,11 @@ function aplicarStatusReprovado() {
 // equipe Clube da Maré responderem enquanto o aluno está com a página aberta.
 escutarStatusAluno(resumo, function (solicitacao) {
     var info = statusDiretoria(solicitacao);
+    if (!solicitacao && !resumo.encontradoNaPlanilha) {
+        info = { chave: 'aguardando-professor', classe: 'status-pendente', rotulo: 'Aguardando o professor', texto: 'Ainda não há cadastro deste aluno no Clube da Maré. Aguardando o professor apresentar as informações.' };
+    } else if (!solicitacao) {
+        info = { chave: 'sem-solicitacao', classe: 'status-pendente', rotulo: 'Solicitação não feita pelo professor', texto: 'O professor já cadastrou este aluno, mas ainda não solicitou a participação à Diretoria.' };
+    }
     var caixa = document.getElementById('caixa-solicitacao');
 
     caixa.classList.remove('status-pendente', 'status-aprovado', 'status-recusado', 'status-aguardando-dev');

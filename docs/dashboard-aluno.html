@@ -22,6 +22,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Miss+Fajardose&family=Petemoss&family=Pinyon+Script&family=Zeyada&display=swap" rel="stylesheet">
 <!-- SheetJS: lê o arquivo .xlsx da planilha local (notas, presença, comportamento) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="confete.js"></script>
 <script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <!-- Solicitações de participação, salvas no localStorage (sem backend) -->
@@ -171,7 +172,7 @@ function verificarConfeteAluno() {
     if (_confeteAlunoDisparado || !_dadosCarregados) return;
     if (!_ultimaSolicitacao || _ultimaSolicitacao.status !== 'Aprovado' || resumo.reprovado) return;
     _confeteAlunoDisparado = true;
-    dispararConfete();
+    if (typeof dispararConfete === 'function') dispararConfete();
 }
 
 // Busca pelo E-MAIL do login (usuarios.js) — não depende do RA da planilha.
@@ -292,6 +293,5 @@ escutarStatusAluno(resumo, function (solicitacao) {
 </script>
 
 <script src="menu.js"></script>
-<script src="confete.js"></script>
 </body>
 </html>

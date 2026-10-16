@@ -773,6 +773,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 </footer>
 
 
+<script src="confete.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
 <script src="comportamento.js"></script>
@@ -805,6 +806,9 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         secao.style.display = 'none';
     });
 
+    // Confete: só quando a equipe Clube da Maré APROVOU este aluno (uma vez por abertura da página).
+    var confeteAlunoDisparado = false;
+
     // Status da Diretoria ao vivo (atualiza se ela decidir com a página aberta).
     escutarStatusAluno(resumo, function (solicitacao) {
         // Mesma função que o dashboard do aluno usa (status-aluno.js).
@@ -814,6 +818,12 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         document.getElementById('resumo-aluno-status').textContent = info.rotulo;
         // Aluno reprovado: o dashboard esconde a caixa de solicitação (a mensagem de reprovação já vem abaixo).
         document.getElementById('resumo-aluno-texto').textContent = resumo.reprovado ? '' : info.texto;
+
+        if (!confeteAlunoDisparado && solicitacao && solicitacao.status === 'Aprovado' && !resumo.reprovado &&
+            typeof dispararConfete === 'function') {
+            confeteAlunoDisparado = true;
+            dispararConfete();
+        }
     });
 })();
 
@@ -853,6 +863,20 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         apagarResumoPainel();
         secao.style.display = 'none';
     });
+
+    // Confete quando o Clube da Maré aprova uma solicitação (uma vez por solicitação,
+    // o mesmo controle do dashboard — ver confete.js). O desenvolvedor não recebe confete.
+    if (typeof confeteQuandoClubeResponder === 'function') {
+        if (resumo.perfil === 'professor' && resumo.sessao && resumo.sessao.login) {
+            escutarSolicitacoesProfessor(resumo.sessao.login, function (lista) {
+                confeteQuandoClubeResponder('professor', lista);
+            });
+        } else if (resumo.perfil === 'diretoria') {
+            escutarTodasSolicitacoes(function (lista) {
+                confeteQuandoClubeResponder('diretoria', lista);
+            });
+        }
+    }
 })();
 </script>
 

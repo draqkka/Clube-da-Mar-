@@ -162,6 +162,18 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     window.location.href = 'index.html';
 });
 
+// ---- Confete: só pro aluno que a equipe Clube da Maré APROVOU ------------
+// Espera a planilha carregar (pra saber se o aluno está reprovado) e a
+// solicitação chegar; se estiver "Aprovado" e o aluno não estiver reprovado,
+// solta o confete uma vez por abertura do painel.
+var _ultimaSolicitacao = null, _dadosCarregados = false, _confeteAlunoDisparado = false;
+function verificarConfeteAluno() {
+    if (_confeteAlunoDisparado || !_dadosCarregados) return;
+    if (!_ultimaSolicitacao || _ultimaSolicitacao.status !== 'Aprovado' || resumo.reprovado) return;
+    _confeteAlunoDisparado = true;
+    dispararConfete();
+}
+
 // Busca pelo E-MAIL do login (usuarios.js) — não depende do RA da planilha.
 // Se o aluno ainda não está em nenhuma planilha, o painel abre mesmo assim,
 // só com nome e turma. O aluno só recebe os próprios dados.
@@ -180,6 +192,8 @@ carregarAlunoPorEmail(resumo.email)
         document.getElementById('valor-nota').textContent = '—';
         document.getElementById('valor-presenca').textContent = '—';
         document.getElementById('valor-comportamento').textContent = '—';
+        _dadosCarregados = true;
+        verificarConfeteAluno();
         return;
     }
 
@@ -231,6 +245,8 @@ carregarAlunoPorEmail(resumo.email)
         resumo.mensagemReprovacao = texto.textContent;
         guardarResumo();
     }
+    _dadosCarregados = true;
+    verificarConfeteAluno();
 })
 .catch(function (erro) {
     document.getElementById('carregando').textContent = 'Não foi possível ler a planilha agora (' + erro.message + ').';
@@ -270,6 +286,8 @@ escutarStatusAluno(resumo, function (solicitacao) {
     resumo.statusChave = info.chave;
     guardarResumo();
     aplicarStatusReprovado();
+    _ultimaSolicitacao = solicitacao;
+    verificarConfeteAluno();
 });
 </script>
 

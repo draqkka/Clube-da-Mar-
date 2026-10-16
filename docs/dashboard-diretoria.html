@@ -277,6 +277,7 @@ function renderizarSolicitacoes() {
 
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
+    confeteQuandoClubeResponder('diretoria', solicitacoes);   // confete quando o Clube da Maré aprova
     renderizarFiltroTurmas();   // uma turma nova pode ter aparecido numa solicitação
     renderizarSolicitacoes();
 });

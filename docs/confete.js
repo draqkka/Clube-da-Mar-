@@ -1,12 +1,23 @@
 // ==========================================================================
-// CONFETE DE BOAS-VINDAS (todos os dashboards)
+// CONFETE DE COMEMORAÇÃO
 //
-// Quando a pessoa abre um dashboard, o confete cai por 5 segundos e some
-// sozinho. O fundo é transparente (só os papeizinhos aparecem) e não
-// bloqueia cliques (pointer-events: none).
+// NÃO aparece mais sozinho ao abrir o dashboard. Só é disparado quando a
+// equipe Clube da Maré APROVA (status "Aprovado" em solicitacoes-local.js):
 //
-// Usado por: dashboard-aluno.html, dashboard-professor.html,
-//            dashboard-diretoria.html e dashboard-desenvolvedor.html.
+//   - dashboard-aluno.html     -> só pro aluno que foi aprovado (a cada vez
+//                                 que ele abre o painel, ou na hora em que a
+//                                 aprovação chega com a página aberta)
+//   - dashboard-professor.html -> quando o Clube da Maré responde (aprova) uma
+//   - dashboard-diretoria.html    solicitação deles; comemora UMA vez por
+//                                 solicitação, neste navegador
+//
+// Os papeizinhos caem por 5 segundos, com fundo transparente, e não
+// bloqueiam cliques (pointer-events: none).
+//
+// Funções deste arquivo:
+//   dispararConfete()                       -> mostra o confete agora
+//   confeteQuandoClubeResponder(perfil, lista)
+//        -> perfil: 'professor' ou 'diretoria'; lista: as solicitações da tela
 // ==========================================================================
 (function () {
     var DURACAO_MS = 5000;
@@ -14,6 +25,7 @@
     var CORES = ['#1e88e5', '#26c6da', '#ff9800', '#43a047', '#ff5252', '#ffd54f', '#ab47bc'];
 
     function mostrar() {
+        if (document.getElementById('confete-boas-vindas')) return;   // já tem um na tela
         var canvas = document.createElement('canvas');
         canvas.id = 'confete-boas-vindas';
         canvas.setAttribute('aria-hidden', 'true');
@@ -66,6 +78,22 @@
         setTimeout(function () { canvas.remove(); }, DURACAO_MS);
     }
 
-    if (document.body) mostrar();
-    else document.addEventListener('DOMContentLoaded', mostrar);
+    window.dispararConfete = function () {
+        if (document.body) mostrar();
+        else document.addEventListener('DOMContentLoaded', mostrar);
+    };
+
+    // Professor e diretoria: comemora quando o Clube da Maré aprova uma
+    // solicitação que eles ainda não "viram" aprovada neste navegador.
+    window.confeteQuandoClubeResponder = function (perfil, lista) {
+        var chave = 'cdm_confete_visto_' + perfil;
+        var vistos = [];
+        try { vistos = JSON.parse(localStorage.getItem(chave) || '[]'); } catch (e) {}
+        var novas = (lista || []).filter(function (s) {
+            return s && s.status === 'Aprovado' && vistos.indexOf(s.id) < 0;
+        }).map(function (s) { return s.id; });
+        if (!novas.length) return;
+        try { localStorage.setItem(chave, JSON.stringify(vistos.concat(novas))); } catch (e) {}
+        window.dispararConfete();
+    };
 })();

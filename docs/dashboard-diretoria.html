@@ -21,6 +21,7 @@
 <!-- 📜 BLOCO 4 — Caligrafia Elegante: Miss Fajardose, Petemoss, Pinyon Script, Zeyada -->
 <link href="https://fonts.googleapis.com/css2?family=Miss+Fajardose&family=Petemoss&family=Pinyon+Script&family=Zeyada&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="confete.js"></script>
 <script src="comportamento.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
@@ -277,7 +278,7 @@ function renderizarSolicitacoes() {
 
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
-    confeteQuandoClubeResponder('diretoria', solicitacoes);   // confete quando o Clube da Maré aprova
+    if (typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('diretoria', solicitacoes);   // confete quando o Clube da Maré aprova
     renderizarFiltroTurmas();   // uma turma nova pode ter aparecido numa solicitação
     renderizarSolicitacoes();
 });
@@ -311,6 +312,5 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
 </script>
 
 <script src="menu.js"></script>
-<script src="confete.js"></script>
 </body>
 </html>

@@ -556,6 +556,7 @@ function renderizarListaSolicitacoes() {
 
 escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
     solicitacoes = minhasSolicitacoes;
+    confeteQuandoClubeResponder('professor', minhasSolicitacoes);   // confete quando o Clube da Maré aprova
     renderizarTurma(); // as linhas mudam de cor assim que a Diretoria responde
     renderizarListaSolicitacoes();
 });

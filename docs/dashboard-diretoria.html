@@ -65,7 +65,14 @@
         <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Agendar visita ao Clube da Maré</h2>
         <p class="dica-importar">Cada turma visita o Clube por <strong>2 dias seguidos</strong>. Escolha o primeiro dia e o segundo é marcado automaticamente. O pedido só vale depois da <strong>autorização do Clube da Maré</strong> — o status aparece aqui e também para o professor e os alunos da turma.</p>
 
-        <div id="agenda-resumo-geral" class="dica-importar"></div>
+        <!-- Alunos que o professor solicitou para a turma escolhida: a Diretoria marca quem entra,
+             confirma ou recusa (ou aprova todos de uma vez) e já agenda os dias logo abaixo. -->
+        <div id="caixa-alunos-solicitados" style="margin-top:14px;">
+            <h3 style="margin:0 0 4px;"><i class="fa-solid fa-user-check" aria-hidden="true"></i> Alunos solicitados pelo professor — turma <span id="alunos-solic-turma"></span></h3>
+            <div id="alunos-solic-conteudo"></div>
+        </div>
+
+        <div id="agenda-resumo-geral" class="dica-importar" style="margin-top:14px;"></div>
         <div id="agenda-lista"></div>
 
         <details id="agenda-form-detalhes" style="margin-top: 14px;">
@@ -158,14 +165,6 @@
         </details>
     </section>
 
-    <!-- Área de solicitações dos professores — agora logo no começo, ANTES da
-         lista de alunos, pra ser um dos primeiros campos da tela. -->
-    <section class="area-avaliacao-professores" style="margin-top: 10px;">
-        <h2>Gerenciar Solicitações dos Professores</h2>
-
-        <div id="lista-solicitacoes"></div>
-        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
-    </section>
 
     <div id="carregando">Carregando todas as turmas...</div>
 
@@ -579,56 +578,138 @@ escutarAgendamentos(function (lista) {
     renderizarAgendamentos();
 });
 
-// Gerenciamento de Solicitações e Notificação ao Professor
-function renderizarSolicitacoes() {
-    var lista = document.getElementById('lista-solicitacoes');
-    lista.innerHTML = '';
-    var solicitacoes = todasSolicitacoes.filter(function (s) { return passaNoFiltro(s.turma); });
+// ---- Alunos solicitados pelo professor (dentro de "Agendar visita") --------
+// A aprovação da Diretoria NÃO é final: passa os alunos pro Clube da Maré, que
+// aprova junto com as datas da visita. Recusar é decisão final dela.
+var solicDesmarcados = {};   // ids que a Diretoria desmarcou (o padrão é tudo marcado)
+var solicResposta = '';      // texto opcional pro professor
+var solicMsg = '';           // aviso depois de uma ação
 
-    if (!solicitacoes.length) {
-        document.getElementById('sem-solicitacoes').textContent = turmaFiltro
-            ? 'Nenhuma solicitação encontrada para a turma ' + turmaFiltro + '.'
-            : 'Nenhuma solicitação encontrada.';
-        document.getElementById('sem-solicitacoes').style.display = 'block';
+function solicitacoesDaTurmaFiltro() {
+    return todasSolicitacoes.filter(function (s) { return passaNoFiltro(s.turma); });
+}
+
+function renderizarSolicitacoes() {
+    var caixa = document.getElementById('alunos-solic-conteudo');
+    if (!caixa) return;
+    document.getElementById('alunos-solic-turma').textContent = turmaFiltro || '';
+    var daTurma = solicitacoesDaTurmaFiltro();
+    if (!daTurma.length) {
+        caixa.innerHTML = '<p class="dica-importar">Nenhuma solicitação do professor encontrada' + (turmaFiltro ? ' para a turma ' + escaparHtml(turmaFiltro) : '') + '.</p>' + solicMsg;
         return;
     }
-    document.getElementById('sem-solicitacoes').style.display = 'none';
+    var porNome = function (a, b) { return String(a.nomeAluno).localeCompare(String(b.nomeAluno), 'pt-BR'); };
+    var pendentes = daTurma.filter(function (s) { return s.status === 'Pendente'; }).sort(porNome);
+    var respondidas = daTurma.filter(function (s) { return s.status !== 'Pendente'; }).sort(porNome);
+    var html = '';
 
-    solicitacoes.forEach(function (s) {
-        var card = document.createElement('div');
-        card.className = 'card-solicitacao';
+    if (pendentes.length) {
+        var todosMarcados = pendentes.every(function (s) { return !solicDesmarcados[s.id]; });
+        html += '<p class="dica-importar" style="margin:0 0 6px;"><strong>' + pendentes.length + '</strong> aluno(s) aguardando a sua análise. Marque quem entra e confirme: o pedido segue pro Clube da Maré, que aprova a turma junto com as datas da visita.</p>' +
+            '<label style="display:flex; gap:8px; align-items:center; font-weight:bold; margin:6px 0; cursor:pointer;"><input type="checkbox" id="solic-todos"' + (todosMarcados ? ' checked' : '') + '> Selecionar todos (' + pendentes.length + ')</label>' +
+            '<div style="max-height:320px; overflow:auto; border:1px solid rgba(0,0,0,.12); border-radius:8px; background:#fff;">' +
+            pendentes.map(function (s) {
+                return '<label style="display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border-bottom:1px solid rgba(0,0,0,.08); cursor:pointer;">' +
+                    '<input type="checkbox" class="chk-solic" data-id="' + escaparHtml(s.id) + '"' + (solicDesmarcados[s.id] ? '' : ' checked') + ' style="margin-top:4px;">' +
+                    '<span><strong>' + escaparHtml(s.nomeAluno) + '</strong>' +
+                    '<span class="detalhe-solicitacao" style="display:block;">Professor: ' + escaparHtml(s.professor) + (s.observacao ? ' · Obs.: ' + escaparHtml(s.observacao) : '') + '</span></span></label>';
+            }).join('') + '</div>' +
+            '<textarea id="solic-resposta" class="form-login-campo" rows="2" style="width:100%; box-sizing:border-box; margin-top:8px;" placeholder="Resposta ao professor (motivo/orientação, opcional)...">' + escaparHtml(solicResposta) + '</textarea>' +
+            '<div class="botoes-solicitacao" style="margin-top:8px;">' +
+            '<button type="button" class="btn-aprovar-solicitacao" id="btn-solic-confirmar">Confirmar selecionados</button> ' +
+            '<button type="button" class="btn-recusar-solicitacao" id="btn-solic-recusar">Recusar selecionados</button> ' +
+            '<button type="button" class="btn-planilha-atalho" id="btn-solic-todas">Aprovar todas as solicitações da turma (' + pendentes.length + ')</button>' +
+            '</div>';
+    } else {
+        html += '<p class="dica-importar">Nenhum aluno aguardando a sua análise nesta turma.</p>';
+    }
+    html += '<div id="solic-msg" aria-live="polite">' + solicMsg + '</div>';
 
-        // A Diretoria só decide sobre as "Pendente" — a aprovação dela NÃO
-        // é final, só passa a bola pra equipe Clube da Maré (Desenvolvedor)
-        // confirmar. Ela só pode reabrir (refazer) uma recusa dela mesma.
-        var podeAgir = s.status === 'Pendente';
-        var podeReabrir = s.status === 'Recusado' && s.respondidoPor === 'Diretoria';
-        var escola = escolaDaSolicitacao(s);
-
-        var html = '<p><strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ')</p>' +
-            '<p class="detalhe-solicitacao"><strong>Escola:</strong> ' + (escola ? escaparHtml(escola) : '<em>não informada na planilha</em>') + '</p>' +
-            '<p class="detalhe-solicitacao">Professor: ' + escaparHtml(s.professor) + '</p>' +
-            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + escaparHtml(s.observacao) + '</p>' : '') +
-            '<p style="margin-top:6px;">Status: ' + htmlStatusSolicitacao(s, { semProfessor: true }) + '</p>';
-
-        if (podeAgir) {
-            html += '<div style="margin-top:10px;">' +
-                '<textarea class="form-login-campo campo-resposta" data-id="' + escaparHtml(s.id) + '" placeholder="Sua resposta ao professor (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
-                '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">Aprovar (envia pra equipe Clube da Maré confirmar)</button> ' +
-                '<button type="button" class="btn-recusar-solicitacao" data-id="' + escaparHtml(s.id) + '">Recusar</button>' +
-                '</div></div>';
-        } else {
-            html += (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + escaparHtml(s.respondidoPor === 'Desenvolvedor' ? 'Equipe Clube da Maré' : (s.respondidoPor || 'Direção')) + '): ' + escaparHtml(s.resposta) + '</p>' : '');
-            if (podeReabrir) {
-                html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + escaparHtml(s.id) + '" style="margin-top:10px;">Refazer / Reavaliar Solicitação</button>';
-            }
-        }
-
-        card.innerHTML = html;
-        lista.appendChild(card);
-    });
+    if (respondidas.length) {
+        html += '<details style="margin-top:10px;"><summary style="cursor:pointer; font-weight:bold;">Já respondidas (' + respondidas.length + ')</summary>' +
+            respondidas.map(function (s) {
+                var reabrir = s.status === 'Recusado' && s.respondidoPor === 'Diretoria';
+                return '<div class="card-solicitacao" style="margin-top:8px;"><p><strong>' + escaparHtml(s.nomeAluno) + '</strong></p>' +
+                    '<p style="margin-top:4px;">' + htmlStatusSolicitacao(s, { semProfessor: true }) + '</p>' +
+                    (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + escaparHtml(s.respondidoPor === 'Desenvolvedor' ? 'Equipe Clube da Maré' : (s.respondidoPor || 'Direção')) + '): ' + escaparHtml(s.resposta) + '</p>' : '') +
+                    (reabrir ? '<button type="button" class="btn-refazer-solicitacao" data-id="' + escaparHtml(s.id) + '" style="margin-top:8px;">Refazer / Reavaliar Solicitação</button>' : '') +
+                    '</div>';
+            }).join('') + '</details>';
+    }
+    caixa.innerHTML = html;
+    atualizarContagemSolic();
 }
+
+// Mantém o texto dos botões e o "selecionar todos" de acordo com as caixas marcadas.
+function atualizarContagemSolic() {
+    var chks = document.querySelectorAll('#alunos-solic-conteudo .chk-solic');
+    if (!chks.length) return;
+    var marcados = document.querySelectorAll('#alunos-solic-conteudo .chk-solic:checked').length;
+    var c = document.getElementById('btn-solic-confirmar'), r = document.getElementById('btn-solic-recusar'), t = document.getElementById('solic-todos');
+    if (c) { c.textContent = 'Confirmar selecionados (' + marcados + ')'; c.disabled = !marcados; }
+    if (r) { r.textContent = 'Recusar selecionados (' + marcados + ')'; r.disabled = !marcados; }
+    if (t) t.checked = marcados === chks.length;
+}
+
+function idsPendentesDaTurma() {
+    return solicitacoesDaTurmaFiltro().filter(function (s) { return s.status === 'Pendente'; }).map(function (s) { return s.id; });
+}
+
+// Aplica a decisão da Diretoria em vários alunos de uma vez.
+function decidirVarios(ids, aprovar) {
+    if (!ids.length) return;
+    var turma = turmaFiltro, resposta = solicResposta.trim();
+    ids.forEach(function (id) { delete solicDesmarcados[id]; });
+    solicResposta = '';
+    responderVariasSolicitacoes(ids, aprovar ? 'Aguardando Desenvolvedor' : 'Recusado', resposta, 'Diretoria', aprovar);
+    var n = ids.length, alunos = n + ' aluno' + (n === 1 ? '' : 's');
+    if (aprovar) {
+        var jaTem = !!agendamentoAtivoDaTurma(todosAgendamentos, turma);
+        solicMsg = '<div class="aviso-agendamento ok" style="margin-top:8px;">✅ ' + alunos + ' confirmado' + (n === 1 ? '' : 's') + '. ' +
+            (jaTem ? 'Eles entram no pedido de visita da turma — o Clube da Maré aprova tudo junto.'
+                   : 'Agora <strong>escolha os dias da visita</strong> logo abaixo e envie o pedido ao Clube da Maré.') + '</div>';
+        renderizarSolicitacoes();
+        if (!jaTem) {
+            document.getElementById('agenda-form-detalhes').open = true;
+            document.getElementById('agenda-form-detalhes').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else {
+        solicMsg = '<div class="aviso-agendamento atencao" style="margin-top:8px;">🔴 ' + alunos + ' recusado' + (n === 1 ? '' : 's') + '. O professor já vê a decisão.</div>';
+        renderizarSolicitacoes();
+    }
+}
+
+(function () {
+    var caixa = document.getElementById('caixa-alunos-solicitados');
+    caixa.addEventListener('change', function (e) {
+        if (e.target.id === 'solic-todos') {
+            var marcar = e.target.checked;
+            document.querySelectorAll('#alunos-solic-conteudo .chk-solic').forEach(function (c) {
+                c.checked = marcar;
+                if (marcar) delete solicDesmarcados[c.dataset.id]; else solicDesmarcados[c.dataset.id] = true;
+            });
+            atualizarContagemSolic();
+        } else if (e.target.classList.contains('chk-solic')) {
+            if (e.target.checked) delete solicDesmarcados[e.target.dataset.id]; else solicDesmarcados[e.target.dataset.id] = true;
+            atualizarContagemSolic();
+        }
+    });
+    caixa.addEventListener('input', function (e) {
+        if (e.target.id === 'solic-resposta') solicResposta = e.target.value;
+    });
+    caixa.addEventListener('click', function (e) {
+        var refazer = e.target.closest('.btn-refazer-solicitacao');
+        if (refazer) { reabrirSolicitacao(refazer.dataset.id); return; }
+        var marcados = Array.prototype.map.call(document.querySelectorAll('#alunos-solic-conteudo .chk-solic:checked'), function (c) { return c.dataset.id; });
+        if (e.target.closest('#btn-solic-confirmar')) { decidirVarios(marcados, true); }
+        else if (e.target.closest('#btn-solic-recusar')) {
+            if (confirm('Recusar ' + marcados.length + ' solicitação(ões)? É uma decisão final da Diretoria (dá pra refazer depois).')) decidirVarios(marcados, false);
+        } else if (e.target.closest('#btn-solic-todas')) {
+            var todos = idsPendentesDaTurma();
+            if (todos.length && confirm('Aprovar as ' + todos.length + ' solicitações da turma ' + turmaFiltro + ' de uma vez?')) decidirVarios(todos, true);
+        }
+    });
+})();
 
 escutarTodasSolicitacoes(function (solicitacoes) {
     todasSolicitacoes = solicitacoes;
@@ -640,32 +721,6 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     renderizarAvisoAgendar();
 });
 
-// Ações nos botões (Aprovar envia pra confirmação do Desenvolvedor; Recusar
-// é decisão final da própria Diretoria; Refazer reabre uma recusa dela)
-document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
-    var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
-    var recusar = evento.target.closest('.btn-recusar-solicitacao');
-    var refazer = evento.target.closest('.btn-refazer-solicitacao');
-
-    if (refazer) {
-        reabrirSolicitacao(refazer.dataset.id);
-        return;
-    }
-
-    if (!aprovar && !recusar) return;
-
-    var botao = aprovar || recusar;
-    var id = botao.dataset.id;
-    var card = botao.closest('.card-solicitacao');
-    var campoTexto = card.querySelector('.campo-resposta');
-    var resposta = campoTexto ? campoTexto.value.trim() : '';
-
-    if (aprovar) {
-        aprovarComoDiretoria(id, resposta);
-    } else {
-        recusarComoDiretoria(id, resposta);
-    }
-});
 </script>
 
 <script src="menu.js"></script>

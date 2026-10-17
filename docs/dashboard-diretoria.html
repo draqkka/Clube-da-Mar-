@@ -457,6 +457,48 @@ document.getElementById('ag-enviar').addEventListener('click', function () {
     }).then(function () { botao.disabled = false; });
 });
 
+// Bloco de negociação da Diretoria com o Clube (aparece nas visitas reprovadas).
+function htmlNegociarDiretoria(a, d) {
+    var sugerida = a.dataSugerida || '';
+    var dataVal = d.data || sugerida;
+    var id = escaparHtml(a.id);
+    return '<div class="negociacao-diretoria" data-id="' + id + '" style="margin-top:10px; padding:10px 12px; border:1px dashed #ff9800; border-radius:8px; background:rgba(255,152,0,.10); color:#3a2a00;">' +
+        '<p style="margin:0 0 6px;"><strong>💬 Negociar o reagendamento com o Clube da Maré</strong></p>' +
+        '<textarea class="form-login-campo campo-neg-texto" rows="2" style="width:100%; box-sizing:border-box; margin-bottom:8px;" placeholder="Mensagem para o Clube (ex.: aceitamos a data sugerida / podemos nesta outra data...)">' + escaparHtml(d.texto) + '</textarea>' +
+        '<label style="font-size:.85rem; font-weight:bold;">Nova data de início: ' +
+        '<input type="date" class="form-login-campo campo-neg-data" style="flex:none; width:auto; margin-left:6px;" min="' + escaparHtml(agPrimeiroDiaPermitido()) + '" value="' + escaparHtml(dataVal) + '"></label>' +
+        '<div class="aviso-agendamento erro msg-neg" hidden></div>' +
+        '<div class="botoes-solicitacao">' +
+        (sugerida ? '<button type="button" class="btn-aprovar-solicitacao" data-acao="neg-aceitar" data-id="' + id + '">Aceitar data sugerida (' + escaparHtml(agPeriodoCurto({ dataInicio: sugerida })) + ')</button> ' : '') +
+        '<button type="button" class="btn-planilha-atalho" data-acao="neg-reagendar" data-id="' + id + '">Reagendar nesta data e reenviar ao Clube</button> ' +
+        '<button type="button" class="btn-agenda-secundario" data-acao="neg-mensagem" data-id="' + id + '">Só enviar mensagem</button>' +
+        '</div></div>';
+}
+
+// Negociação depois de uma reprovação: aceitar a data sugerida, propor outra data ou só mandar mensagem.
+// Reagendar remarca o MESMO pedido e ele volta pro Clube como "aguardando" (o histórico fica no cartão).
+function negociarComClube(botao, acao) {
+    var a = todosAgendamentos.filter(function (x) { return x.id === botao.dataset.id; })[0];
+    var bloco = botao.closest('.negociacao-diretoria');
+    if (!a || !bloco) return;
+    var texto = bloco.querySelector('.campo-neg-texto').value.trim();
+    var data = bloco.querySelector('.campo-neg-data').value;
+    var msg = bloco.querySelector('.msg-neg');
+    function erro(t) { msg.textContent = t; msg.hidden = false; }
+    msg.hidden = true;
+
+    if (acao === 'neg-mensagem') {
+        if (!texto) { erro('Escreva a mensagem para o Clube.'); return; }
+        enviarMensagemNegociacao(a.id, 'Diretoria', texto, '');
+        return;
+    }
+    var novaData = acao === 'neg-aceitar' ? a.dataSugerida : data;
+    var erros = validarReagendamento(a, novaData, todosAgendamentos);
+    if (erros.length) { erro(erros.join(' ')); return; }
+    reagendarAgendamento(a.id, novaData,
+        texto || (acao === 'neg-aceitar' ? 'Aceitamos a data sugerida pelo Clube.' : 'Propomos esta nova data para a visita.'));
+}
+
 // Lista do status dos pedidos da turma escolhida + datas reservadas.
 function renderizarAgendamentos() {
     var daTurma = agendamentosDaTurma(todosAgendamentos, turmaFiltro);
@@ -470,21 +512,29 @@ function renderizarAgendamentos() {
     if (!daTurma.length) {
         lista.innerHTML = '<p class="dica-importar">A turma ' + escaparHtml(turmaFiltro) + ' ainda não tem visita agendada.</p>';
     } else {
+        // guarda o que já foi digitado na negociação (a lista é refeita quando algo muda)
+        var digitadoNeg = {};
+        lista.querySelectorAll('.negociacao-diretoria').forEach(function (bloco) {
+            var t = bloco.querySelector('.campo-neg-texto'), d = bloco.querySelector('.campo-neg-data');
+            digitadoNeg[bloco.dataset.id] = { texto: t ? t.value : '', data: d ? d.value : '' };
+        });
         lista.innerHTML = daTurma.map(function (a) {
             var acoes = '';
+            var negociar = '';
             if (a.status === 'Pendente') {
                 acoes = '<button type="button" class="btn-agenda-secundario" data-acao="cancelar" data-id="' + escaparHtml(a.id) + '">Cancelar pedido</button>';
             } else if (a.status === 'Aprovado' && !agJaPassou(a)) {
                 acoes = '<button type="button" class="btn-agenda-secundario" data-acao="cancelar" data-id="' + escaparHtml(a.id) + '">Cancelar visita</button>';
             } else if (a.status === 'Recusado') {
-                acoes = (a.dataSugerida
-                    ? '<button type="button" class="btn-planilha-atalho" data-acao="refazer" data-id="' + escaparHtml(a.id) + '" data-data="' + escaparHtml(a.dataSugerida) + '">Pedir na data sugerida (' + escaparHtml(agPeriodoCurto({ dataInicio: a.dataSugerida })) + ')</button> '
-                    : '') +
-                    '<button type="button" class="btn-agenda-secundario" data-acao="refazer" data-id="' + escaparHtml(a.id) + '">Fazer novo pedido com estes dados</button>';
+                // Reprovado pelo Clube: a Diretoria negocia o reagendamento (aceita a data sugerida,
+                // propõe outra ou manda mensagem). "Fazer novo pedido" continua disponível.
+                negociar = htmlNegociarDiretoria(a, digitadoNeg[a.id] || { texto: '', data: '' });
+                acoes = '<button type="button" class="btn-agenda-secundario" data-acao="refazer" data-id="' + escaparHtml(a.id) + '">Fazer novo pedido com estes dados</button>';
             }
             acoes += (acoes ? ' ' : '') + '<button type="button" class="btn-recusar-solicitacao" data-acao="apagar" data-id="' + escaparHtml(a.id) + '"><i class="fa-solid fa-trash" aria-hidden="true"></i> Apagar agendamento</button>';
-            return htmlCartaoAgendamento(a, { mostrarTurma: true }).replace(/<\/div>$/,
-                '<div class="botoes-solicitacao">' + acoes + '</div></div>');
+            return htmlCartaoAgendamento(a, { mostrarTurma: true }).replace(/<\/div>$/, function () {
+                return negociar + '<div class="botoes-solicitacao">' + acoes + '</div></div>';
+            });
         }).join('');
     }
 
@@ -530,6 +580,7 @@ function refazerPedido(id, novaData) {
 document.getElementById('agenda-lista').addEventListener('click', function (evento) {
     var botao = evento.target.closest('button[data-acao]');
     if (!botao) return;
+    if (/^neg-/.test(botao.dataset.acao)) { negociarComClube(botao, botao.dataset.acao); return; }
     if (botao.dataset.acao === 'cancelar') {
         if (confirm('Cancelar este agendamento? O Clube da Maré, o professor e os alunos verão o cancelamento.')) cancelarAgendamento(botao.dataset.id);
     } else if (botao.dataset.acao === 'apagar') {

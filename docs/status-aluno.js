@@ -35,7 +35,8 @@ function statusDiretoria(solicitacao) {
     var textos = {
         'aprovado': 'O contato com o Clube da Maré foi aceito! Sua participação está confirmada. 🎉',
         'reprovado': i.mensagem,
-        'esperando-contato': 'A direção aprovou sua participação. Agora estamos esperando contato da equipe Clube da Maré.',
+        'esperando-contato': 'A direção aprovou sua participação e fez o agendamento da visita da turma. Agora estamos esperando a aprovação do Clube da Maré.',
+        'esperando-agendamento': 'A direção aprovou sua participação. Falta a direção agendar os dias da visita ao Clube da Maré.',
         'analise': 'O professor enviou sua participação e a direção ainda está analisando.',
         'sem-solicitacao': 'Sua participação ainda não foi enviada para análise da direção.'
     };

@@ -543,6 +543,20 @@ function _contemTitulo(linhas) {
     return false;
 }
 
+// A planilha precisa ter o NOME dos alunos. RA sozinho não serve.
+var MSG_PLANILHA_SO_RA = 'Planilha recusada: ela tem só o RA dos alunos e nenhuma coluna com o nome. ' +
+    'Use a planilha com o nome do aluno (coluna "Aluno" ou "Nome").';
+
+// Existe alguma coluna de RA no topo da aba?
+function _planilhaTemColunaRa(linhas) {
+    for (var i = 0; i < Math.min(linhas.length, 60); i++) {
+        for (var c = 0; c < linhas[i].length; c++) {
+            if (_CHAVES_RA.indexOf(_chaveColuna(linhas[i][c])) !== -1) return true;
+        }
+    }
+    return false;
+}
+
 // Linha/coluna do cabeçalho "Aluno"/"Nome".
 function _acharCabecalho(linhas) {
     for (var i = 0; i < Math.min(linhas.length, 60); i++) {
@@ -775,6 +789,7 @@ function _processarAba(nomeAba, linhas, res) {
 
     var cab = _acharCabecalho(linhas);
     if (!cab) {
+        if (_planilhaTemColunaRa(linhas)) throw new Error(MSG_PLANILHA_SO_RA);
         res.ignoradas.push({ aba: nomeAba, motivo: 'não achei a coluna "Aluno" (ou "Nome")' });
         return;
     }
@@ -828,10 +843,13 @@ function _processarAba(nomeAba, linhas, res) {
     if (colsFreq.length > 1) {
         res.avisos.push('Aba "' + nomeAba + '": achei ' + colsFreq.length + ' colunas de frequência; usei a primeira. Se estiver errada, avise o desenvolvedor.');
     }
-    if (colRa === -1) {
-        res.avisos.push('Aba "' + nomeAba + '": a planilha não tem coluna RA — os alunos foram identificados pelo nome. ' +
-            'O aluno só consegue ver o próprio status no painel dele se tiver o e-mail institucional e a senha cadastrados: ' +
-            'depois de solicitar a participação dele, use o botão \"Cadastrar e-mail e senha\" ao lado, na tabela.');
+    {
+        // Não é um problema: o site trabalha com planilhas identificadas pelo NOME do aluno.
+        // Se a planilha trouxer RA, ele é ignorado (não é guardado nem exibido).
+        var infoNome = 'Os alunos são identificados pelo nome; o RA da planilha, se houver, não é guardado nem exibido. ' +
+            'Para o aluno ver o próprio status no painel dele, cadastre o e-mail institucional e a senha: ' +
+            'depois de solicitar a participação dele, use o botão "Cadastrar e-mail e senha" ao lado, na tabela.';
+        if (res.infos.indexOf(infoNome) === -1) res.infos.push(infoNome);
     }
     if (colSit === -1) {
         res.avisos.push('Aba "' + nomeAba + '": não achei a coluna "Situação" — considerei todos os alunos como Ativos.');
@@ -866,9 +884,14 @@ function _processarAba(nomeAba, linhas, res) {
     var grupos = {};
     var semTurma = 0;
     var repetidos = 0;
+    var contagemNomes = {};  // quantas vezes cada nome já apareceu em cada turma
+    var homonimos = [];      // nomes repetidos na mesma turma (pessoas diferentes)
+    var nomesLidos = 0;      // linhas com nome de aluno de verdade
+    var linhasSoRa = 0;      // linhas com RA preenchido mas sem nome
     for (var l = cab.linha + 1; l < linhas.length; l++) {
         var linha = linhas[l];
         var nome = _textoCelula(linha[colNome]);
+        if (colRa !== -1 && _textoCelula(linha[colRa]) && !/[A-Za-z\u00C0-\u00FF].*[A-Za-z\u00C0-\u00FF]/.test(nome)) linhasSoRa++;
         if (!nome || _CHAVES_NOME.indexOf(_chaveColuna(nome)) !== -1) continue;
         if (!/[A-Za-z\u00C0-\u00FF].*[A-Za-z\u00C0-\u00FF]/.test(nome)) continue; // código/lixo, não é nome de aluno
 
@@ -877,11 +900,11 @@ function _processarAba(nomeAba, linhas, res) {
         var nomeSemAcento = _semAcento(nome).toUpperCase().trim();
         if (/^LEGENDA\b/.test(nomeSemAcento)) break;
         if (/^[A-Z]{1,3}\s+[-\u2013]\s+\S/.test(nomeSemAcento)) continue;
+        nomesLidos++;
 
-        var ra = colRa === -1 ? '' : _textoCelula(linha[colRa]);
-        if (colRa !== -1 && colDig !== -1) ra += _textoCelula(linha[colDig]);
-        if (colRa !== -1 && colUf !== -1) ra += _textoCelula(linha[colUf]);
-        if (colRa === -1) ra = 'NOME' + _chaveColuna(nome).toUpperCase(); // sem RA: usa o nome como identificador
+        // O aluno é identificado pelo NOME. Se a planilha tiver coluna RA, ela é
+        // ignorada de propósito (nada de RA é guardado nem exibido).
+        var ra = 'NOME' + _chaveColuna(nome).toUpperCase();
         if (!raCanonico(ra)) continue; // linha de total/anotação, não é aluno
 
         var turma = turmaAba;
@@ -890,6 +913,16 @@ function _processarAba(nomeAba, linhas, res) {
             if (_turmaValida(t)) turma = t;
         }
         if (!turma) { semTurma++; continue; }
+
+        // Dois alunos com o MESMO nome na mesma turma são pessoas diferentes: o
+        // primeiro mantém o identificador de sempre e os seguintes ganham um
+        // número (DUP2, DUP3...), pela ordem em que aparecem na planilha.
+        var chaveNome = turma + '|' + _chaveColuna(nome);
+        contagemNomes[chaveNome] = (contagemNomes[chaveNome] || 0) + 1;
+        if (contagemNomes[chaveNome] > 1) {
+            ra = ra + 'DUP' + contagemNomes[chaveNome];
+            if (homonimos.indexOf(nome) === -1) homonimos.push(nome);
+        }
 
         var curso = colCurso !== -1 ? _formatarCurso(linha[colCurso]) : '';
         curso = curso || cursoAba;
@@ -951,6 +984,13 @@ function _processarAba(nomeAba, linhas, res) {
         }
     }
 
+    if (linhasSoRa > 0 && nomesLidos === 0) throw new Error(MSG_PLANILHA_SO_RA);
+
+    if (homonimos.length) {
+        res.avisos.push('Aba "' + nomeAba + '": há mais de um aluno com o mesmo nome na turma (' + homonimos.join(', ') +
+            ') — foram mantidos como pessoas diferentes.');
+    }
+
     if (repetidos) {
         res.avisos.push('Aba "' + nomeAba + '": ' + repetidos + ' aluno(s) apareciam em mais de uma linha e foram unidos em um só.');
     }
@@ -982,7 +1022,7 @@ function _processarAba(nomeAba, linhas, res) {
 // for a planilha oficial.
 function lerRegistroRendimento(arrayBuffer, nomeArquivo) {
     var pasta = _lerPasta(arrayBuffer);
-    var res = { turmas: [], avisos: [], ignoradas: [], abasComTitulo: 0, nomeArquivo: String(nomeArquivo || '') };
+    var res = { turmas: [], avisos: [], infos: [], ignoradas: [], abasComTitulo: 0, nomeArquivo: String(nomeArquivo || '') };
 
     pasta.SheetNames.forEach(function (nomeAba) {
         var linhas = XLSX.utils.sheet_to_json(pasta.Sheets[nomeAba], { header: 1, defval: '' });

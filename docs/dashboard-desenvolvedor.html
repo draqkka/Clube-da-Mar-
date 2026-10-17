@@ -129,7 +129,7 @@
     <!-- Usuários cadastrados no sistema (usuarios.js) -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
         <h2>Usuários Cadastrados (usuarios.js)</h2>
-        <p class="dica-importar">Pra adicionar/editar/remover uma conta, edite direto o arquivo "usuarios.js" — esta tabela só está lendo o que já está lá.</p>
+        <p class="dica-importar">Pra adicionar/editar/remover uma conta, edite direto o arquivo "usuarios.js". Os alunos que o professor cadastra pelo painel dele ficam no banco e também aparecem aqui.</p>
         <div class="tabela-rolagem">
         <table class="tabela-alunos" id="tabela-usuarios" style="min-width:0;">
             <thead>
@@ -394,16 +394,60 @@ document.getElementById('info-turmas').addEventListener('click', function (event
 
 // ---- Usuários cadastrados (usuarios.js) ----------------------------------
 var corpoUsuarios = document.getElementById('corpo-tabela-usuarios');
-USUARIOS.forEach(function (u, indice) {
-    var linha = document.createElement('tr');
-    var idSenha = 'senha-' + indice;
-    linha.innerHTML = '<td>' + u.login + '</td><td>' + u.perfil + '</td><td>' + (u.nome || '') +
-        '</td><td>' + (u.turmas || '-') +
-        '</td><td><span id="' + idSenha + '" style="letter-spacing:2px;">••••••••</span> ' +
-        '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + u.senha + '">mostrar</button></td>';
-    corpoUsuarios.appendChild(linha);
+
+function _escUsuario(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+// Desenha a tabela com os usuários do usuarios.js + os alunos que o professor
+// cadastrou (esses ficam no banco; a senha deles fica guardada com hash, então
+// não dá pra "mostrar").
+function desenharUsuarios() {
+    corpoUsuarios.innerHTML = '';
+    USUARIOS.forEach(function (u, indice) {
+        var linha = document.createElement('tr');
+        var idSenha = 'senha-' + indice;
+        var celulaSenha = u.doBanco
+            ? '<span style="opacity:.75;">cadastrada pelo professor (não dá pra ver)</span> ' +
+              '<button type="button" class="btn-remover-usuario" data-email="' + _escUsuario(u.login) + '" style="background:#8b2c2c;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Remover</button>'
+            : '<span id="' + idSenha + '" style="letter-spacing:2px;">••••••••</span> ' +
+              '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + _escUsuario(u.senha) + '">mostrar</button>';
+        linha.innerHTML = '<td>' + _escUsuario(u.login) + '</td><td>' + _escUsuario(u.perfil) + '</td><td>' + _escUsuario(u.nome || '') +
+            '</td><td>' + _escUsuario(u.turmas || '-') + '</td><td>' + celulaSenha + '</td>';
+        corpoUsuarios.appendChild(linha);
+    });
+    document.getElementById('resumo-usuarios').textContent = USUARIOS.length;
+}
+desenharUsuarios();
+// Junta os alunos cadastrados pelo professor (banco) e redesenha.
+if (typeof carregarUsuariosCadastrados === 'function') {
+    carregarUsuariosCadastrados().then(desenharUsuarios);
+}
+
+// Remove um aluno cadastrado pelo professor (só os do banco; os do usuarios.js se editam no arquivo).
+corpoUsuarios.addEventListener('click', function (evento) {
+    var rem = evento.target.closest('.btn-remover-usuario');
+    if (!rem) return;
+    var email = rem.dataset.email;
+    if (!confirm('Remover o cadastro de ' + email + '? O aluno não conseguirá mais entrar, e o professor poderá cadastrá-lo de novo.')) return;
+    rem.disabled = true;
+    rem.textContent = 'Removendo...';
+    fetch('/api/alunos-cadastrados?email=' + encodeURIComponent(email), { method: 'DELETE' })
+        .then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (corpo) {
+                if (!r.ok) throw new Error(corpo.erro || ('Erro ' + r.status));
+            });
+        })
+        .then(function () { return carregarUsuariosCadastrados(true); })
+        .then(desenharUsuarios)
+        .catch(function (erro) {
+            rem.disabled = false;
+            rem.textContent = 'Remover';
+            alert('Não consegui remover: ' + erro.message);
+        });
 });
-document.getElementById('resumo-usuarios').textContent = USUARIOS.length;
 
 corpoUsuarios.addEventListener('click', function (evento) {
     var botao = evento.target.closest('.btn-mostrar-senha');

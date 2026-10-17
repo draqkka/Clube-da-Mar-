@@ -676,8 +676,7 @@ function renderizarSolicitacoes() {
             '<textarea id="solic-resposta" class="form-login-campo" rows="2" style="width:100%; box-sizing:border-box; margin-top:8px;" placeholder="Resposta ao professor (motivo/orientação, opcional)...">' + escaparHtml(solicResposta) + '</textarea>' +
             '<div class="botoes-solicitacao" style="margin-top:8px;">' +
             '<button type="button" class="btn-aprovar-solicitacao" id="btn-solic-confirmar">Confirmar selecionados</button> ' +
-            '<button type="button" class="btn-recusar-solicitacao" id="btn-solic-recusar">Recusar selecionados</button> ' +
-            '<button type="button" class="btn-planilha-atalho" id="btn-solic-todas">Aprovar todas as solicitações da turma (' + pendentes.length + ')</button>' +
+            '<button type="button" class="btn-recusar-solicitacao" id="btn-solic-recusar">Recusar selecionados</button>' +
             '</div>';
     } else {
         html += '<p class="dica-importar">Nenhum aluno aguardando a sua análise nesta turma.</p>';
@@ -708,10 +707,6 @@ function atualizarContagemSolic() {
     if (c) { c.textContent = 'Confirmar selecionados (' + marcados + ')'; c.disabled = !marcados; }
     if (r) { r.textContent = 'Recusar selecionados (' + marcados + ')'; r.disabled = !marcados; }
     if (t) t.checked = marcados === chks.length;
-}
-
-function idsPendentesDaTurma() {
-    return solicitacoesDaTurmaFiltro().filter(function (s) { return s.status === 'Pendente'; }).map(function (s) { return s.id; });
 }
 
 // Aplica a decisão da Diretoria em vários alunos de uma vez.
@@ -763,9 +758,6 @@ function decidirVarios(ids, aprovar) {
         if (e.target.closest('#btn-solic-confirmar')) { decidirVarios(marcados, true); }
         else if (e.target.closest('#btn-solic-recusar')) {
             if (confirm('Recusar ' + marcados.length + ' solicitação(ões)? É uma decisão final da Diretoria (dá pra refazer depois).')) decidirVarios(marcados, false);
-        } else if (e.target.closest('#btn-solic-todas')) {
-            var todos = idsPendentesDaTurma();
-            if (todos.length && confirm('Aprovar as ' + todos.length + ' solicitações da turma ' + turmaFiltro + ' de uma vez?')) decidirVarios(todos, true);
         }
     });
 })();

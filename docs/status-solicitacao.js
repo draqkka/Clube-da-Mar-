@@ -41,6 +41,25 @@ function solicitacaoVisivelParaDesenvolvedor(s) {
     return false;
 }
 
+// O aluno dessa solicitação já tem e-mail e senha cadastrados (usuarios.js ou
+// cadastrado pelo professor no banco)? Sem a lista de usuários na página,
+// considera que sim (pra nunca esconder nada por engano).
+function solicitacaoTemCadastroAluno(s) {
+    if (!s) return false;
+    if (typeof listarEstudantes !== 'function') return true;
+    var estudantes = listarEstudantes();
+    var email = String(s.emailAluno || '').trim().toLowerCase();
+    if (email) {
+        return estudantes.some(function (u) { return String(u.login || '').trim().toLowerCase() === email; });
+    }
+    if (typeof nomesCompativeis !== 'function') return true;
+    return estudantes.some(function (u) {
+        var turmaU = typeof primeiraTurmaDoUsuario === 'function' ? primeiraTurmaDoUsuario(u) : '';
+        return nomesCompativeis(u.nome, s.nomeAluno) &&
+            (!turmaU || !s.turma || _turmaChaveSolic(turmaU) === _turmaChaveSolic(s.turma));
+    });
+}
+
 function _quemRespondeu(s) {
     if (!s || !s.respondidoPor) return '';
     return s.respondidoPor === 'Desenvolvedor' ? 'Equipe Clube da Maré' : 'Direção';

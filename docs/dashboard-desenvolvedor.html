@@ -168,7 +168,7 @@
         <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
         <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
 
-        <button type="button" id="btn-apagar-tudo" class="btn-apagar-banco">Apagar todas as solicitações e alunos do banco (teste)</button>
+        <button type="button" id="btn-apagar-tudo" class="btn-apagar-banco">Apagar todas as solicitações, alunos e agendamentos do banco (teste)</button>
         <p id="msg-apagar-tudo" class="dica-importar" style="margin-top:8px;"></p>
 
     </section>
@@ -343,7 +343,7 @@ function renderizarAlunos() {
             t.notas.length + ' aluno(s): ' + ativos.length + ' ativos · ' + aprovados.length + ' aprovados · ' +
             (ativos.length - aprovados.length) + ' não atingiram · ' + (t.notas.length - ativos.length) + ' fora da sala' +
             (partes.length ? '<br>' + partes.join(' · ') : '') +
-            ' <button type="button" class="btn-remover-turma" data-turma="' + escaparHtml(t.turma) + '" style="margin-left:8px;">Remover alunos desta turma + solicitações</button>';
+            ' <button type="button" class="btn-remover-turma" data-turma="' + escaparHtml(t.turma) + '" style="margin-left:8px;">Remover alunos desta turma + solicitações + agendamentos</button>';
         if (mostrar) infoTurmas.appendChild(p);
     });
 
@@ -397,10 +397,11 @@ document.getElementById('info-turmas').addEventListener('click', function (event
     var botao = evento.target.closest('.btn-remover-turma');
     if (!botao) return;
     var turma = botao.dataset.turma;
-    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ' e TODAS as solicitações do banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
+    if (!confirm('Isso remove TODOS os alunos salvos na turma ' + turma + ', TODAS as solicitações e TODOS os agendamentos do banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
     botao.disabled = true;
     removerTurma(turma)
         .then(function () { return limparTodasSolicitacoes(); })
+        .then(function () { return limparTodosAgendamentos(); })
         .then(carregarAlunosDev)
         .catch(function (erro) {
             botao.disabled = false;
@@ -758,7 +759,7 @@ atualizarDadosBrutos();
 document.getElementById('btn-apagar-tudo').addEventListener('click', function () {
     var botao = this;
     var msg = document.getElementById('msg-apagar-tudo');
-    if (!confirm('Isso apaga TODAS as solicitações e TODOS os alunos salvos no banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
+    if (!confirm('Isso apaga TODAS as solicitações, TODOS os agendamentos e TODOS os alunos salvos no banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
     botao.disabled = true;
     msg.textContent = 'Apagando...';
 
@@ -769,6 +770,7 @@ document.getElementById('btn-apagar-tudo').addEventListener('click', function ()
     var removidos = 0;
 
     limparTodasSolicitacoes()
+        .then(function () { return limparTodosAgendamentos(); })
         .then(function () {
             return Promise.all(turmas.map(function (turma) {
                 return removerTurma(turma).then(function (r) { removidos += r.removidos; });
@@ -777,7 +779,7 @@ document.getElementById('btn-apagar-tudo').addEventListener('click', function ()
         .then(carregarAlunosDev)
         .then(function () {
             botao.disabled = false;
-            msg.textContent = 'Pronto: solicitações apagadas e ' + removidos + ' aluno(s) removido(s).';
+            msg.textContent = 'Pronto: solicitações e agendamentos apagados e ' + removidos + ' aluno(s) removido(s).';
         })
         .catch(function (erro) {
             botao.disabled = false;

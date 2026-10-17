@@ -172,6 +172,39 @@ document.getElementById('form-acesso').addEventListener('submit', function (even
     // Busca em USUARIOS (usuarios.js) já é instantânea, mas o delay de 1s
     // abaixo é só visual — dá tempo da pessoa ver o "Verificando..." antes
     // de entrar, em vez de trocar de tela na hora.
+    function voltarBotao() {
+        botaoAcessar.disabled = false;
+        botaoAcessar.textContent = 'Acessar';
+    }
+    function mostrarErro(msg) {
+        voltarBotao();
+        avisoErro.textContent = msg;
+        avisoErro.style.display = 'block';
+    }
+    function acessoNegado() {
+        mostrarErro('Login, senha ou perfil incorretos. Verifique seus dados e tente novamente.');
+    }
+
+    // Guarda os dados da sessão no navegador (só nesta aba/site) pra usar
+    // nas páginas seguintes sem precisar logar de novo em cada uma.
+    function entrar(usuario) {
+        var turmas = String(usuario.turmas || '')
+            .split(',')
+            .map(function (t) { return t.trim(); })
+            .filter(Boolean);
+
+        sessionStorage.setItem('cdm_sessao', JSON.stringify({
+            login: login,
+            perfil: perfil,
+            nome: usuario.nome,
+            email: String(usuario.login).trim().toLowerCase(),   // identifica o aluno (no lugar do RA)
+            ra: usuario.ra || '',
+            turmas: turmas
+        }));
+
+        window.location.href = dadosPerfil.destino;
+    }
+
     setTimeout(function () {
         try {
             if (typeof buscarUsuario !== 'function') {
@@ -179,39 +212,22 @@ document.getElementById('form-acesso').addEventListener('submit', function (even
             }
 
             var usuario = buscarUsuario(login, senha, perfil);
+            if (usuario) { entrar(usuario); return; }
 
-            if (!usuario) {
-                botaoAcessar.disabled = false;
-                botaoAcessar.textContent = 'Acessar';
-                avisoErro.textContent = 'Login, senha ou perfil incorretos. Verifique seus dados e tente novamente.';
-                avisoErro.style.display = 'block';
+            // Aluno cadastrado pelo professor: fica no banco (não em usuarios.js),
+            // e a senha é conferida no servidor.
+            if (perfil === 'estudante' && typeof loginUsuarioCadastrado === 'function') {
+                loginUsuarioCadastrado(login, senha)
+                    .then(function (u) { if (u) entrar(u); else acessoNegado(); })
+                    .catch(function (erro) { mostrarErro('Erro ao verificar login: ' + erro.message); });
                 return;
             }
 
-            var turmas = String(usuario.turmas || '')
-                .split(',')
-                .map(function (t) { return t.trim(); })
-                .filter(Boolean);
-
-            // Guarda os dados da sessão no navegador (só nesta aba/site) pra usar
-            // nas páginas seguintes sem precisar logar de novo em cada uma.
-            sessionStorage.setItem('cdm_sessao', JSON.stringify({
-                login: login,
-                perfil: perfil,
-                nome: usuario.nome,
-                email: String(usuario.login).trim().toLowerCase(),   // identifica o aluno (no lugar do RA)
-                ra: usuario.ra,
-                turmas: turmas
-            }));
-
-            window.location.href = dadosPerfil.destino;
+            acessoNegado();
         } catch (erro) {
             // Antes, um erro aqui deixava o botão travado em "Verificando..."
             // pra sempre, sem nenhum aviso. Agora sempre volta pro normal.
-            botaoAcessar.disabled = false;
-            botaoAcessar.textContent = 'Acessar';
-            avisoErro.textContent = 'Erro ao verificar login: ' + erro.message;
-            avisoErro.style.display = 'block';
+            mostrarErro('Erro ao verificar login: ' + erro.message);
         }
     }, 1000);
 });

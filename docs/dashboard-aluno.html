@@ -313,7 +313,6 @@ escutarStatusAluno(resumo, function (solicitacao) {
 // ---- Visita da turma ao Clube da Maré (agendamentos-local.js) --------------
 // Vale pra turma inteira: o aluno vê as datas, o horário e se o Clube da Maré
 // já autorizou. Atualiza sozinho quando o Clube responde.
-var _confeteVisitaDisparado = false;
 escutarAgendamentosDaTurma(function () { return resumo.turma; }, function (daTurma) {
     var visita = agendamentoAtualDaTurma(daTurma, resumo.turma);
     var conteudo = document.getElementById('agendamento-aluno-conteudo');
@@ -332,8 +331,7 @@ escutarAgendamentosDaTurma(function () { return resumo.turma; }, function (daTur
     if (!visita) resumo.visita = null;
     guardarResumo();
     // Confete uma vez quando o Clube da Maré aprova a data da turma.
-    if (!_confeteVisitaDisparado && visita && visita.status === 'Aprovado' && typeof confeteQuandoClubeResponder === 'function') {
-        _confeteVisitaDisparado = true;
+    if (visita && visita.status === 'Aprovado' && typeof confeteQuandoClubeResponder === 'function') {
         confeteQuandoClubeResponder('aluno-visita', [visita]);
     }
 });

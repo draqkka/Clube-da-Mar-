@@ -3898,3 +3898,58 @@ body { animation: mareEntrada .45s ease both; }
 /* o cartão do aluno/professor/diretoria, a logo e os painéis ficam acima do degradê */
 #inicio .hero-logo, #inicio .resumo-aluno { z-index: 5; }
 .hero-eventos-programacao .eventos-programacao-container { z-index: 10; }
+
+
+/* =========================================================================
+   AGENDAMENTO DA VISITA AO CLUBE DA MARÉ (agendamentos-local.js)
+   Cartão próprio (fundo e texto definidos aqui) pra ficar legível tanto nas
+   áreas claras (Diretoria/Desenvolvedor) quanto nas escuras (professor/aluno).
+   ========================================================================= */
+.cartao-agendamento{
+    background: #fffdf6; color: #1d2b3a; border: 1px solid #e3dcc6; border-left: 6px solid var(--cor-dourado, #d9a441);
+    border-radius: 10px; padding: 14px 16px; margin: 12px 0; line-height: 1.5;
+    box-shadow: 0 4px 12px rgba(0,0,0,.14); text-align: left;
+}
+.cartao-agendamento p{ margin: 3px 0; color: inherit; }
+.cartao-agendamento i{ width: 1.2em; text-align: center; opacity: .75; margin-right: 4px; }
+.cartao-agendamento .detalhe-solicitacao{ color: #4a5a6a; }
+.cartao-agendamento-titulo{ font-weight: bold; font-size: 1.05rem; margin-bottom: 6px !important; }
+.cartao-agendamento-datas{ font-size: 1.05rem; }
+.cartao-agendamento-dias{ font-size: .8rem; opacity: .75; }
+.cartao-agendamento-resposta{ margin-top: 8px !important; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,.06); }
+.cartao-agendamento.status-pendente,
+.cartao-agendamento.status-aguardando-dev{ background: #fff8e1; color: #1d2b3a; border-color: #f0dfa0; border-left-color: #e0a800; }
+.cartao-agendamento.status-aprovado{ background: #e8f8ef; color: #12331f; border-color: #b6e3c8; border-left-color: #17a86b; }
+.cartao-agendamento.status-recusado{ background: #fdecec; color: #4a1010; border-color: #f0b8b8; border-left-color: #c0392b; }
+.cartao-agendamento.status-cancelado{ background: #eef0f2; color: #3a4350; border-color: #d3d8de; border-left-color: #8a94a0; }
+.cartao-agendamento .botoes-solicitacao{ flex-wrap: wrap; }
+
+.caixa-agendamento-professor{ margin: 24px 0 8px; padding: 18px 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+.caixa-agendamento-professor h2{ margin-top: 0; }
+
+/* Formulário da Diretoria */
+.form-agendamento{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; margin-top: 12px; }
+.form-agendamento .campo{ display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.form-agendamento .campo.largo{ grid-column: 1 / -1; }
+.form-agendamento label{ font-weight: bold; font-size: .9rem; color: var(--cor-azul-escuro, #12324f); }
+.form-agendamento .form-login-campo{ flex: none; width: 100%; box-sizing: border-box; }
+.form-agendamento textarea.form-login-campo{ resize: vertical; }
+.form-agendamento .dica-campo{ font-size: .8rem; color: #4a5a6a; }
+.form-agendamento .dia-dois{ padding: 10px 12px; border-radius: 10px; background: #e9f3fb; color: #12324f; font-weight: bold; min-height: 44px; display: flex; align-items: center; box-sizing: border-box; }
+.form-agendamento .check-declaracao{ display: flex; gap: 10px; align-items: flex-start; font-weight: normal; color: #1d2b3a; }
+.form-agendamento .check-declaracao input{ margin-top: 4px; }
+.aviso-agendamento{ border-radius: 8px; padding: 10px 12px; margin: 8px 0; font-size: .9rem; }
+.aviso-agendamento.erro{ background: #fdecec; color: #4a1010; border: 1px solid #f0b8b8; }
+.aviso-agendamento.atencao{ background: #fff8e1; color: #5a4300; border: 1px solid #f0dfa0; }
+.aviso-agendamento.ok{ background: #e8f8ef; color: #12331f; border: 1px solid #b6e3c8; }
+.aviso-agendamento ul{ margin: 4px 0 0 18px; padding: 0; }
+.reservas-clube{ display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 0; }
+.reserva-chip{ background: #fdecec; color: #4a1010; border: 1px solid #f0b8b8; border-radius: 999px; padding: 3px 10px; font-size: .82rem; }
+.filtro-status-agenda{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0; }
+.btn-agenda-secundario{ background: #e9eef3; color: #12324f; border: 1px solid #c9d3dd; border-radius: 6px; padding: 8px 14px; cursor: pointer; font-family: var(--fonte-titulos); transition: transform .15s; }
+.btn-agenda-secundario:hover{ transform: translateY(-2px); }
+.btn-aprovar-solicitacao:disabled{ opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+@media (max-width: 600px){
+    .form-agendamento{ grid-template-columns: 1fr; }
+}

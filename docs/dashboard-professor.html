@@ -27,6 +27,7 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="agendamentos-local.js"></script>
 <script src="resumo-painel.js"></script>
 </head>
 <body class="fonte-profissional">
@@ -100,6 +101,13 @@
     <!-- RESPOSTA, HISTÓRICO E OPÇÃO DE REFAZER DO PROFESSOR
          (fica logo abaixo da área de importar a planilha, sempre visível,
          com ou sem alunos na turma) -->
+    <!-- Status da VISITA da turma ao Clube da Maré (2 dias seguidos), pedida pela Diretoria
+         e autorizada pelo Clube. Só leitura: muda sozinho quando o Clube responde. -->
+    <section class="caixa-agendamento-professor" id="area-agendamento-professor" style="display:none;">
+        <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Visita da turma ao Clube da Maré</h2>
+        <div id="agendamento-professor-conteudo"></div>
+    </section>
+
     <section style="margin-top: 24px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
         <h2>Minhas Solicitações Enviadas</h2>
         <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
@@ -212,6 +220,9 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
     var c = contarSolicitacoesPorStatus(solicitacoes);
     cartoes.push({ rotulo: 'Solicitações enviadas', valor: c.total });
     cartoes.push({ rotulo: 'Confirmadas', valor: c.confirmada });
+    var visita = agendamentoAtualDaTurma(agendaTodos, turmaAtual);
+    cartoes.push({ rotulo: 'Visita ao Clube' + (turmaAtual ? ' (' + turmaAtual + ')' : ''),
+        valor: visita ? infoStatusAgendamento(visita).curto + ' · ' + agPeriodoCurto(visita) : 'Não agendada' });
     var texto = c.pendente ? c.pendente + ' solicitação(ões) aguardando a direção.' : '';
     guardarResumoPainel(sessao, cartoes, texto);
     sessionStorage.removeItem('cdm_sessao');
@@ -405,6 +416,7 @@ function selecionarTurma(turma) {
     turmaAtual = turma;
     dadosTurmaAtual = null;
     renderizarChipsTurma();
+    renderizarAgendamentoProfessor();   // status da visita da turma escolhida
     renderizarListaSolicitacoes(); // mostra só as solicitações desta turma
 
     document.getElementById('aviso-turma-nova').style.display = 'none';
@@ -580,10 +592,6 @@ function renderizarListaSolicitacoes() {
 
         item.innerHTML = '<strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ') — ' +
             htmlStatusSolicitacao(s, { semProfessor: true }) +
-            ((s.status === 'Aguardando Desenvolvedor' && !solicitacaoTemCadastroAluno(s))
-                ? '<p style="margin-top:8px; padding:8px 10px; border-radius:6px; background:rgba(255,193,7,.18); border-left:4px solid #ffc107;">⚠️ <strong>Aviso:</strong> ' +
-                  escaparHtml(s.nomeAluno) + ' ainda não tem e-mail e senha cadastrados. A equipe Clube da Maré só consegue analisar a participação depois que você cadastrar o aluno (botão de cadastro na tabela da turma).</p>'
-                : '') +
             (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + escaparHtml(s.observacao) + '</p>' : '') +
             (s.resposta ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta (' + escaparHtml(s.respondidoPor || '') + '): "' + escaparHtml(s.resposta) + '"</p>' : '') +
             '<div style="margin-top: 10px;">' +
@@ -767,6 +775,32 @@ function perguntarTurmas(estranhas, jaEscolhidas, aoConfirmar) {
 }
 
 function rotuloTurma2(g) { return g.curso ? g.curso + ' · ' + g.turma : g.turma; }
+
+// ---- Visita da turma ao Clube da Maré (status vindo de agendamentos-local.js) ----
+var agendaTodos = [];
+
+function renderizarAgendamentoProfessor() {
+    var area = document.getElementById('area-agendamento-professor');
+    if (!turmaAtual) { area.style.display = 'none'; return; }
+    area.style.display = '';
+    var visita = agendamentoAtualDaTurma(agendaTodos, turmaAtual);
+    var conteudo = document.getElementById('agendamento-professor-conteudo');
+    if (!visita) {
+        conteudo.innerHTML = '<p class="dica-importar">A direção ainda não pediu a data da visita da turma ' + escaparHtml(turmaAtual) +
+            ' ao Clube da Maré. Quando pedir, o status aparece aqui.</p>';
+        return;
+    }
+    var info = infoStatusAgendamento(visita);
+    // confete (uma vez por visita) quando o Clube da Maré aprova a data da turma
+    if (visita.status === 'Aprovado' && typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('professor-visita', [visita]);
+    conteudo.innerHTML = '<p style="margin:0 0 4px;">Turma <strong>' + escaparHtml(turmaAtual) + '</strong> — ' + escaparHtml(info.mensagem) + '</p>' +
+        htmlCartaoAgendamento(visita, { mostrarContato: false });
+}
+
+escutarAgendamentos(function (lista) {
+    agendaTodos = lista;
+    renderizarAgendamentoProfessor();
+});
 </script>
 
 <script src="menu.js"></script>

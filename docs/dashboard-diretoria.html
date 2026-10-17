@@ -482,8 +482,9 @@ function renderizarAgendamentos() {
                     : '') +
                     '<button type="button" class="btn-agenda-secundario" data-acao="refazer" data-id="' + escaparHtml(a.id) + '">Fazer novo pedido com estes dados</button>';
             }
+            acoes += (acoes ? ' ' : '') + '<button type="button" class="btn-recusar-solicitacao" data-acao="apagar" data-id="' + escaparHtml(a.id) + '"><i class="fa-solid fa-trash" aria-hidden="true"></i> Apagar agendamento</button>';
             return htmlCartaoAgendamento(a, { mostrarTurma: true }).replace(/<\/div>$/,
-                (acoes ? '<div class="botoes-solicitacao">' + acoes + '</div>' : '') + '</div>');
+                '<div class="botoes-solicitacao">' + acoes + '</div></div>');
         }).join('');
     }
 
@@ -531,6 +532,13 @@ document.getElementById('agenda-lista').addEventListener('click', function (even
     if (!botao) return;
     if (botao.dataset.acao === 'cancelar') {
         if (confirm('Cancelar este agendamento? O Clube da Maré, o professor e os alunos verão o cancelamento.')) cancelarAgendamento(botao.dataset.id);
+    } else if (botao.dataset.acao === 'apagar') {
+        if (!confirm('Apagar este agendamento de vez? Ele some do banco e deixa de aparecer para o Clube da Maré, o professor e os alunos. Esta ação não pode ser desfeita.')) return;
+        botao.disabled = true;
+        apagarAgendamento(botao.dataset.id).catch(function (erro) {
+            botao.disabled = false;
+            alert('Não consegui apagar o agendamento: ' + erro.message);
+        });
     } else if (botao.dataset.acao === 'refazer') {
         refazerPedido(botao.dataset.id, botao.dataset.data || '');
     }

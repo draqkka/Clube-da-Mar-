@@ -93,13 +93,14 @@ function buscarEstudantePorEmail(email) {
 // (/api/alunos-cadastrados) e entram na lista USUARIOS quando a página chama
 // carregarUsuariosCadastrados() — a partir daí funcionam como qualquer
 // estudante daqui (aparecem em listarEstudantes, buscarEstudantePorEmail...).
-// A senha NÃO vem pro navegador; o login é conferido no servidor.
+// A senha só vem pro navegador no painel do desenvolvedor (?senhas=1); o login é conferido no servidor.
 // ==========================================================================
 var _usuariosCadastradosPromessa = null;
 
-function carregarUsuariosCadastrados(forcar) {
+// comSenhas = true só no painel do desenvolvedor (traz também a senha pra "mostrar").
+function carregarUsuariosCadastrados(forcar, comSenhas) {
     if (_usuariosCadastradosPromessa && !forcar) return _usuariosCadastradosPromessa;
-    _usuariosCadastradosPromessa = fetch('/api/alunos-cadastrados', { cache: 'no-store' })
+    _usuariosCadastradosPromessa = fetch('/api/alunos-cadastrados' + (comSenhas ? '?senhas=1' : ''), { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : { usuarios: [] }; })
         .then(function (corpo) {
             for (var i = USUARIOS.length - 1; i >= 0; i--) {
@@ -109,7 +110,7 @@ function carregarUsuariosCadastrados(forcar) {
                 var email = String(u.login || '').trim().toLowerCase();
                 var jaTem = USUARIOS.some(function (x) { return emailDoUsuario(x) === email; });
                 if (!email || jaTem) return;
-                USUARIOS.push({ login: email, senha: null, perfil: 'estudante', nome: u.nome, ra: u.ra || '', turmas: u.turmas || '', doBanco: true });
+                USUARIOS.push({ login: email, senha: u.senha || null, perfil: 'estudante', nome: u.nome, ra: u.ra || '', turmas: u.turmas || '', doBanco: true });
             });
             return USUARIOS;
         })

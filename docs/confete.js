@@ -16,8 +16,9 @@
 //
 // Funções deste arquivo:
 //   dispararConfete()                       -> mostra o confete agora
-//   confeteQuandoClubeResponder(perfil, lista)
-//        -> perfil: 'professor' ou 'diretoria'; lista: as solicitações da tela
+//   confeteQuandoClubeResponder(perfil, lista, onde)
+//        -> perfil: 'professor' ou 'diretoria'; lista: as solicitações da tela;
+//           onde (opcional): nome da tela, pra ela ter o seu próprio controle
 // ==========================================================================
 (function () {
     var DURACAO_MS = 5000;
@@ -85,8 +86,10 @@
 
     // Professor e diretoria: comemora quando o Clube da Maré aprova uma
     // solicitação que eles ainda não "viram" aprovada neste navegador.
-    window.confeteQuandoClubeResponder = function (perfil, lista) {
-        var chave = 'cdm_confete_visto_' + perfil;
+    window.confeteQuandoClubeResponder = function (perfil, lista, onde) {
+        // "onde" separa o controle de cada tela (ex.: 'inicio'): o confete do
+        // dashboard não "gasta" o da tela inicial, e vice-versa.
+        var chave = 'cdm_confete_visto_' + perfil + (onde ? '_' + onde : '');
         var vistos = [];
         try { vistos = JSON.parse(localStorage.getItem(chave) || '[]'); } catch (e) {}
         var novas = (lista || []).filter(function (s) {

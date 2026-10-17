@@ -8,6 +8,7 @@
 // POST /api/alunos-cadastrados  { acao: 'cadastrar', solicitacaoId, email, senha, professor }
 //        -> cadastra o aluno dessa solicitação (nome e turma vêm da própria
 //           solicitação). Só funciona se a participação já foi solicitada.
+// DELETE /api/alunos-cadastrados?email=...  -> remove o aluno cadastrado (o professor pode cadastrar de novo)
 // POST /api/alunos-cadastrados  { acao: 'login', email, senha }
 //        -> { usuario: {...} } se e-mail e senha conferem (senha guardada com hash).
 //
@@ -144,7 +145,23 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ erro: 'Ação inválida.' });
         }
 
-        res.setHeader('Allow', 'GET, POST');
+        if (req.method === 'DELETE') {
+            const emailRemover = texto(req.query && req.query.email, 150).toLowerCase();
+            if (!emailRemover) return res.status(400).json({ erro: 'Informe o e-mail.' });
+            const achado = (await sql`SELECT solicitacao_id FROM usuarios_cadastrados WHERE email = ${emailRemover}`)[0];
+            if (!achado) return res.status(404).json({ erro: 'Aluno cadastrado não encontrado.' });
+            await sql`DELETE FROM usuarios_cadastrados WHERE email = ${emailRemover}`;
+            // Solta a solicitação do e-mail removido (o professor poderá cadastrar de novo).
+            if (achado.solicitacao_id) {
+                await sql`
+                    UPDATE solicitacoes
+                    SET dados = jsonb_set(dados, '{emailAluno}', '""'::jsonb), atualizado_em = now()
+                    WHERE id = ${achado.solicitacao_id} AND dados->>'emailAluno' = ${emailRemover}`;
+            }
+            return res.status(200).json({ ok: true });
+        }
+
+        res.setHeader('Allow', 'GET, POST, DELETE');
         return res.status(405).json({ erro: 'Método não permitido.' });
     } catch (erro) {
         console.error('Erro em /api/alunos-cadastrados:', erro);

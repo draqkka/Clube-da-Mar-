@@ -96,7 +96,7 @@
             <p id="trilha-solicitacao" style="margin-top:10px;"></p>
         </div>
 
-        <!-- Só aparece quando o aluno está aprovado (ver critério no JS).
+        <!-- Só aparece depois que a equipe Clube da Maré aprova o aluno (ver atualizarFormularioAluno no JS).
              O texto/link mudam conforme o perfil (ver JS: FORMULARIOS). -->
         <div id="area-formulario" style="display:none;">
             <h2 id="titulo-area-formulario">Para finalizarmos, responda o formulário abaixo para garantir seu ingresso:</h2>
@@ -168,6 +168,19 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 // solicitação chegar; se estiver "Aprovado" e o aluno não estiver reprovado,
 // solta o confete uma vez por abertura do painel.
 var _ultimaSolicitacao = null, _dadosCarregados = false, _confeteAlunoDisparado = false;
+// Ficha de confirmação e saúde: só depois que a equipe Clube da Maré APROVOU este aluno.
+function atualizarFormularioAluno() {
+    var liberado = !!(_ultimaSolicitacao && _ultimaSolicitacao.status === 'Aprovado' && !resumo.reprovado);
+    if (liberado) {
+        var formulario = FORMULARIOS[sessao.perfil] || FORMULARIOS.estudante;
+        document.getElementById('titulo-area-formulario').textContent = formulario.titulo;
+        var linkFormulario = document.getElementById('link-formulario');
+        linkFormulario.href = formulario.link;
+        linkFormulario.textContent = formulario.texto;
+    }
+    document.getElementById('area-formulario').style.display = liberado ? 'block' : 'none';
+}
+
 function verificarConfeteAluno() {
     if (_confeteAlunoDisparado || !_dadosCarregados) return;
     if (!_ultimaSolicitacao || _ultimaSolicitacao.status !== 'Aprovado' || resumo.reprovado) return;
@@ -194,7 +207,8 @@ carregarAlunoPorEmail(resumo.email)
         document.getElementById('valor-presenca').textContent = '—';
         document.getElementById('valor-comportamento').textContent = '—';
         _dadosCarregados = true;
-        verificarConfeteAluno();
+        atualizarFormularioAluno();
+    verificarConfeteAluno();
         return;
     }
 
@@ -231,13 +245,8 @@ carregarAlunoPorEmail(resumo.email)
         caixa.classList.add('caixa-aprovado');
         texto.textContent = MSG_ALUNO_APROVADO;
 
-        var formulario = FORMULARIOS[sessao.perfil] || FORMULARIOS.estudante;
-        document.getElementById('titulo-area-formulario').textContent = formulario.titulo;
-        var linkFormulario = document.getElementById('link-formulario');
-        linkFormulario.href = formulario.link;
-        linkFormulario.textContent = formulario.texto;
-
-        document.getElementById('area-formulario').style.display = 'block';
+        // O formulário NÃO aparece só por estar aprovado na planilha: ele só
+        // aparece depois que a equipe Clube da Maré confirma (atualizarFormularioAluno).
     } else {
         caixa.classList.add('caixa-reprovado');
         texto.textContent = !avaliacao.ativo
@@ -247,6 +256,7 @@ carregarAlunoPorEmail(resumo.email)
         guardarResumo();
     }
     _dadosCarregados = true;
+    atualizarFormularioAluno();
     verificarConfeteAluno();
 })
 .catch(function (erro) {
@@ -288,6 +298,7 @@ escutarStatusAluno(resumo, function (solicitacao) {
     guardarResumo();
     aplicarStatusReprovado();
     _ultimaSolicitacao = solicitacao;
+    atualizarFormularioAluno();
     verificarConfeteAluno();
 });
 </script>

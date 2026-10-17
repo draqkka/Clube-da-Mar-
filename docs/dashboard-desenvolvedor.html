@@ -402,18 +402,19 @@ function _escUsuario(v) {
 }
 
 // Desenha a tabela com os usuários do usuarios.js + os alunos que o professor
-// cadastrou (esses ficam no banco; a senha deles fica guardada com hash, então
-// não dá pra "mostrar").
+// cadastrou (esses ficam no banco; a senha vem do servidor só aqui, pra "mostrar").
 function desenharUsuarios() {
     corpoUsuarios.innerHTML = '';
     USUARIOS.forEach(function (u, indice) {
         var linha = document.createElement('tr');
         var idSenha = 'senha-' + indice;
-        var celulaSenha = u.doBanco
-            ? '<span style="opacity:.75;">cadastrada pelo professor (não dá pra ver)</span> ' +
-              '<button type="button" class="btn-remover-usuario" data-email="' + _escUsuario(u.login) + '" style="background:#8b2c2c;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Remover</button>'
+        var botaoRemover = u.doBanco
+            ? ' <button type="button" class="btn-remover-usuario" data-email="' + _escUsuario(u.login) + '" style="background:#8b2c2c;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Remover</button>'
+            : '';
+        var celulaSenha = (u.doBanco && !u.senha)
+            ? '<span style="opacity:.75;">cadastrada antes da atualização (senha indisponível)</span>' + botaoRemover
             : '<span id="' + idSenha + '" style="letter-spacing:2px;">••••••••</span> ' +
-              '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + _escUsuario(u.senha) + '">mostrar</button>';
+              '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + _escUsuario(u.senha) + '">mostrar</button>' + botaoRemover;
         linha.innerHTML = '<td>' + _escUsuario(u.login) + '</td><td>' + _escUsuario(u.perfil) + '</td><td>' + _escUsuario(u.nome || '') +
             '</td><td>' + _escUsuario(u.turmas || '-') + '</td><td>' + celulaSenha + '</td>';
         corpoUsuarios.appendChild(linha);
@@ -423,7 +424,7 @@ function desenharUsuarios() {
 desenharUsuarios();
 // Junta os alunos cadastrados pelo professor (banco) e redesenha.
 if (typeof carregarUsuariosCadastrados === 'function') {
-    carregarUsuariosCadastrados().then(desenharUsuarios);
+    carregarUsuariosCadastrados(true, true).then(desenharUsuarios);
 }
 
 // Remove um aluno cadastrado pelo professor (só os do banco; os do usuarios.js se editam no arquivo).
@@ -440,7 +441,7 @@ corpoUsuarios.addEventListener('click', function (evento) {
                 if (!r.ok) throw new Error(corpo.erro || ('Erro ' + r.status));
             });
         })
-        .then(function () { return carregarUsuariosCadastrados(true); })
+        .then(function () { return carregarUsuariosCadastrados(true, true); })
         .then(desenharUsuarios)
         .catch(function (erro) {
             rem.disabled = false;

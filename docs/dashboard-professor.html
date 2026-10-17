@@ -580,6 +580,10 @@ function renderizarListaSolicitacoes() {
 
         item.innerHTML = '<strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ') — ' +
             htmlStatusSolicitacao(s, { semProfessor: true }) +
+            ((s.status === 'Aguardando Desenvolvedor' && !solicitacaoTemCadastroAluno(s))
+                ? '<p style="margin-top:8px; padding:8px 10px; border-radius:6px; background:rgba(255,193,7,.18); border-left:4px solid #ffc107;">⚠️ <strong>Aviso:</strong> ' +
+                  escaparHtml(s.nomeAluno) + ' ainda não tem e-mail e senha cadastrados. A equipe Clube da Maré só consegue analisar a participação depois que você cadastrar o aluno (botão de cadastro na tabela da turma).</p>'
+                : '') +
             (s.observacao ? '<p style="margin-top:4px;">Minha Obs: ' + escaparHtml(s.observacao) + '</p>' : '') +
             (s.resposta ? '<p style="margin-top:4px; font-style: italic; color:#ffd700;">Resposta (' + escaparHtml(s.respondidoPor || '') + '): "' + escaparHtml(s.resposta) + '"</p>' : '') +
             '<div style="margin-top: 10px;">' +

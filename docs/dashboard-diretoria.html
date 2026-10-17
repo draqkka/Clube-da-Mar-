@@ -44,6 +44,10 @@
         <p>Visão geral de turmas, agendamento da visita ao Clube da Maré e gerenciamento de solicitações dos professores.</p>
     </div>
 
+    <!-- AVISO: depois que a Diretoria aprova solicitações de uma turma, pede pra agendar os dias da visita
+         (preenchido por renderizarAvisoAgendar, no script do agendamento). -->
+    <div id="aviso-agendar-dias" aria-live="polite"></div>
+
     <!-- FILTRO DE TURMA — dropdown: a Diretoria escolhe uma turma e a página
          inteira (solicitações e lista de alunos) mostra só ela. -->
     <div class="filtro-turma-dir" style="margin: 16px 0 8px; display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
@@ -533,8 +537,44 @@ document.getElementById('agenda-lista').addEventListener('click', function (even
     }
 });
 
+// ---- Aviso "agora agende os dias" ------------------------------------------
+// Aparece pra cada turma que já teve solicitação aprovada pela Diretoria
+// (aguardando ou confirmada pelo Clube) e ainda NÃO tem visita pedida/aprovada.
+function renderizarAvisoAgendar() {
+    var caixa = document.getElementById('aviso-agendar-dias');
+    if (!caixa) return;
+    var porTurma = {}, ordem = [];
+    (todasSolicitacoes || []).forEach(function (s) {
+        if (s.status !== 'Aguardando Desenvolvedor' && s.status !== 'Aprovado') return;
+        if (agendamentoAtivoDaTurma(todosAgendamentos, s.turma)) return;   // já tem visita em andamento
+        if (!porTurma[s.turma]) { porTurma[s.turma] = 0; ordem.push(s.turma); }
+        porTurma[s.turma]++;
+    });
+    caixa.innerHTML = ordem.map(function (t) {
+        var n = porTurma[t];
+        return '<div class="aviso-agendamento ok" style="margin:10px 0; display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:space-between;">' +
+            '<span>📅 Você aprovou <strong>' + n + ' solicitaç' + (n === 1 ? 'ão' : 'ões') + '</strong> da turma <strong>' + escaparHtml(t) +
+            '</strong>. Agora <strong>agende os dias da visita</strong> ao Clube da Maré — o Clube confirma as solicitações e as datas de uma vez.</span>' +
+            '<button type="button" class="btn-planilha-atalho btn-agendar-turma" data-turma="' + escaparHtml(t) + '">Agendar os dias da turma ' + escaparHtml(t) + '</button>' +
+            '</div>';
+    }).join('');
+}
+
+document.getElementById('aviso-agendar-dias').addEventListener('click', function (evento) {
+    var botao = evento.target.closest('.btn-agendar-turma');
+    if (!botao) return;
+    var seletor = document.getElementById('filtro-turma-select');
+    seletor.value = botao.dataset.turma;
+    seletor.dispatchEvent(new Event('change'));   // a página inteira passa pra essa turma
+    var detalhes = document.getElementById('agenda-form-detalhes');
+    detalhes.open = true;
+    document.getElementById('area-agendamento').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(function () { var c = document.getElementById('ag-inicio'); if (c) c.focus({ preventScroll: true }); }, 500);
+});
+
 escutarAgendamentos(function (lista) {
     todosAgendamentos = lista;
+    renderizarAvisoAgendar();
     if (typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('diretoria-visita', lista);   // confete quando o Clube aprova a data
     renderizarAgendamentos();
 });
@@ -597,6 +637,7 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     if (typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('diretoria', solicitacoes);   // confete quando o Clube da Maré aprova
     renderizarFiltroTurmas();   // uma turma nova pode ter aparecido numa solicitação
     renderizarSolicitacoes();
+    renderizarAvisoAgendar();
 });
 
 // Ações nos botões (Aprovar envia pra confirmação do Desenvolvedor; Recusar

@@ -791,8 +791,6 @@ function renderizarAgendamentoProfessor() {
         return;
     }
     var info = infoStatusAgendamento(visita);
-    // confete (uma vez por visita) quando o Clube da Maré aprova a data da turma
-    if (visita.status === 'Aprovado' && typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('professor-visita', [visita]);
     conteudo.innerHTML = '<p style="margin:0 0 4px;">Turma <strong>' + escaparHtml(turmaAtual) + '</strong> — ' + escaparHtml(info.mensagem) + '</p>' +
         htmlCartaoAgendamento(visita, { mostrarContato: false });
 }
@@ -800,6 +798,13 @@ function renderizarAgendamentoProfessor() {
 escutarAgendamentos(function (lista) {
     agendaTodos = lista;
     renderizarAgendamentoProfessor();
+    // Confete (uma vez por visita) quando o Clube da Maré aprova a data de QUALQUER turma do professor
+    if (typeof confeteQuandoClubeResponder === 'function') {
+        var minhas = (sessao && sessao.turmas || []).map(_agTurma);
+        confeteQuandoClubeResponder('professor-visita', lista.filter(function (a) {
+            return minhas.indexOf(_agTurma(a.turma)) !== -1;
+        }));
+    }
 });
 </script>
 

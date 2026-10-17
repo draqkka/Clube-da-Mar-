@@ -4,7 +4,9 @@
 // usuarios.js os junta à lista na hora de abrir a página.
 //
 // GET  /api/alunos-cadastrados                    -> { usuarios: [{ login, nome, turmas, ra, perfil }] }
-//                                          (NUNCA devolve senha)
+//                                          (não devolve senha)
+// GET  /api/alunos-cadastrados?senhas=1           -> igual, mas com o campo "senha" (usado só pelo painel do desenvolvedor)
+//                                          (alunas cadastradas antes desta versão vêm com senha vazia)
 // POST /api/alunos-cadastrados  { acao: 'cadastrar', solicitacaoId, email, senha, professor }
 //        -> cadastra o aluno dessa solicitação (nome e turma vêm da própria
 //           solicitação). Só funciona se a participação já foi solicitada.
@@ -45,6 +47,33 @@ function senhaConfere(senha, guardado) {
     return esperado.length === atual.length && crypto.timingSafeEqual(esperado, atual);
 }
 
+// Cópia criptografada (AES-256-GCM) da senha, só pra o painel do desenvolvedor
+// poder "mostrar". O login continua conferindo pelo hash (senha_hash).
+// Defina SENHAS_CHAVE na Vercel (qualquer texto longo); sem ela usa a string do banco.
+function chaveSenhas() {
+    const base = process.env.SENHAS_CHAVE || process.env.POSTGRES_URL || process.env.DATABASE_URL || 'clube-da-mare';
+    return crypto.createHash('sha256').update(String(base)).digest();
+}
+
+function cifrarSenha(senha) {
+    const iv = crypto.randomBytes(12);
+    const c = crypto.createCipheriv('aes-256-gcm', chaveSenhas(), iv);
+    const dados = Buffer.concat([c.update(String(senha), 'utf8'), c.final()]);
+    return [iv.toString('hex'), c.getAuthTag().toString('hex'), dados.toString('hex')].join(':');
+}
+
+function decifrarSenha(guardado) {
+    try {
+        const p = String(guardado || '').split(':');
+        if (p.length !== 3) return '';
+        const d = crypto.createDecipheriv('aes-256-gcm', chaveSenhas(), Buffer.from(p[0], 'hex'));
+        d.setAuthTag(Buffer.from(p[1], 'hex'));
+        return Buffer.concat([d.update(Buffer.from(p[2], 'hex')), d.final()]).toString('utf8');
+    } catch (e) {
+        return '';
+    }
+}
+
 let tabelaPronta = false;
 
 async function banco() {
@@ -61,6 +90,7 @@ async function banco() {
                 professor      text NOT NULL DEFAULT '',
                 criado_em      timestamptz NOT NULL DEFAULT now()
             )`;
+        await sql`ALTER TABLE usuarios_cadastrados ADD COLUMN IF NOT EXISTS senha_cripto text NOT NULL DEFAULT ''`;
         // a solicitação é consultada aqui; garante que a tabela dela existe
         await sql`
             CREATE TABLE IF NOT EXISTS solicitacoes (
@@ -84,8 +114,15 @@ module.exports = async function handler(req, res) {
         const sql = await banco();
 
         if (req.method === 'GET') {
-            const linhas = await sql`SELECT email, nome, turma, ra FROM usuarios_cadastrados ORDER BY nome`;
-            return res.status(200).json({ usuarios: linhas.map(paraUsuario) });
+            const linhas = await sql`SELECT email, nome, turma, ra, senha_cripto FROM usuarios_cadastrados ORDER BY nome`;
+            const comSenha = req.query && req.query.senhas === '1';
+            return res.status(200).json({
+                usuarios: linhas.map(function (l) {
+                    const u = paraUsuario(l);
+                    if (comSenha) u.senha = decifrarSenha(l.senha_cripto);
+                    return u;
+                })
+            });
         }
 
         if (req.method === 'POST') {
@@ -130,8 +167,8 @@ module.exports = async function handler(req, res) {
 
                 const nome = nomeBonito(s.nomeAluno);
                 await sql`
-                    INSERT INTO usuarios_cadastrados (email, nome, turma, ra, senha_hash, solicitacao_id, professor)
-                    VALUES (${email}, ${nome}, ${texto(s.turma, 20)}, '', ${criarHash(senha)}, ${idSolic}, ${texto(s.professor, 120)})`;
+                    INSERT INTO usuarios_cadastrados (email, nome, turma, ra, senha_hash, senha_cripto, solicitacao_id, professor)
+                    VALUES (${email}, ${nome}, ${texto(s.turma, 20)}, '', ${criarHash(senha)}, ${cifrarSenha(senha)}, ${idSolic}, ${texto(s.professor, 120)})`;
 
                 // Liga a solicitação ao e-mail do aluno (é assim que o painel dele a encontra).
                 await sql`

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Cadastrar aluno</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- ===== FONTES DO GOOGLE FONTS ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- 🌟 BLOCO 1 — Títulos de Forte Impacto: Alfa Slab One, Fjalla One, Gravitas One -->
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Fjalla+One&family=Gravitas+One&display=swap" rel="stylesheet">
+
+<!-- ✍️ BLOCO 2 — Escrita Manual Casual: Caveat, Delicious Handrawn, Permanent Marker -->
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Delicious+Handrawn&family=Permanent+Marker&display=swap" rel="stylesheet">
+
+<!-- 🎨 BLOCO 3 — Cursivas Criativas & Retro: Lobster Two, Pacifico, Playwrite DE LA Guides -->
+<link href="https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Pacifico&family=Playwrite+DE+LA+Guides&display=swap" rel="stylesheet">
+
+<!-- 📜 BLOCO 4 — Caligrafia Elegante: Miss Fajardose, Petemoss, Pinyon Script, Zeyada -->
+<link href="https://fonts.googleapis.com/css2?family=Miss+Fajardose&family=Petemoss&family=Pinyon+Script&family=Zeyada&display=swap" rel="stylesheet">
+<!-- <link href="https://fonts.googleapis.com/css2?family=NOME+DA+FONTE&display=swap" rel="stylesheet"> -->
+
+<!-- Lista de usuários (login/senha) direto no código -->
+<script src="usuarios.js"></script>
+</head>
+<body class="fonte-profissional">
+
+<header>
+<nav class="topnav">
+    <a href="dashboard-professor.html" class="link-sair-topo"><i class="fa-solid fa-arrow-left"></i> Voltar ao painel</a>
+</nav>
+</header>
+
+<style>
+.cad-aluno-info { color: #fff; margin-top: 6px; }
+.modal-cad { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.65); padding: 16px; }
+.modal-cad[hidden] { display: none; }
+.modal-cad-caixa { position: relative; width: 100%; max-width: 440px; background: #fff; color: #12324f;
+    border-radius: 16px; padding: 32px 28px 26px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.modal-cad-caixa h2 { margin: 6px 0 10px; color: #0a8f4e; }
+.modal-cad-caixa p { margin: 6px 0; line-height: 1.5; }
+.modal-cad-fechar { position: absolute; top: 8px; right: 14px; background: none; border: 0; color: #12324f;
+    font-size: 30px; line-height: 1; cursor: pointer; }
+.modal-cad-emoji { font-size: 2.6rem; }
+</style>
+
+<!--
+    CADASTRO DE E-MAIL INSTITUCIONAL + SENHA DO ALUNO (feito pelo PROFESSOR)
+    Chega aqui pelo botão "Cadastrar e-mail e senha" da tabela do dashboard-professor.html,
+    com ?sid=<id da solicitação>. O nome e a turma vêm da própria solicitação (só dá pra
+    cadastrar quem já teve a participação solicitada). O cadastro vai pro banco
+    (/api/alunos-cadastrados) e passa a valer no login do aluno (login-formulario.html).
+-->
+<main class="pagina-login">
+
+    <div>
+        <div class="login-saudacao">
+            <h1>Cadastrar aluno(a)</h1>
+            <p id="cad-aluno-info" class="cad-aluno-info">Carregando...</p>
+        </div>
+    </div>
+
+    <form class="form-login-card" id="form-cadastro">
+
+        <div class="form-login-linha">
+            <input type="email" class="form-login-campo" id="campo-email" placeholder="E-mail institucional do aluno" autocomplete="off">
+        </div>
+
+        <div class="form-login-senha-caixa">
+            <input type="password" class="form-login-campo" id="campo-senha" placeholder="Senha do aluno" autocomplete="new-password">
+            <button type="button" class="form-login-olho" id="botao-olho" aria-label="Mostrar senha">
+                <i class="fa-regular fa-eye"></i>
+            </button>
+        </div>
+
+        <div class="form-login-botoes">
+            <a href="dashboard-professor.html" class="btn-form-voltar">Voltar</a>
+            <button type="submit" class="btn-form-acessar" id="botao-cadastrar" disabled>Cadastrar</button>
+        </div>
+
+    </form>
+
+</main>
+
+<!-- Aviso depois de cadastrar: o X fecha e volta pro dashboard do professor -->
+<div class="modal-cad" id="modal-cadastrado" hidden role="dialog" aria-modal="true" aria-labelledby="modal-cad-titulo">
+    <div class="modal-cad-caixa">
+        <button type="button" class="modal-cad-fechar" id="modal-cad-fechar" aria-label="Fechar e voltar ao painel">&times;</button>
+        <div class="modal-cad-emoji">✅</div>
+        <h2 id="modal-cad-titulo">Aluno(a) cadastrado(a)!</h2>
+        <p id="modal-cad-texto"></p>
+    </div>
+</div>
+
+<script>
+// Só o professor logado cadastra alunos.
+var sessao = JSON.parse(sessionStorage.getItem('cdm_sessao') || 'null');
+if (!sessao || sessao.perfil !== 'professor') {
+    window.location.href = 'login.html';
+}
+
+var idSolicitacao = new URLSearchParams(window.location.search).get('sid') || '';
+var solicitacao = null;
+
+var info = document.getElementById('cad-aluno-info');
+var botaoCadastrar = document.getElementById('botao-cadastrar');
+
+// Mostrar/esconder a senha ao clicar no ícone do olho
+document.getElementById('botao-olho').addEventListener('click', function () {
+    var campoSenha = document.getElementById('campo-senha');
+    var icone = this.querySelector('i');
+    var vaiMostrar = campoSenha.type === 'password';
+    campoSenha.type = vaiMostrar ? 'text' : 'password';
+    icone.classList.toggle('fa-eye', !vaiMostrar);
+    icone.classList.toggle('fa-eye-slash', vaiMostrar);
+});
+
+// Mensagem de erro (igual à da tela de login)
+var avisoErro = document.createElement('p');
+avisoErro.style.color = '#ff5c5c';
+avisoErro.style.textAlign = 'center';
+avisoErro.style.display = 'none';
+document.getElementById('form-cadastro').insertBefore(avisoErro, document.querySelector('.form-login-botoes'));
+
+function mostrarErro(msg) {
+    avisoErro.textContent = msg;
+    avisoErro.style.display = 'block';
+}
+
+// Busca a solicitação pra saber quem é o aluno (nome e turma).
+fetch('/api/solicitacoes', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (corpo) {
+        solicitacao = (corpo.solicitacoes || []).filter(function (s) { return s.id === idSolicitacao; })[0] || null;
+        if (!solicitacao) {
+            info.textContent = 'Não encontrei a solicitação deste aluno. Volte ao painel e tente de novo.';
+            return;
+        }
+        info.textContent = solicitacao.nomeAluno + ' · Turma ' + solicitacao.turma;
+        botaoCadastrar.disabled = false;
+        // ao voltar, o painel reabre nesta turma
+        try { sessionStorage.setItem('cdm_turma_voltar', solicitacao.turma); } catch (e) {}
+    })
+    .catch(function () {
+        info.textContent = 'Não consegui carregar os dados do aluno agora. Volte ao painel e tente de novo.';
+    });
+
+function voltarAoPainel() {
+    window.location.href = 'dashboard-professor.html';
+}
+
+document.getElementById('form-cadastro').addEventListener('submit', function (evento) {
+    evento.preventDefault();
+    avisoErro.style.display = 'none';
+    if (!solicitacao) return;
+
+    var email = document.getElementById('campo-email').value.trim().toLowerCase();
+    var senha = document.getElementById('campo-senha').value;
+
+    if (!email || !senha) { mostrarErro('Preencha o e-mail e a senha.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { mostrarErro('Digite um e-mail institucional válido.'); return; }
+    if (senha.length < 6) { mostrarErro('A senha precisa ter pelo menos 6 caracteres.'); return; }
+
+    // E-mail que já está no usuarios.js
+    if (typeof USUARIOS !== 'undefined' && USUARIOS.some(function (u) { return String(u.login).trim().toLowerCase() === email; })) {
+        mostrarErro('Este e-mail já está cadastrado.');
+        return;
+    }
+
+    botaoCadastrar.disabled = true;
+    botaoCadastrar.textContent = 'Cadastrando...';
+
+    fetch('/api/alunos-cadastrados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'cadastrar', solicitacaoId: idSolicitacao, email: email, senha: senha, professor: sessao.login })
+    })
+    .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (corpo) {
+            if (!r.ok) throw new Error(corpo.erro || ('Erro ' + r.status));
+            return corpo;
+        });
+    })
+    .then(function (resp) {
+        document.getElementById('modal-cad-texto').textContent =
+            resp.nome + ' já pode entrar no painel com o e-mail ' + resp.email + ' e a senha que você cadastrou.';
+        document.getElementById('modal-cadastrado').hidden = false;
+        document.getElementById('modal-cad-fechar').focus();
+    })
+    .catch(function (erro) {
+        botaoCadastrar.disabled = false;
+        botaoCadastrar.textContent = 'Cadastrar';
+        mostrarErro(erro.message);
+    });
+});
+
+// O X (ou Esc, ou clicar fora) fecha o aviso e volta pro dashboard do professor.
+document.getElementById('modal-cad-fechar').addEventListener('click', voltarAoPainel);
+document.getElementById('modal-cadastrado').addEventListener('click', function (e) {
+    if (e.target === this) voltarAoPainel();
+});
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !document.getElementById('modal-cadastrado').hidden) voltarAoPainel();
+});
+</script>
+
+<script src="menu.js"></script>
+</body>
+</html>

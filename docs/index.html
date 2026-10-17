@@ -143,6 +143,7 @@
             </div>
         </div>
         <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
+        <p id="resumo-aluno-visita" class="resumo-aluno-texto" style="display:none;"></p>
         <p id="resumo-aluno-mensagem" class="resumo-aluno-texto"></p>
         <p class="resumo-aluno-dica"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i>Clique no cartão para abrir seu painel completo</p>
     </section>
@@ -776,6 +777,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 <script src="confete.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="agendamentos-local.js"></script>
 <script src="comportamento.js"></script>
 <script src="status-aluno.js"></script>
 <script src="resumo-painel.js"></script>
@@ -805,6 +807,20 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         apagarResumoAluno();
         secao.style.display = 'none';
     });
+
+    // Visita da turma ao Clube da Maré (mesmo texto do painel do aluno), ao vivo.
+    var linhaVisita = document.getElementById('resumo-aluno-visita');
+    function mostrarVisita(info) {
+        linhaVisita.style.display = info ? '' : 'none';
+        linhaVisita.textContent = info ? '📅 Visita da turma ao Clube: ' + info : '';
+    }
+    mostrarVisita(resumo.visita ? resumo.visita.rotulo + ' — ' + resumo.visita.periodo + ', ' + resumo.visita.entrada + ' às ' + resumo.visita.saida : '');
+    if (resumo.turma) {
+        escutarAgendamentosDaTurma(function () { return resumo.turma; }, function (daTurma) {
+            var v = agendamentoAtualDaTurma(daTurma, resumo.turma);
+            mostrarVisita(v ? infoStatusAgendamento(v).rotulo + ' — ' + agPeriodoTexto(v) + ', ' + v.entrada + ' às ' + v.saida : '');
+        });
+    }
 
     // Confete: só quando a equipe Clube da Maré APROVOU este aluno (uma vez por abertura da página).
     var confeteAlunoDisparado = false;

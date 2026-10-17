@@ -103,6 +103,10 @@
     <section class="area-avaliacao-professores">
         <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
         <p class="dica-importar">Aqui aparecem as solicitações em todos os estágios, inclusive as que aguardam o professor ou a Diretoria, para que o Desenvolvedor acompanhe o andamento completo. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
+        <div id="barra-aprovar-turma" style="display:none; margin:12px 0; padding:10px 12px; border-radius:8px; background:rgba(0,0,0,.08); align-items:center; gap:12px; flex-wrap:wrap;">
+            <button type="button" id="btn-aprovar-turma" class="btn-aprovar-solicitacao">Aprovar todas da turma</button>
+            <span id="texto-aprovar-turma"></span>
+        </div>
         <div id="lista-solicitacoes"></div>
         <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
     </section>
@@ -424,7 +428,7 @@ function desenharUsuarios() {
 desenharUsuarios();
 // Junta os alunos cadastrados pelo professor (banco) e redesenha.
 if (typeof carregarUsuariosCadastrados === 'function') {
-    carregarUsuariosCadastrados(true, true).then(desenharUsuarios);
+    carregarUsuariosCadastrados(true, true).then(function () { desenharUsuarios(); renderizarSolicitacoes(); });
 }
 
 // Remove um aluno cadastrado pelo professor (só os do banco; os do usuarios.js se editam no arquivo).
@@ -461,8 +465,13 @@ corpoUsuarios.addEventListener('click', function (evento) {
 
 // ---- Solicitações encaminhadas pela Direção --------------------------------
 // O Desenvolvedor acompanha todos os status, inclusive os que aguardam professor ou Diretoria.
+// Alunos sem e-mail/senha cadastrados não aparecem aqui enquanto a solicitação
+// ainda está em andamento (o professor recebe um aviso no painel dele).
 function solicitacoesDoDev() {
-    return todasSolicitacoes.slice();
+    return todasSolicitacoes.filter(function (s) {
+        var emAndamento = s.status !== 'Aprovado' && s.status !== 'Recusado';
+        return !(emAndamento && !solicitacaoTemCadastroAluno(s));
+    });
 }
 
 function nomeEscolaDaSolicitacaoDev(s) {
@@ -497,6 +506,45 @@ function renderizarFiltroEscolas() {
 
 document.getElementById('filtro-escola').addEventListener('change', renderizarSolicitacoes);
 
+// ---- Aprovar todas as solicitações de uma turma de uma vez ---------------
+var _aprovandoTurma = false;
+
+function pendentesDaTurmaDev(filtradas) {
+    return filtradas.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; });
+}
+
+function atualizarBarraAprovarTurma(filtradas) {
+    var barra = document.getElementById('barra-aprovar-turma');
+    var pendentes = pendentesDaTurmaDev(filtradas);
+    barra.style.display = (turmaFiltro && pendentes.length) ? 'flex' : 'none';
+    document.getElementById('btn-aprovar-turma').disabled = _aprovandoTurma;
+    document.getElementById('btn-aprovar-turma').textContent = 'Aprovar todas da turma ' + turmaFiltro;
+    document.getElementById('texto-aprovar-turma').textContent =
+        pendentes.length + ' solicitação(ões) aguardando confirmação final nesta turma.';
+}
+
+document.getElementById('btn-aprovar-turma').addEventListener('click', function () {
+    var escolaFiltro = document.getElementById('filtro-escola').value;
+    var pendentes = pendentesDaTurmaDev(solicitacoesDoDev().filter(function (s) {
+        return passaNoFiltro(s.turma) && (!escolaFiltro || nomeEscolaDaSolicitacaoDev(s) === escolaFiltro);
+    }));
+    if (!turmaFiltro || !pendentes.length || _aprovandoTurma) return;
+    if (!confirm('Confirmar a aprovação final de ' + pendentes.length + ' solicitação(ões) da turma ' + turmaFiltro + '?')) return;
+    _aprovandoTurma = true;
+    this.disabled = true;
+    Promise.all(pendentes.map(function (s) { return aprovarComoDesenvolvedor(s.id, ''); }))
+        .then(function () {
+            mostrarPopupAviso({
+                emoji: '🟢', classe: 'popup-aprovado',
+                titulo: 'Turma aprovada',
+                mensagem: pendentes.length + ' solicitação(ões) da turma ' + turmaFiltro + ' foram confirmadas pela equipe Clube da Maré.',
+                linhas: ['A Direção, os professores e os alunos já veem o novo status.']
+            });
+        })
+        .catch(function (erro) { alert('Não consegui aprovar todas: ' + erro.message); })
+        .then(function () { _aprovandoTurma = false; renderizarSolicitacoes(); });
+});
+
 function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
@@ -513,6 +561,7 @@ function renderizarSolicitacoes() {
         ? 'Nenhuma solicitação encontrada com os filtros selecionados.'
         : 'Nenhuma solicitação encontrada.';
     document.getElementById('sem-solicitacoes').style.display = filtradas.length ? 'none' : 'block';
+    atualizarBarraAprovarTurma(filtradas);
 
     filtradas.forEach(function (s) {
         var card = document.createElement('div');

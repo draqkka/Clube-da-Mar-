@@ -23,6 +23,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="confete.js"></script>
 <script src="comportamento.js"></script>
+<script src="usuarios.js"></script>
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
@@ -44,6 +45,11 @@
 .legenda-cores { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 10px 0; font-size: .92rem; }
 .progresso-diretoria { margin: 8px 0 14px; font-weight: bold; }
 .cards-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+.acoes-linha { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.btn-cadastrar-aluno { background: #ff7a00; color: #fff; border: none; border-radius: 6px; padding: 6px 10px;
+    font-size: .8rem; cursor: pointer; transition: transform .15s; }
+.btn-cadastrar-aluno:hover { transform: translateY(-2px); }
+.chip-cadastrado { font-size: .8rem; font-weight: bold; color: #0a8f4e; }
 .passos-planilha { margin: 6px 0 0 18px; line-height: 1.7; }
 .caixa-planilha-oficial { border: 2px dashed var(--cor-dourado, #d9a441); border-radius: 12px; padding: 16px 20px; margin-top: 16px; }
 
@@ -151,7 +157,8 @@
         verdade (mesmo padrão do formulário de confirmação do aluno, em
         dashboard-aluno.html).
     -->
-    <section class="area-avaliacao-professores" style="margin-top: 30px;">
+    <!-- Só aparece depois que o Clube da Maré aprova (confirma) alguma solicitação deste professor. -->
+    <section class="area-avaliacao-professores" id="area-formulario-professor" style="margin-top: 30px; display:none;">
         <h2>Formulário do Professor</h2>
         <p id="texto-formulario-professor">Preencha o Termo de Compromisso do Acompanhante:</p>
         <a href="https://forms.gle/kPxU4qJXq9vyyPCZ7" target="_blank" class="btn-planilha-atalho">
@@ -284,6 +291,18 @@ window.resolverEscolaSolicitacao = function (s) {
     return e || dadosDaEscola(d.notas).escola || '';
 };
 
+// O aluno já tem e-mail/senha? (usuarios.js ou cadastrado pelo professor no banco)
+function usuarioCadastradoDoAluno(aluno) {
+    if (typeof listarEstudantes !== 'function') return null;
+    return listarEstudantes(aluno.turma).filter(function (u) {
+        return nomesCompativeis(u.nome, aluno.nome) || (u.ra && mesmoRa(u.ra, aluno.ra));
+    })[0] || null;
+}
+// Junta os alunos cadastrados pelo professor e redesenha a tabela.
+if (typeof carregarUsuariosCadastrados === 'function') {
+    carregarUsuariosCadastrados().then(function () { renderizarTurma(); });
+}
+
 // ---- Tabela da turma -------------------------------------------------------
 function renderizarTurma() {
     if (!dadosTurmaAtual) return;
@@ -327,9 +346,19 @@ function renderizarTurma() {
             else if (s.status === 'Aprovado') confirmadas++;
             else if (s.status === 'Aguardando Desenvolvedor') esperandoEquipe++;
         }
-        var botao = !s
-            ? '<button type="button" class="btn-solicitar-participacao" data-ra="' + escaparHtml(a.ra) + '">Solicitar participação</button>'
-            : '<button type="button" disabled>Já solicitada</button>';
+        var botao;
+        if (!s) {
+            botao = '<button type="button" class="btn-solicitar-participacao" data-ra="' + escaparHtml(a.ra) + '">Solicitar participação</button>';
+        } else {
+            // Já solicitada: ao lado, o cadastro do e-mail institucional + senha do aluno
+            // (sem isso o aluno não consegue entrar no painel dele).
+            var uCad = usuarioCadastradoDoAluno(a);
+            botao = '<div class="acoes-linha"><button type="button" disabled>Já solicitada</button>' +
+                (uCad
+                    ? '<span class="chip-cadastrado" title="' + escaparHtml(emailDoUsuario(uCad)) + '">✔ E-mail cadastrado</span>'
+                    : '<button type="button" class="btn-cadastrar-aluno" data-sid="' + escaparHtml(s.id) + '">Cadastrar e-mail e senha</button>') +
+                '</div>';
+        }
 
         var linha = document.createElement('tr');
         linha.className = info.classe;
@@ -422,7 +451,11 @@ if (!minhasTurmas.length) {
             var d = _planilhaCachePorTurma[turmaCanonica(t)];
             return d && d.notas.length;
         })[0];
-        selecionarTurma(comAlunos || minhasTurmas[0]);
+        // Voltando da tela de cadastro do aluno, reabre a mesma turma.
+        var voltar = '';
+        try { voltar = sessionStorage.getItem('cdm_turma_voltar') || ''; sessionStorage.removeItem('cdm_turma_voltar'); } catch (e) {}
+        var preferida = minhasTurmas.filter(function (t) { return voltar && turmaCanonica(t) === turmaCanonica(voltar); })[0];
+        selecionarTurma(preferida || comAlunos || minhasTurmas[0]);
     });
 }
 
@@ -478,6 +511,8 @@ function fecharModal() {
 }
 
 document.getElementById('corpo-tabela-aprovados').addEventListener('click', function (evento) {
+    var cad = evento.target.closest('.btn-cadastrar-aluno');
+    if (cad) { window.location.href = 'cadastro-aluno.html?sid=' + encodeURIComponent(cad.dataset.sid); return; }
     var botao = evento.target.closest('.btn-solicitar-participacao');
     if (!botao || !dadosTurmaAtual) return;
     var aluno = dadosTurmaAtual.notas.filter(function (a) { return mesmoRa(a.ra, botao.dataset.ra); })[0];
@@ -557,6 +592,8 @@ function renderizarListaSolicitacoes() {
 
 escutarSolicitacoesProfessor(sessao.login, function (minhasSolicitacoes) {
     solicitacoes = minhasSolicitacoes;
+    document.getElementById('area-formulario-professor').style.display =
+        minhasSolicitacoes.some(function (s) { return s.status === 'Aprovado'; }) ? '' : 'none';
     if (typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('professor', minhasSolicitacoes);   // confete quando o Clube da Maré aprova
     renderizarTurma(); // as linhas mudam de cor assim que a Diretoria responde
     renderizarListaSolicitacoes();

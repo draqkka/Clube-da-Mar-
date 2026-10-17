@@ -25,6 +25,7 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="agendamentos-local.js"></script>
 <script src="resumo-painel.js"></script>
 <!-- Lista de usuários — só é carregada nesta página pra exibir a tabela de
      contas cadastradas (nenhuma outra página do painel precisa dela). -->
@@ -79,6 +80,10 @@
             <span class="card-status-valor" id="resumo-aguardando-dev">-</span>
         </div>
         <div class="card-status">
+            <span class="card-status-rotulo">Visitas aguardando autorização</span>
+            <span class="card-status-valor" id="resumo-agenda-pendentes">-</span>
+        </div>
+        <div class="card-status">
             <span class="card-status-rotulo">Solicitações da direção</span>
             <span class="card-status-valor" id="resumo-total-solicitacoes">-</span>
         </div>
@@ -99,14 +104,33 @@
         </select>
     </div>
 
+    <!--
+        AGENDAMENTOS DE VISITA — a Diretoria pede 2 dias seguidos para uma turma
+        e o Clube da Maré (aqui) AUTORIZA ou REPROVA a disponibilidade. Mostra
+        todas as turmas (o filtro de turma da página não se aplica aqui, pra
+        você enxergar conflitos de data entre turmas).
+    -->
+    <section class="area-avaliacao-professores" id="area-agenda-dev">
+        <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Agendamentos de visita (autorização do Clube da Maré)</h2>
+        <p class="dica-importar">A Diretoria pede 2 dias seguidos para a turma. Aprove ou reprove a disponibilidade: a decisão aparece na hora para a Diretoria, o professor e os alunos da turma. Ao reprovar, escreva o motivo e, se quiser, sugira outra data. Datas já aprovadas para outra turma não podem ser aprovadas de novo.</p>
+        <div class="filtro-status-agenda">
+            <label for="filtro-status-agenda" style="font-weight:bold;">Mostrar:</label>
+            <select id="filtro-status-agenda" class="form-login-campo" style="flex:none; min-width:220px;">
+                <option value="Pendente">Aguardando autorização</option>
+                <option value="Aprovado">Aprovadas</option>
+                <option value="Recusado">Reprovadas</option>
+                <option value="Cancelado">Canceladas pela direção</option>
+                <option value="">Todas</option>
+            </select>
+        </div>
+        <div id="lista-agendamentos"></div>
+        <p id="sem-agendamentos" style="display:none;">Nenhum agendamento neste filtro.</p>
+    </section>
+
     <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
     <section class="area-avaliacao-professores">
         <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
         <p class="dica-importar">Aqui aparecem as solicitações em todos os estágios, inclusive as que aguardam o professor ou a Diretoria, para que o Desenvolvedor acompanhe o andamento completo. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
-        <div id="barra-aprovar-turma" style="display:none; margin:12px 0; padding:10px 12px; border-radius:8px; background:rgba(0,0,0,.08); align-items:center; gap:12px; flex-wrap:wrap;">
-            <button type="button" id="btn-aprovar-turma" class="btn-aprovar-solicitacao">Aprovar todas da turma</button>
-            <span id="texto-aprovar-turma"></span>
-        </div>
         <div id="lista-solicitacoes"></div>
         <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
     </section>
@@ -406,19 +430,18 @@ function _escUsuario(v) {
 }
 
 // Desenha a tabela com os usuários do usuarios.js + os alunos que o professor
-// cadastrou (esses ficam no banco; a senha vem do servidor só aqui, pra "mostrar").
+// cadastrou (esses ficam no banco; a senha deles fica guardada com hash, então
+// não dá pra "mostrar").
 function desenharUsuarios() {
     corpoUsuarios.innerHTML = '';
     USUARIOS.forEach(function (u, indice) {
         var linha = document.createElement('tr');
         var idSenha = 'senha-' + indice;
-        var botaoRemover = u.doBanco
-            ? ' <button type="button" class="btn-remover-usuario" data-email="' + _escUsuario(u.login) + '" style="background:#8b2c2c;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Remover</button>'
-            : '';
-        var celulaSenha = (u.doBanco && !u.senha)
-            ? '<span style="opacity:.75;">cadastrada antes da atualização (senha indisponível)</span>' + botaoRemover
+        var celulaSenha = u.doBanco
+            ? '<span style="opacity:.75;">cadastrada pelo professor (não dá pra ver)</span> ' +
+              '<button type="button" class="btn-remover-usuario" data-email="' + _escUsuario(u.login) + '" style="background:#8b2c2c;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Remover</button>'
             : '<span id="' + idSenha + '" style="letter-spacing:2px;">••••••••</span> ' +
-              '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + _escUsuario(u.senha) + '">mostrar</button>' + botaoRemover;
+              '<button type="button" class="btn-mostrar-senha" data-alvo="' + idSenha + '" data-senha="' + _escUsuario(u.senha) + '">mostrar</button>';
         linha.innerHTML = '<td>' + _escUsuario(u.login) + '</td><td>' + _escUsuario(u.perfil) + '</td><td>' + _escUsuario(u.nome || '') +
             '</td><td>' + _escUsuario(u.turmas || '-') + '</td><td>' + celulaSenha + '</td>';
         corpoUsuarios.appendChild(linha);
@@ -428,7 +451,7 @@ function desenharUsuarios() {
 desenharUsuarios();
 // Junta os alunos cadastrados pelo professor (banco) e redesenha.
 if (typeof carregarUsuariosCadastrados === 'function') {
-    carregarUsuariosCadastrados(true, true).then(function () { desenharUsuarios(); renderizarSolicitacoes(); });
+    carregarUsuariosCadastrados().then(desenharUsuarios);
 }
 
 // Remove um aluno cadastrado pelo professor (só os do banco; os do usuarios.js se editam no arquivo).
@@ -445,7 +468,7 @@ corpoUsuarios.addEventListener('click', function (evento) {
                 if (!r.ok) throw new Error(corpo.erro || ('Erro ' + r.status));
             });
         })
-        .then(function () { return carregarUsuariosCadastrados(true, true); })
+        .then(function () { return carregarUsuariosCadastrados(true); })
         .then(desenharUsuarios)
         .catch(function (erro) {
             rem.disabled = false;
@@ -465,13 +488,8 @@ corpoUsuarios.addEventListener('click', function (evento) {
 
 // ---- Solicitações encaminhadas pela Direção --------------------------------
 // O Desenvolvedor acompanha todos os status, inclusive os que aguardam professor ou Diretoria.
-// Alunos sem e-mail/senha cadastrados não aparecem aqui enquanto a solicitação
-// ainda está em andamento (o professor recebe um aviso no painel dele).
 function solicitacoesDoDev() {
-    return todasSolicitacoes.filter(function (s) {
-        var emAndamento = s.status !== 'Aprovado' && s.status !== 'Recusado';
-        return !(emAndamento && !solicitacaoTemCadastroAluno(s));
-    });
+    return todasSolicitacoes.slice();
 }
 
 function nomeEscolaDaSolicitacaoDev(s) {
@@ -506,45 +524,6 @@ function renderizarFiltroEscolas() {
 
 document.getElementById('filtro-escola').addEventListener('change', renderizarSolicitacoes);
 
-// ---- Aprovar todas as solicitações de uma turma de uma vez ---------------
-var _aprovandoTurma = false;
-
-function pendentesDaTurmaDev(filtradas) {
-    return filtradas.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; });
-}
-
-function atualizarBarraAprovarTurma(filtradas) {
-    var barra = document.getElementById('barra-aprovar-turma');
-    var pendentes = pendentesDaTurmaDev(filtradas);
-    barra.style.display = (turmaFiltro && pendentes.length) ? 'flex' : 'none';
-    document.getElementById('btn-aprovar-turma').disabled = _aprovandoTurma;
-    document.getElementById('btn-aprovar-turma').textContent = 'Aprovar todas da turma ' + turmaFiltro;
-    document.getElementById('texto-aprovar-turma').textContent =
-        pendentes.length + ' solicitação(ões) aguardando confirmação final nesta turma.';
-}
-
-document.getElementById('btn-aprovar-turma').addEventListener('click', function () {
-    var escolaFiltro = document.getElementById('filtro-escola').value;
-    var pendentes = pendentesDaTurmaDev(solicitacoesDoDev().filter(function (s) {
-        return passaNoFiltro(s.turma) && (!escolaFiltro || nomeEscolaDaSolicitacaoDev(s) === escolaFiltro);
-    }));
-    if (!turmaFiltro || !pendentes.length || _aprovandoTurma) return;
-    if (!confirm('Confirmar a aprovação final de ' + pendentes.length + ' solicitação(ões) da turma ' + turmaFiltro + '?')) return;
-    _aprovandoTurma = true;
-    this.disabled = true;
-    Promise.all(pendentes.map(function (s) { return aprovarComoDesenvolvedor(s.id, ''); }))
-        .then(function () {
-            mostrarPopupAviso({
-                emoji: '🟢', classe: 'popup-aprovado',
-                titulo: 'Turma aprovada',
-                mensagem: pendentes.length + ' solicitação(ões) da turma ' + turmaFiltro + ' foram confirmadas pela equipe Clube da Maré.',
-                linhas: ['A Direção, os professores e os alunos já veem o novo status.']
-            });
-        })
-        .catch(function (erro) { alert('Não consegui aprovar todas: ' + erro.message); })
-        .then(function () { _aprovandoTurma = false; renderizarSolicitacoes(); });
-});
-
 function renderizarSolicitacoes() {
     var lista = document.getElementById('lista-solicitacoes');
     lista.innerHTML = '';
@@ -561,7 +540,6 @@ function renderizarSolicitacoes() {
         ? 'Nenhuma solicitação encontrada com os filtros selecionados.'
         : 'Nenhuma solicitação encontrada.';
     document.getElementById('sem-solicitacoes').style.display = filtradas.length ? 'none' : 'block';
-    atualizarBarraAprovarTurma(filtradas);
 
     filtradas.forEach(function (s) {
         var card = document.createElement('div');
@@ -602,6 +580,108 @@ escutarTodasSolicitacoes(function (solicitacoes) {
     renderizarAlunos();        // atualiza a coluna "Solicitação" dos alunos
     renderizarSolicitacoes();
     if (typeof atualizarDadosBrutos === 'function') atualizarDadosBrutos();
+});
+
+// ==========================================================================
+// AGENDAMENTOS DE VISITA (ver agendamentos-local.js)
+// ==========================================================================
+var todosAgendamentos = [];
+
+function renderizarAgendamentosDev() {
+    var lista = document.getElementById('lista-agendamentos');
+    var filtro = document.getElementById('filtro-status-agenda').value;
+    var c = contarAgendamentosPorStatus(todosAgendamentos);
+    document.getElementById('resumo-agenda-pendentes').textContent = c.pendente;
+
+    // guarda o que já foi digitado nas respostas (a lista é refeita quando algo muda)
+    var digitado = {};
+    lista.querySelectorAll('.card-agenda-dev').forEach(function (card) {
+        var t = card.querySelector('.campo-resposta-agenda'), d = card.querySelector('.campo-data-sugerida');
+        digitado[card.dataset.id] = { texto: t ? t.value : '', data: d ? d.value : '' };
+    });
+
+    var visiveis = todosAgendamentos.filter(function (a) { return !filtro || a.status === filtro; })
+        .sort(function (a, b) { return a.dataInicio < b.dataInicio ? -1 : 1; });   // as datas mais próximas primeiro
+    document.getElementById('sem-agendamentos').style.display = visiveis.length ? 'none' : 'block';
+
+    lista.innerHTML = visiveis.map(function (a) {
+        var extra = '';
+        if (a.status === 'Pendente') {
+            var conflitos = agConflitosAprovados(a.dataInicio, todosAgendamentos, a.id);
+            var concorrentes = agConcorrentesPendentes(a.dataInicio, a.turma, todosAgendamentos, a.id);
+            if (conflitos.length) {
+                extra += '<div class="aviso-agendamento erro">⛔ Conflito: a turma <strong>' + escaparHtml(conflitos[0].turma) +
+                    '</strong> já tem visita aprovada em ' + escaparHtml(agPeriodoCurto(conflitos[0])) + '. Não dá pra aprovar estas datas — reprove e sugira outra.</div>';
+            } else if (concorrentes.length) {
+                extra += '<div class="aviso-agendamento atencao">⚠️ A turma <strong>' + escaparHtml(concorrentes[0].turma) +
+                    '</strong> também pediu essas datas (' + escaparHtml(agPeriodoCurto(concorrentes[0])) + '). Ao aprovar um, o outro não poderá ser aprovado.</div>';
+            }
+            var d = digitado[a.id] || { texto: '', data: '' };
+            extra += '<div style="margin-top:10px;">' +
+                '<textarea class="form-login-campo campo-resposta-agenda" rows="2" style="width:100%; box-sizing:border-box; margin-bottom:8px;" placeholder="Resposta à Diretoria (motivo/orientação; obrigatória ao reprovar)...">' + escaparHtml(d.texto) + '</textarea>' +
+                '<label style="font-size:.85rem; font-weight:bold;">Sugerir outra data (opcional, ao reprovar): ' +
+                '<input type="date" class="form-login-campo campo-data-sugerida" style="flex:none; width:auto; margin-left:6px;" min="' + escaparHtml(agPrimeiroDiaPermitido()) + '" value="' + escaparHtml(d.data) + '"></label>' +
+                '<div class="aviso-agendamento erro msg-agenda" hidden></div>' +
+                '<div class="botoes-solicitacao">' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-acao="aprovar" data-id="' + escaparHtml(a.id) + '"' + (conflitos.length ? ' disabled' : '') + '>Aprovar disponibilidade</button> ' +
+                '<button type="button" class="btn-recusar-solicitacao" data-acao="recusar" data-id="' + escaparHtml(a.id) + '">Reprovar</button>' +
+                '</div></div>';
+        } else if (a.status === 'Aprovado' || a.status === 'Recusado') {
+            extra += '<div class="botoes-solicitacao"><button type="button" class="btn-agenda-secundario" data-acao="reabrir" data-id="' + escaparHtml(a.id) + '">Reavaliar (volta pra análise)</button></div>';
+        }
+        return '<div class="card-agenda-dev" data-id="' + escaparHtml(a.id) + '">' +
+            htmlCartaoAgendamento(a, { mostrarTurma: true }).replace(/<\/div>$/, extra + '</div>') + '</div>';
+    }).join('');
+}
+
+document.getElementById('filtro-status-agenda').addEventListener('change', renderizarAgendamentosDev);
+
+escutarAgendamentos(function (lista) {
+    todosAgendamentos = lista;
+    renderizarAgendamentosDev();
+});
+
+document.getElementById('lista-agendamentos').addEventListener('click', function (evento) {
+    var botao = evento.target.closest('button[data-acao]');
+    if (!botao || botao.disabled) return;
+    var id = botao.dataset.id;
+    var a = todosAgendamentos.filter(function (x) { return x.id === id; })[0];
+    if (!a) return;
+
+    if (botao.dataset.acao === 'reabrir') { reabrirAgendamento(id); return; }
+
+    var card = botao.closest('.card-agenda-dev');
+    var resposta = card.querySelector('.campo-resposta-agenda').value.trim();
+    var sugerida = card.querySelector('.campo-data-sugerida').value;
+    var msg = card.querySelector('.msg-agenda');
+    function erro(t) { msg.textContent = t; msg.hidden = false; }
+    msg.hidden = true;
+
+    if (botao.dataset.acao === 'aprovar') {
+        if (agConflitosAprovados(a.dataInicio, todosAgendamentos, a.id).length) { erro('Estas datas já estão aprovadas para outra turma.'); return; }
+        aprovarAgendamento(id, resposta);
+        mostrarPopupAviso({
+            emoji: '🟢', classe: 'popup-aprovado', titulo: 'Disponibilidade aprovada',
+            mensagem: 'A visita da turma ' + a.turma + ' está autorizada para ' + agPeriodoTexto(a) + '.',
+            linhas: ['<strong>Escola:</strong> ' + escaparHtml(a.escola), '<strong>Horário:</strong> ' + escaparHtml(a.entrada) + ' às ' + escaparHtml(a.saida),
+                resposta ? '<strong>Sua resposta:</strong> “' + escaparHtml(resposta) + '”' : '',
+                'A Diretoria, o professor e os alunos da turma já veem o novo status.'].filter(Boolean)
+        });
+    } else {
+        if (!resposta) { erro('Escreva o motivo da reprovação para a Diretoria.'); return; }
+        if (sugerida) {
+            if (sugerida < agPrimeiroDiaPermitido()) { erro('A data sugerida precisa ser a partir de ' + agDataBR(agPrimeiroDiaPermitido()) + '.'); return; }
+            if (agConflitosAprovados(sugerida, todosAgendamentos, a.id).length) { erro('A data sugerida também já está reservada. Escolha outra.'); return; }
+        }
+        recusarAgendamento(id, resposta, sugerida);
+        mostrarPopupAviso({
+            emoji: '🔴', classe: 'popup-reprovado', titulo: 'Disponibilidade reprovada',
+            mensagem: 'As datas pedidas pela turma ' + a.turma + ' (' + agPeriodoTexto(a) + ') foram reprovadas.',
+            linhas: ['<strong>Sua resposta:</strong> “' + escaparHtml(resposta) + '”',
+                sugerida ? '<strong>Data sugerida:</strong> ' + escaparHtml(agPeriodoTexto({ dataInicio: sugerida, dataFim: agDataFim(sugerida) })) : '',
+                'A Diretoria, o professor e os alunos da turma já veem o novo status.'].filter(Boolean)
+        });
+    }
 });
 
 // Pop-up de aviso depois de cada decisão (um por aluno).

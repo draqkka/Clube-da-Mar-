@@ -130,10 +130,10 @@ function infoStatusSolicitacao(s) {
         }
         if (visita && visita.status === 'Recusado') {
             return {
-                chave: 'esperando-agendamento', classe: 'status-recusado', emoji: '🔴', rotulo: 'Data reprovada — direção vai reagendar',
-                titulo: 'Data reprovada — direção vai reagendar',
-                mensagem: 'A direção aprovou, mas o Clube da Maré reprovou as datas da visita. A direção vai pedir outra data.',
-                etapas: [prof, dirOk, { emoji: '🔴', texto: 'Data reprovada — direção vai reagendar' }]
+                chave: 'visita-reprovada', classe: 'status-recusado', emoji: '🔴', rotulo: 'Reprovado pelo Clube — reagendando com a direção',
+                titulo: 'Reprovado pelo Clube — reagendando com a direção',
+                mensagem: 'A direção aprovou, mas o Clube da Maré reprovou as datas da visita. A direção está negociando o reagendamento com o Clube.',
+                etapas: [prof, dirOk, { emoji: '🔴', texto: 'Reprovado pelo Clube — reagendando com a direção' }]
             };
         }
         return {

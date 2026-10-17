@@ -76,18 +76,23 @@ function nomeCurtoAluno(nomeCompleto) {
 // mensagemReprovacao...).
 // ==========================================================================
 var MSG_ALUNO_APROVADO = 'Parabéns! Gosto assim, se superando, continue assim! :)';
-var MSG_ALUNO_SEM_DADOS = 'Não encontramos sua média e frequência na planilha ainda. Fale com a secretaria da escola.';
+var MSG_ALUNO_SEM_DADOS = 'O professor ainda não colocou suas notas e frequências.';
 
 // Status que aparece no card "Status" (e o texto da caixa de solicitação).
 function statusPainelAluno(solicitacao, resumo) {
     resumo = resumo || {};
     var info = statusDiretoria(solicitacao);
     if (!solicitacao && !resumo.encontradoNaPlanilha) {
+        // O professor ainda não puxou a planilha: não há nota nem frequência deste aluno.
         info = { chave: 'aguardando-professor', classe: 'status-pendente', rotulo: 'Aguardando o professor',
+                 texto: 'Aguardando o professor: ele ainda não colocou suas notas e frequências.' };
+    } else if (!solicitacao && resumo.cadastradoPeloProfessor === false) {
+        // Está na planilha, mas o professor não cadastrou o e-mail e a senha do aluno.
+        info = { chave: 'aguardando-cadastro', classe: 'status-pendente', rotulo: 'Aguardando o professor',
                  texto: 'Aguardando o professor: ainda não há cadastro deste aluno no Clube da Maré.' };
     } else if (!solicitacao) {
-        info = { chave: 'sem-solicitacao', classe: 'status-pendente', rotulo: 'Solicitação não feita pelo professor',
-                 texto: 'O professor já cadastrou este aluno, mas ainda não solicitou a participação à Diretoria.' };
+        info = { chave: 'sem-solicitacao', classe: 'status-pendente', rotulo: 'Aguardando solicitação de participação do professor',
+                 texto: 'Aguardando solicitação de participação do professor.' };
     }
     // Aluno reprovado: "Reprovado" no card e a mesma mensagem do painel.
     if (resumo.reprovado) {

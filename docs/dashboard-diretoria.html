@@ -26,6 +26,7 @@
 <script src="planilha.js"></script>
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="agendamentos-local.js"></script>
 <script src="resumo-painel.js"></script>
 </head>
 <body class="fonte-profissional">
@@ -40,7 +41,7 @@
 
     <div class="login-saudacao">
         <h1 id="titulo-boas-vindas">Olá, Diretoria!</h1>
-        <p>Visão geral de turmas e gerenciamento de solicitações dos professores.</p>
+        <p>Visão geral de turmas, agendamento da visita ao Clube da Maré e gerenciamento de solicitações dos professores.</p>
     </div>
 
     <!-- FILTRO DE TURMA — dropdown: a Diretoria escolhe uma turma e a página
@@ -49,6 +50,109 @@
         <label for="filtro-turma-select" style="font-weight:bold;">Selecionar turma:</label>
         <select id="filtro-turma-select" style="min-width:240px; max-width:100%; padding:10px 12px; border-radius:8px;"></select>
     </div>
+
+    <!--
+        AGENDAMENTO DA VISITA AO CLUBE DA MARÉ — funciona como marcar uma
+        consulta, mas pra turma inteira: 2 dias seguidos, com horário de
+        entrada e saída. O pedido só vale depois que o Clube da Maré
+        (painel do Desenvolvedor) AUTORIZA. A lógica está em agendamentos-local.js.
+    -->
+    <section class="area-avaliacao-professores" id="area-agendamento" style="margin-top: 10px;">
+        <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Agendar visita ao Clube da Maré</h2>
+        <p class="dica-importar">Cada turma visita o Clube por <strong>2 dias seguidos</strong>. Escolha o primeiro dia e o segundo é marcado automaticamente. O pedido só vale depois da <strong>autorização do Clube da Maré</strong> — o status aparece aqui e também para o professor e os alunos da turma.</p>
+
+        <div id="agenda-resumo-geral" class="dica-importar"></div>
+        <div id="agenda-lista"></div>
+
+        <details id="agenda-form-detalhes" style="margin-top: 14px;">
+            <summary id="agenda-form-titulo" style="cursor:pointer; font-weight:bold; font-size:1.05rem;">Fazer novo pedido de agendamento</summary>
+
+            <div id="agenda-reservas-caixa" style="margin-top:12px;">
+                <strong style="font-size:.9rem;">Datas já reservadas no Clube (indisponíveis):</strong>
+                <div id="agenda-reservas" class="reservas-clube"></div>
+            </div>
+
+            <div class="form-agendamento" id="form-agendamento">
+                <div class="campo">
+                    <label for="ag-turma">Turma</label>
+                    <select id="ag-turma" class="form-login-campo"></select>
+                </div>
+                <div class="campo">
+                    <label for="ag-escola">Escola que está solicitando</label>
+                    <input type="text" id="ag-escola" class="form-login-campo" maxlength="200" placeholder="Nome da escola" autocomplete="organization">
+                </div>
+
+                <div class="campo">
+                    <label for="ag-inicio">1º dia da visita</label>
+                    <input type="date" id="ag-inicio" class="form-login-campo">
+                </div>
+                <div class="campo">
+                    <label>2º dia (automático)</label>
+                    <div class="dia-dois" id="ag-dia2">Escolha o 1º dia</div>
+                </div>
+
+                <div class="campo">
+                    <label for="ag-entrada">Horário de entrada</label>
+                    <input type="time" id="ag-entrada" class="form-login-campo">
+                </div>
+                <div class="campo">
+                    <label for="ag-saida">Horário de saída</label>
+                    <input type="time" id="ag-saida" class="form-login-campo">
+                    <span class="dica-campo">Vale para os dois dias.</span>
+                </div>
+
+                <div class="campo">
+                    <label for="ag-responsavel">Responsável pelo pedido</label>
+                    <input type="text" id="ag-responsavel" class="form-login-campo" maxlength="150" autocomplete="name">
+                </div>
+                <div class="campo">
+                    <label for="ag-cargo">Cargo</label>
+                    <select id="ag-cargo" class="form-login-campo"></select>
+                </div>
+
+                <div class="campo">
+                    <label for="ag-telefone">Telefone / WhatsApp (com DDD)</label>
+                    <input type="tel" id="ag-telefone" class="form-login-campo" maxlength="20" placeholder="(11) 90000-0000" autocomplete="tel">
+                </div>
+                <div class="campo">
+                    <label for="ag-email">E-mail para contato (opcional)</label>
+                    <input type="email" id="ag-email" class="form-login-campo" maxlength="150" autocomplete="email">
+                </div>
+
+                <div class="campo">
+                    <label for="ag-alunos">Quantidade de alunos</label>
+                    <input type="number" id="ag-alunos" class="form-login-campo" min="1" max="500" inputmode="numeric">
+                </div>
+                <div class="campo">
+                    <label for="ag-acomp">Acompanhantes (professores/monitores)</label>
+                    <input type="number" id="ag-acomp" class="form-login-campo" min="1" max="100" inputmode="numeric">
+                </div>
+
+                <div class="campo largo">
+                    <label for="ag-transporte">Como a turma vai chegar?</label>
+                    <select id="ag-transporte" class="form-login-campo"></select>
+                </div>
+
+                <div class="campo largo">
+                    <label for="ag-obs">Observações (acessibilidade, restrição alimentar, medicação, etc.)</label>
+                    <textarea id="ag-obs" class="form-login-campo" rows="3" maxlength="1000"></textarea>
+                </div>
+
+                <div class="campo largo">
+                    <label class="check-declaracao">
+                        <input type="checkbox" id="ag-declaro">
+                        <span>Declaro que as informações estão corretas e que a visita só está confirmada depois da autorização do Clube da Maré.</span>
+                    </label>
+                </div>
+
+                <div class="campo largo">
+                    <div id="ag-aviso-data" aria-live="polite"></div>
+                    <div id="ag-mensagem" aria-live="polite"></div>
+                    <button type="button" class="btn-planilha-atalho" id="ag-enviar" style="align-self:flex-start;">Solicitar agendamento ao Clube da Maré</button>
+                </div>
+            </div>
+        </details>
+    </section>
 
     <!-- Área de solicitações dos professores — agora logo no começo, ANTES da
          lista de alunos, pra ser um dos primeiros campos da tela. -->
@@ -108,6 +212,9 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
         { rotulo: 'Confirmadas', valor: c.confirmada },
         { rotulo: 'Recusadas', valor: c.recusada }
     ];
+    var ca = contarAgendamentosPorStatus(todosAgendamentos);
+    cartoes.push({ rotulo: 'Visitas aguardando o Clube', valor: ca.pendente });
+    cartoes.push({ rotulo: 'Visitas aprovadas', valor: ca.aprovado });
     var texto = dadosAlunos ? dadosAlunos.notas.length + ' aluno(s) nas turmas.' : '';
     guardarResumoPainel(sessao, cartoes, texto);
     sessionStorage.removeItem('cdm_sessao');
@@ -128,9 +235,9 @@ window.resolverEscolaSolicitacao = function (s) {
     return e || dadosDaEscola(alunos).escola || '';
 };
 
-// Turmas que a Diretora pode escolher, nesta ordem. Só 2ºA e 3ºA têm alunos de
-// verdade; as outras são fictícias (ficam vazias). Pra mudar a lista, edite aqui.
-var TURMAS_DIRETORIA = ['1ºA', '1ºB', '1ºC', '1ºD', '2ºA', '2ºB', '2ºC', '3ºA'];
+// Turmas que a Diretora pode escolher, nesta ordem (as mesmas do professor: duas
+// do 1º ano, duas do 2º e a 3ºA). Só 2ºA e 3ºA têm alunos de verdade; as outras ficam vazias. Pra mudar a lista, edite aqui.
+var TURMAS_DIRETORIA = ['1ºA', '1ºB', '2ºA', '2ºB', '3ºA'];
 
 // Turma selecionada: sempre uma das turmas do dropdown (sem opção 'todas').
 var turmaFiltro = '2ºA';
@@ -156,10 +263,13 @@ function renderizarFiltroTurmas() {
     }).join('');
     if (turmas.indexOf(turmaFiltro) === -1) turmaFiltro = turmas[0] || '';
     seletor.value = turmaFiltro;
+    if (typeof sincronizarTurmaDoFormulario === 'function') sincronizarTurmaDoFormulario();
 }
 
 document.getElementById('filtro-turma-select').addEventListener('change', function () {
     turmaFiltro = this.value;
+    document.getElementById('ag-escola').dataset.tocado = '';   // a escola acompanha a nova turma
+    if (typeof sincronizarTurmaDoFormulario === 'function') { sincronizarTurmaDoFormulario(true); renderizarAgendamentos(); }
     renderizarTabelaAlunos();
     renderizarInfoTurmas();
     renderizarSolicitacoes();
@@ -220,11 +330,214 @@ carregarTodasAsTurmas()
         renderizarSolicitacoes(); // a escola de cada solicitação vem dos alunos
         renderizarTabelaAlunos();
         renderizarInfoTurmas();
+        preencherEscolaDaTurma();
     })
     .catch(function (erro) {
         document.getElementById('carregando').textContent = 'Erro ao ler planilha (' + erro.message + ').';
     });
 
+
+// ==========================================================================
+// AGENDAMENTO DA VISITA AO CLUBE DA MARÉ (ver agendamentos-local.js)
+// ==========================================================================
+var todosAgendamentos = [];
+
+// Preenche os selects fixos do formulário.
+(function () {
+    document.getElementById('ag-cargo').innerHTML = AGENDAMENTO_CARGOS.map(function (c) {
+        return '<option>' + escaparHtml(c) + '</option>';
+    }).join('');
+    document.getElementById('ag-transporte').innerHTML = '<option value="">Selecione...</option>' +
+        AGENDAMENTO_TRANSPORTES.map(function (t) { return '<option>' + escaparHtml(t) + '</option>'; }).join('');
+    document.getElementById('ag-entrada').value = AGENDAMENTO_HORA_ENTRADA_PADRAO;
+    document.getElementById('ag-saida').value = AGENDAMENTO_HORA_SAIDA_PADRAO;
+    document.getElementById('ag-inicio').min = agPrimeiroDiaPermitido();
+    document.getElementById('ag-responsavel').value = sessao.nome || '';
+    document.getElementById('ag-email').value = /@/.test(sessao.login || '') ? sessao.login : '';
+})();
+
+// A turma do formulário acompanha a turma escolhida no filtro da página.
+// "forcar" = o filtro mudou agora (o formulário vai junto); sem ele, a escolha
+// que a Diretoria já fez no formulário é mantida (a lista é recriada a cada atualização).
+function sincronizarTurmaDoFormulario(forcar) {
+    var sel = document.getElementById('ag-turma');
+    var turmas = Array.prototype.map.call(document.getElementById('filtro-turma-select').options, function (o) { return o.value; });
+    var chave = turmas.join('|');
+    var atual = sel.value;
+    if (sel.dataset.opcoes !== chave) {
+        sel.innerHTML = turmas.map(function (t) {
+            return '<option value="' + escaparHtml(t) + '">' + escaparHtml(t) + '</option>';
+        }).join('');
+        sel.dataset.opcoes = chave;
+    }
+    sel.value = (!forcar && atual && turmas.indexOf(atual) !== -1) ? atual : turmaFiltro;
+    preencherEscolaDaTurma();
+}
+
+// A escola vem da planilha da turma (se a Diretoria ainda não digitou outra).
+function preencherEscolaDaTurma() {
+    var campo = document.getElementById('ag-escola');
+    if (campo.dataset.tocado === '1' || !dadosAlunos) return;
+    var turma = document.getElementById('ag-turma').value;
+    var alunos = dadosAlunos.notas.filter(function (a) { return mesmaTurma(a.turma, turma); });
+    campo.value = alunos.length ? (dadosDaEscola(alunos).escola || '') : '';
+}
+document.getElementById('ag-escola').addEventListener('input', function () { this.dataset.tocado = '1'; });
+document.getElementById('ag-turma').addEventListener('change', function () {
+    preencherEscolaDaTurma();
+    atualizarAvisoData();
+});
+
+// 2º dia automático + aviso de disponibilidade assim que escolhe a data.
+function atualizarAvisoData() {
+    var inicio = document.getElementById('ag-inicio').value;
+    var dia2 = document.getElementById('ag-dia2');
+    var aviso = document.getElementById('ag-aviso-data');
+    aviso.innerHTML = '';
+    if (!inicio) { dia2.textContent = 'Escolha o 1º dia'; return; }
+    dia2.textContent = agDataCompleta(agDataFim(inicio));
+
+    var conflitos = agConflitosAprovados(inicio, todosAgendamentos);
+    if (conflitos.length) {
+        aviso.innerHTML = '<div class="aviso-agendamento erro">⛔ O Clube da Maré já tem uma visita aprovada em <strong>' +
+            escaparHtml(agPeriodoCurto(conflitos[0])) + '</strong>. Escolha outras datas.</div>';
+        return;
+    }
+    var turma = document.getElementById('ag-turma').value;
+    var concorrentes = agConcorrentesPendentes(inicio, turma, todosAgendamentos);
+    if (concorrentes.length) {
+        aviso.innerHTML = '<div class="aviso-agendamento atencao">⚠️ Há outro pedido aguardando o Clube nesses dias. Você pode enviar, mas o Clube escolhe qual atender.</div>';
+    }
+}
+document.getElementById('ag-inicio').addEventListener('input', atualizarAvisoData);
+
+function mensagemAgendamento(tipo, html) {
+    document.getElementById('ag-mensagem').innerHTML = html ? '<div class="aviso-agendamento ' + tipo + '">' + html + '</div>' : '';
+}
+
+document.getElementById('ag-enviar').addEventListener('click', function () {
+    var botao = this;
+    var dados = {
+        turma: document.getElementById('ag-turma').value,
+        escola: document.getElementById('ag-escola').value,
+        dataInicio: document.getElementById('ag-inicio').value,
+        entrada: document.getElementById('ag-entrada').value,
+        saida: document.getElementById('ag-saida').value,
+        responsavel: document.getElementById('ag-responsavel').value,
+        cargo: document.getElementById('ag-cargo').value,
+        telefone: document.getElementById('ag-telefone').value,
+        email: document.getElementById('ag-email').value.trim(),
+        numAlunos: document.getElementById('ag-alunos').value,
+        numAcompanhantes: document.getElementById('ag-acomp').value,
+        transporte: document.getElementById('ag-transporte').value,
+        observacao: document.getElementById('ag-obs').value,
+        criadoPor: sessao.login || sessao.nome || ''
+    };
+    var erros = validarAgendamento(dados, todosAgendamentos);
+    if (!document.getElementById('ag-declaro').checked) erros.push('Marque a declaração para enviar o pedido.');
+    if (erros.length) {
+        mensagemAgendamento('erro', '<strong>Confira antes de enviar:</strong><ul>' +
+            erros.map(function (e) { return '<li>' + escaparHtml(e) + '</li>'; }).join('') + '</ul>');
+        return;
+    }
+    botao.disabled = true;
+    mensagemAgendamento('atencao', 'Enviando o pedido ao Clube da Maré...');
+    criarAgendamento(dados).then(function () {
+        mensagemAgendamento('ok', '✅ Pedido enviado! Agora é só aguardar a autorização do Clube da Maré — o status aparece aqui e para o professor e os alunos da turma.');
+        document.getElementById('ag-inicio').value = '';
+        document.getElementById('ag-obs').value = '';
+        document.getElementById('ag-declaro').checked = false;
+        atualizarAvisoData();
+        setTimeout(function () { document.getElementById('agenda-form-detalhes').open = false; mensagemAgendamento('', ''); }, 3500);
+    }).catch(function (erro) {
+        mensagemAgendamento('erro', 'Não foi possível enviar o pedido: ' + escaparHtml(erro.message) + '. Tente de novo em instantes.');
+    }).then(function () { botao.disabled = false; });
+});
+
+// Lista do status dos pedidos da turma escolhida + datas reservadas.
+function renderizarAgendamentos() {
+    var daTurma = agendamentosDaTurma(todosAgendamentos, turmaFiltro);
+    var ativo = agendamentoAtivoDaTurma(todosAgendamentos, turmaFiltro);
+    var c = contarAgendamentosPorStatus(todosAgendamentos);
+    document.getElementById('agenda-resumo-geral').textContent = todosAgendamentos.length
+        ? 'Todas as turmas: ' + c.pendente + ' aguardando o Clube · ' + c.aprovado + ' aprovada(s) · ' + c.recusado + ' reprovada(s)'
+        : '';
+
+    var lista = document.getElementById('agenda-lista');
+    if (!daTurma.length) {
+        lista.innerHTML = '<p class="dica-importar">A turma ' + escaparHtml(turmaFiltro) + ' ainda não tem visita agendada.</p>';
+    } else {
+        lista.innerHTML = daTurma.map(function (a) {
+            var acoes = '';
+            if (a.status === 'Pendente') {
+                acoes = '<button type="button" class="btn-agenda-secundario" data-acao="cancelar" data-id="' + escaparHtml(a.id) + '">Cancelar pedido</button>';
+            } else if (a.status === 'Aprovado' && !agJaPassou(a)) {
+                acoes = '<button type="button" class="btn-agenda-secundario" data-acao="cancelar" data-id="' + escaparHtml(a.id) + '">Cancelar visita</button>';
+            } else if (a.status === 'Recusado') {
+                acoes = (a.dataSugerida
+                    ? '<button type="button" class="btn-planilha-atalho" data-acao="refazer" data-id="' + escaparHtml(a.id) + '" data-data="' + escaparHtml(a.dataSugerida) + '">Pedir na data sugerida (' + escaparHtml(agPeriodoCurto({ dataInicio: a.dataSugerida })) + ')</button> '
+                    : '') +
+                    '<button type="button" class="btn-agenda-secundario" data-acao="refazer" data-id="' + escaparHtml(a.id) + '">Fazer novo pedido com estes dados</button>';
+            }
+            return htmlCartaoAgendamento(a, { mostrarTurma: true }).replace(/<\/div>$/,
+                (acoes ? '<div class="botoes-solicitacao">' + acoes + '</div>' : '') + '</div>');
+        }).join('');
+    }
+
+    // Datas já reservadas (aprovadas) — de todas as turmas, sem dizer de quem.
+    var reservas = agPeriodosReservados(todosAgendamentos);
+    document.getElementById('agenda-reservas').innerHTML = reservas.length
+        ? reservas.map(function (a) { return '<span class="reserva-chip">' + escaparHtml(agPeriodoCurto(a)) + '/' + escaparHtml(a.dataInicio.slice(0, 4)) + '</span>'; }).join('')
+        : '<span class="dica-importar">Nenhuma data reservada por enquanto.</span>';
+
+    // Sem pedido ativo: o formulário já abre pra facilitar.
+    document.getElementById('agenda-form-titulo').textContent = ativo
+        ? 'Fazer novo pedido (a turma ' + turmaFiltro + ' já tem um agendamento em andamento)'
+        : 'Fazer novo pedido de agendamento';
+    atualizarAvisoData();
+}
+
+// Abre o formulário já com os dados de um pedido anterior (e a data sugerida, se houver).
+function refazerPedido(id, novaData) {
+    var a = todosAgendamentos.filter(function (x) { return x.id === id; })[0];
+    if (!a) return;
+    document.getElementById('ag-turma').value = a.turma;
+    var escola = document.getElementById('ag-escola');
+    escola.value = a.escola; escola.dataset.tocado = '1';
+    document.getElementById('ag-entrada').value = a.entrada;
+    document.getElementById('ag-saida').value = a.saida;
+    document.getElementById('ag-responsavel').value = a.responsavel;
+    document.getElementById('ag-cargo').value = a.cargo || AGENDAMENTO_CARGOS[0];
+    document.getElementById('ag-telefone').value = a.telefone;
+    document.getElementById('ag-email').value = a.email;
+    document.getElementById('ag-alunos').value = a.numAlunos || '';
+    document.getElementById('ag-acomp').value = a.numAcompanhantes || '';
+    document.getElementById('ag-transporte').value = a.transporte;
+    document.getElementById('ag-obs').value = a.observacao;
+    document.getElementById('ag-inicio').value = novaData && novaData >= agPrimeiroDiaPermitido() ? novaData : '';
+    document.getElementById('ag-declaro').checked = false;
+    mensagemAgendamento('', '');
+    atualizarAvisoData();
+    var det = document.getElementById('agenda-form-detalhes');
+    det.open = true;
+    det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('agenda-lista').addEventListener('click', function (evento) {
+    var botao = evento.target.closest('button[data-acao]');
+    if (!botao) return;
+    if (botao.dataset.acao === 'cancelar') {
+        if (confirm('Cancelar este agendamento? O Clube da Maré, o professor e os alunos verão o cancelamento.')) cancelarAgendamento(botao.dataset.id);
+    } else if (botao.dataset.acao === 'refazer') {
+        refazerPedido(botao.dataset.id, botao.dataset.data || '');
+    }
+});
+
+escutarAgendamentos(function (lista) {
+    todosAgendamentos = lista;
+    if (typeof confeteQuandoClubeResponder === 'function') confeteQuandoClubeResponder('diretoria-visita', lista);   // confete quando o Clube aprova a data
+    renderizarAgendamentos();
+});
 
 // Gerenciamento de Solicitações e Notificação ao Professor
 function renderizarSolicitacoes() {

@@ -26,7 +26,12 @@
     var CORES = ['#1e88e5', '#26c6da', '#ff9800', '#43a047', '#ff5252', '#ffd54f', '#ab47bc'];
 
     function mostrar() {
-        if (document.getElementById('confete-boas-vindas')) return;   // já tem um na tela
+        // Já tem um confete na tela: espera ele acabar e solta o próximo (antes o
+        // segundo era engolido, mas já contava como "visto").
+        if (document.getElementById('confete-boas-vindas')) {
+            setTimeout(mostrar, DURACAO_MS + 150);
+            return;
+        }
         var canvas = document.createElement('canvas');
         canvas.id = 'confete-boas-vindas';
         canvas.setAttribute('aria-hidden', 'true');
@@ -92,9 +97,12 @@
         var chave = 'cdm_confete_visto_' + perfil + (onde ? '_' + onde : '');
         var vistos = [];
         try { vistos = JSON.parse(localStorage.getItem(chave) || '[]'); } catch (e) {}
+        // O "visto" é por id + momento da resposta: se o Clube da Maré reabrir e
+        // aprovar de novo, o confete volta a aparecer.
+        function marca(s) { return s.respondidoEm ? s.id + '@' + s.respondidoEm : s.id; }
         var novas = (lista || []).filter(function (s) {
-            return s && s.status === 'Aprovado' && vistos.indexOf(s.id) < 0;
-        }).map(function (s) { return s.id; });
+            return s && s.status === 'Aprovado' && vistos.indexOf(marca(s)) < 0;
+        }).map(marca);
         if (!novas.length) return;
         try { localStorage.setItem(chave, JSON.stringify(vistos.concat(novas))); } catch (e) {}
         window.dispararConfete();

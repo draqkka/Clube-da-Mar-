@@ -819,6 +819,10 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         escutarAgendamentosDaTurma(function () { return resumo.turma; }, function (daTurma) {
             var v = agendamentoAtualDaTurma(daTurma, resumo.turma);
             mostrarVisita(v ? infoStatusAgendamento(v).rotulo + ' — ' + agPeriodoTexto(v) + ', ' + v.entrada + ' às ' + v.saida : '');
+            // Confete quando o Clube da Maré aprova a data da turma (uma vez por aprovação)
+            if (v && v.status === 'Aprovado' && typeof confeteQuandoClubeResponder === 'function') {
+                confeteQuandoClubeResponder('aluno-visita', [v], 'inicio');
+            }
         });
     }
 
@@ -890,6 +894,16 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         } else if (resumo.perfil === 'diretoria') {
             escutarTodasSolicitacoes(function (lista) {
                 confeteQuandoClubeResponder('diretoria', lista, 'inicio');
+            });
+        }
+        // Visita da turma aprovada pelo Clube da Maré (professor: só as turmas dele; diretoria: todas)
+        if (resumo.perfil === 'professor' || resumo.perfil === 'diretoria') {
+            var turmasDele = ((resumo.sessao && resumo.sessao.turmas) || []).map(_agTurma);
+            escutarAgendamentos(function (lista) {
+                var deles = resumo.perfil === 'diretoria' ? lista : lista.filter(function (a) {
+                    return turmasDele.indexOf(_agTurma(a.turma)) !== -1;
+                });
+                confeteQuandoClubeResponder(resumo.perfil + '-visita', deles, 'inicio');
             });
         }
     }

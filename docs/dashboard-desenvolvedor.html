@@ -96,13 +96,6 @@
         <select id="filtro-turma-select" style="min-width:240px; max-width:100%; padding:10px 12px; border-radius:8px;"></select>
     </div>
 
-    <!-- Filtro por escola: permite localizar solicitações de uma escola específica. -->
-    <div class="filtro-escola-dev" style="margin: 16px 0 24px; display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
-        <label for="filtro-escola" style="font-weight:bold;">Selecionar escola:</label>
-        <select id="filtro-escola" style="min-width:240px; max-width:100%; padding:10px 12px; border-radius:8px;">
-            <option value="">Todas as escolas</option>
-        </select>
-    </div>
 
     <!--
         AGENDAMENTOS DE VISITA — a Diretoria pede 2 dias seguidos para uma turma
@@ -112,7 +105,7 @@
     -->
     <section class="area-avaliacao-professores" id="area-agenda-dev">
         <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Agendamentos de visita (autorização do Clube da Maré)</h2>
-        <p class="dica-importar">A Diretoria pede 2 dias seguidos para a turma. Aprove ou reprove a disponibilidade: a decisão aparece na hora para a Diretoria, o professor e os alunos da turma. Ao reprovar, escreva o motivo e, se quiser, sugira outra data. Datas já aprovadas para outra turma não podem ser aprovadas de novo.</p>
+        <p class="dica-importar">A Diretoria pede 2 dias seguidos para a turma e já envia junto os <strong>alunos solicitados</strong> (destacados em cada pedido). Você pode <strong>aprovar a turma toda de uma vez</strong> (visita + todos os alunos) ou decidir aluno por aluno: a decisão aparece na hora para a Diretoria, o professor e os alunos da turma. Ao reprovar, escreva o motivo e, se quiser, sugira outra data. Datas já aprovadas para outra turma não podem ser aprovadas de novo.</p>
         <div class="filtro-status-agenda">
             <label for="filtro-status-agenda" style="font-weight:bold;">Mostrar:</label>
             <select id="filtro-status-agenda" class="form-login-campo" style="flex:none; min-width:220px;">
@@ -123,17 +116,11 @@
                 <option value="">Todas</option>
             </select>
         </div>
+        <div id="aviso-sem-visita-dev"></div>
         <div id="lista-agendamentos"></div>
         <p id="sem-agendamentos" style="display:none;">Nenhum agendamento neste filtro.</p>
     </section>
 
-    <!-- Todas as solicitações, qualquer status (Pendente/Aprovado/Recusado) -->
-    <section class="area-avaliacao-professores">
-        <h2>Solicitações de Participação (encaminhadas pela Direção)</h2>
-        <p class="dica-importar">Aqui aparecem as solicitações em todos os estágios, inclusive as que aguardam o professor ou a Diretoria, para que o Desenvolvedor acompanhe o andamento completo. Ao confirmar ou recusar, um aviso mostra o aluno e o resultado, e o status muda na hora para a Direção, o professor e o aluno ("Esperando contato equipe Clube da Maré" → "Confirmada pela equipe Clube da Maré").</p>
-        <div id="lista-solicitacoes"></div>
-        <p id="sem-solicitacoes" style="display:none;">Nenhuma solicitação encontrada.</p>
-    </section>
 
     <!-- Todos os alunos, de todas as turmas -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
@@ -254,6 +241,7 @@ document.getElementById('link-sair').addEventListener('click', function (e) {
 // ---- Alunos (banco) — todas as turmas, com resultado, motivo e solicitação --
 var dadosAlunos = null;        // { porTurma, notas } vindo do banco
 var todasSolicitacoes = [];    // vem do localStorage (mais recentes primeiro)
+var todosAgendamentos = [];    // visitas pedidas pela Diretoria (agendamentos-local.js)
 
 // Turma escolhida no dropdown (sempre uma turma; não existe mais "todas")
 var turmaFiltro = '';
@@ -522,74 +510,14 @@ function renderizarFiltroEscolas() {
     if (escolas.indexOf(atual) !== -1) seletor.value = atual;
 }
 
-document.getElementById('filtro-escola').addEventListener('change', renderizarSolicitacoes);
 
+// Só o agendamento é aprovado aqui: os alunos solicitados aparecem dentro de cada pedido de visita.
 function renderizarSolicitacoes() {
-    var lista = document.getElementById('lista-solicitacoes');
-    lista.innerHTML = '';
     var visiveis = solicitacoesDoDev();
-
     document.getElementById('resumo-total-solicitacoes').textContent = visiveis.length;
     document.getElementById('resumo-aguardando-dev').textContent =
         visiveis.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
-    var escolaFiltro = document.getElementById('filtro-escola').value;
-    var filtradas = visiveis.filter(function (s) {
-        return passaNoFiltro(s.turma) && (!escolaFiltro || nomeEscolaDaSolicitacaoDev(s) === escolaFiltro);
-    });
-    document.getElementById('sem-solicitacoes').textContent = (turmaFiltro || escolaFiltro)
-        ? 'Nenhuma solicitação encontrada com os filtros selecionados.'
-        : 'Nenhuma solicitação encontrada.';
-    document.getElementById('sem-solicitacoes').style.display = filtradas.length ? 'none' : 'block';
-
-    filtradas.forEach(function (s) {
-        var card = document.createElement('div');
-        card.className = 'card-solicitacao';
-
-        var podeConfirmar = s.status === 'Aguardando Desenvolvedor';
-        var info = infoStatusSolicitacao(s);
-        var escola = escolaDaSolicitacao(s);
-
-        var html = '<p><strong>' + escaparHtml(s.nomeAluno) + '</strong> (' + escaparHtml(s.turma) + ')</p>' +
-            '<p class="detalhe-solicitacao"><strong>Escola:</strong> ' + (escola ? escaparHtml(escola) : '<em>não informada na planilha</em>') + '</p>' +
-            '<p class="detalhe-solicitacao">Professor: ' + escaparHtml(s.professor) + '</p>' +
-            (s.observacao ? '<p class="detalhe-solicitacao">Obs. Professor: ' + escaparHtml(s.observacao) + '</p>' : '') +
-            '<p class="' + info.classe + '" style="display:inline-block; padding:2px 10px; border-radius:6px;">Status: <strong>' +
-            escaparHtml(textoStatusSolicitacao(s, { semProfessor: true })) + '</strong></p>' +
-            (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + escaparHtml(s.respondidoPor === 'Desenvolvedor' ? 'Você' : (s.respondidoPor || 'Diretoria')) + '): ' + escaparHtml(s.resposta) + '</p>' : '');
-
-        if (podeConfirmar) {
-            // Visita da turma: se a Diretoria já pediu as datas, dá pra confirmar tudo de uma vez.
-            var visitaDaTurma = agendamentoAtualDaTurma(todosAgendamentos, s.turma);
-            var blocoVisita = '', rotuloAprovar = 'Confirmar aprovação (final)';
-            if (visitaDaTurma && visitaDaTurma.status === 'Pendente') {
-                var conflito = agConflitosAprovados(visitaDaTurma.dataInicio, todosAgendamentos, visitaDaTurma.id).length > 0;
-                blocoVisita = '<div class="aviso-agendamento ' + (conflito ? 'erro' : 'atencao') + '" style="margin-bottom:8px;">' +
-                    '📅 A Diretoria também pediu a <strong>visita da turma ' + escaparHtml(s.turma) + '</strong>: ' + escaparHtml(agPeriodoTexto(visitaDaTurma)) +
-                    ', ' + escaparHtml(visitaDaTurma.entrada) + ' às ' + escaparHtml(visitaDaTurma.saida) + '.' +
-                    (conflito
-                        ? ' ⛔ Essas datas já estão aprovadas para outra turma — resolva no bloco de agendamentos acima.'
-                        : '<label style="display:block; margin-top:6px; cursor:pointer;"><input type="checkbox" class="chk-aprovar-visita" data-visita="' + escaparHtml(visitaDaTurma.id) + '" checked> ' +
-                          'Confirmar também a visita (as datas) junto com esta aprovação</label>') +
-                    '</div>';
-                if (!conflito) rotuloAprovar = 'Confirmar aprovação + visita';
-            } else if (visitaDaTurma && visitaDaTurma.status === 'Aprovado') {
-                blocoVisita = '<p class="detalhe-solicitacao">📅 Visita da turma já confirmada: ' + escaparHtml(agPeriodoTexto(visitaDaTurma)) + '.</p>';
-            } else {
-                blocoVisita = '<p class="detalhe-solicitacao">📅 A Diretoria ainda não pediu as datas da visita desta turma.</p>';
-            }
-            html += '<div style="margin-top:10px;">' + blocoVisita +
-                '<textarea class="form-login-campo campo-resposta" data-id="' + escaparHtml(s.id) + '" placeholder="Resposta (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
-                '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">' + rotuloAprovar + '</button> ' +
-                '<button type="button" class="btn-recusar-solicitacao" data-id="' + escaparHtml(s.id) + '">Recusar</button>' +
-                '</div></div>';
-        } else if (s.status === 'Aprovado' || (s.status === 'Recusado' && solicitacaoPassouDirecao(s))) {
-            html += '<button type="button" class="btn-refazer-solicitacao" data-id="' + escaparHtml(s.id) + '" style="margin-top:10px;">Reabrir (volta pra sua fila)</button>';
-        }
-
-        card.innerHTML = html;
-        lista.appendChild(card);
-    });
+    renderizarAgendamentosDev();
 }
 
 escutarTodasSolicitacoes(function (solicitacoes) {
@@ -604,13 +532,59 @@ escutarTodasSolicitacoes(function (solicitacoes) {
 // ==========================================================================
 // AGENDAMENTOS DE VISITA (ver agendamentos-local.js)
 // ==========================================================================
-var todosAgendamentos = [];
+
+// Alunos solicitados da turma de uma visita (só o que a Diretoria já encaminhou).
+function alunosDaVisita(a) {
+    var turma = _agTurma(a.turma);
+    return todasSolicitacoes.filter(function (s) {
+        return solicitacaoVisivelParaDesenvolvedor(s) && _agTurma(s.turma) === turma;
+    }).sort(function (x, y) {
+        var px = x.status === 'Aguardando Desenvolvedor' ? 0 : 1, py = y.status === 'Aguardando Desenvolvedor' ? 0 : 1;
+        return px - py || String(x.nomeAluno).localeCompare(String(y.nomeAluno), 'pt-BR');
+    });
+}
+
+// Bloco em destaque com os alunos solicitados, dentro do cartão da visita.
+function htmlBlocoAlunosDev(a, alunos) {
+    if (!alunos.length) return '<p class="detalhe-solicitacao" style="margin-top:8px;">👥 Nenhum aluno encaminhado pela Diretoria para esta turma ainda.</p>';
+    var aguard = alunos.filter(function (s) { return s.status === 'Aguardando Desenvolvedor'; }).length;
+    var ok = alunos.filter(function (s) { return s.status === 'Aprovado'; }).length;
+    var rec = alunos.filter(function (s) { return s.status === 'Recusado'; }).length;
+    var linhas = alunos.map(function (s) {
+        var esperando = s.status === 'Aguardando Desenvolvedor';
+        var info = infoStatusSolicitacao(s);
+        var botoes = esperando
+            ? '<button type="button" class="btn-agenda-secundario" data-acao="aluno-aprovar" data-id="' + escaparHtml(a.id) + '" data-sid="' + escaparHtml(s.id) + '">Aprovar</button> ' +
+              '<button type="button" class="btn-agenda-secundario" data-acao="aluno-recusar" data-id="' + escaparHtml(a.id) + '" data-sid="' + escaparHtml(s.id) + '">Recusar</button>'
+            : '<button type="button" class="btn-agenda-secundario" data-acao="aluno-reabrir" data-id="' + escaparHtml(a.id) + '" data-sid="' + escaparHtml(s.id) + '">Reabrir</button>';
+        return '<li style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:6px 8px; border-bottom:1px solid rgba(0,0,0,.08);' +
+            (esperando ? ' background:rgba(255,152,0,.22); font-weight:bold;' : '') + '">' +
+            '<span style="flex:1 1 220px;">' + escaparHtml(s.nomeAluno) + '</span>' +
+            '<span class="' + info.classe + '" style="padding:2px 8px; border-radius:6px; font-size:.82rem; font-weight:normal;">' + info.emoji + ' ' + escaparHtml(info.rotulo) + '</span>' + botoes + '</li>';
+    }).join('');
+    return '<div style="margin-top:10px; padding:10px 12px; border-left:4px solid #ff9800; background:rgba(255,152,0,.12); border-radius:8px;">' +
+        '<p style="margin:0 0 6px;"><strong>👥 Alunos solicitados da turma ' + escaparHtml(a.turma) + '</strong> — ' +
+        '<strong>' + aguard + ' aguardando você</strong> · ' + ok + ' confirmado(s) · ' + rec + ' recusado(s)</p>' +
+        '<ul style="list-style:none; padding:0; margin:0; max-height:280px; overflow:auto; background:#fff; border-radius:6px;">' + linhas + '</ul></div>';
+}
 
 function renderizarAgendamentosDev() {
     var lista = document.getElementById('lista-agendamentos');
     var filtro = document.getElementById('filtro-status-agenda').value;
     var c = contarAgendamentosPorStatus(todosAgendamentos);
     document.getElementById('resumo-agenda-pendentes').textContent = c.pendente;
+
+    // Turmas com alunos aguardando você, mas sem visita pedida pela Diretoria.
+    var semVisita = {}, ordemSV = [];
+    todasSolicitacoes.forEach(function (s) {
+        if (s.status !== 'Aguardando Desenvolvedor' || agendamentoAtivoDaTurma(todosAgendamentos, s.turma)) return;
+        if (!semVisita[s.turma]) { semVisita[s.turma] = 0; ordemSV.push(s.turma); }
+        semVisita[s.turma]++;
+    });
+    document.getElementById('aviso-sem-visita-dev').innerHTML = ordemSV.map(function (t) {
+        return '<div class="aviso-agendamento atencao">⏳ Turma <strong>' + escaparHtml(t) + '</strong>: ' + semVisita[t] +
+            ' aluno(s) aprovado(s) pela Diretoria, mas a Diretoria ainda não agendou os dias da visita.</div>';
+    }).join('');
 
     // guarda o que já foi digitado nas respostas (a lista é refeita quando algo muda)
     var digitado = {};
@@ -625,6 +599,9 @@ function renderizarAgendamentosDev() {
 
     lista.innerHTML = visiveis.map(function (a) {
         var extra = '';
+        var alunosV = (a.status === 'Pendente' || a.status === 'Aprovado') ? alunosDaVisita(a) : [];
+        var aguardando = alunosV.filter(function (x) { return x.status === 'Aguardando Desenvolvedor'; });
+        var blocoAlunos = (a.status === 'Pendente' || a.status === 'Aprovado') ? htmlBlocoAlunosDev(a, alunosV) : '';
         if (a.status === 'Pendente') {
             var conflitos = agConflitosAprovados(a.dataInicio, todosAgendamentos, a.id);
             var concorrentes = agConcorrentesPendentes(a.dataInicio, a.turma, todosAgendamentos, a.id);
@@ -636,17 +613,22 @@ function renderizarAgendamentosDev() {
                     '</strong> também pediu essas datas (' + escaparHtml(agPeriodoCurto(concorrentes[0])) + '). Ao aprovar um, o outro não poderá ser aprovado.</div>';
             }
             var d = digitado[a.id] || { texto: '', data: '' };
-            extra += '<div style="margin-top:10px;">' +
+            extra += blocoAlunos + '<div style="margin-top:10px;">' +
                 '<textarea class="form-login-campo campo-resposta-agenda" rows="2" style="width:100%; box-sizing:border-box; margin-bottom:8px;" placeholder="Resposta à Diretoria (motivo/orientação; obrigatória ao reprovar)...">' + escaparHtml(d.texto) + '</textarea>' +
                 '<label style="font-size:.85rem; font-weight:bold;">Sugerir outra data (opcional, ao reprovar): ' +
                 '<input type="date" class="form-login-campo campo-data-sugerida" style="flex:none; width:auto; margin-left:6px;" min="' + escaparHtml(agPrimeiroDiaPermitido()) + '" value="' + escaparHtml(d.data) + '"></label>' +
                 '<div class="aviso-agendamento erro msg-agenda" hidden></div>' +
                 '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-acao="aprovar" data-id="' + escaparHtml(a.id) + '"' + (conflitos.length ? ' disabled' : '') + '>Aprovar disponibilidade</button> ' +
+                (aguardando.length
+                    ? '<button type="button" class="btn-aprovar-solicitacao" data-acao="aprovar-turma" data-id="' + escaparHtml(a.id) + '"' + (conflitos.length ? ' disabled' : '') + '>Aprovar turma toda (visita + ' + aguardando.length + ' aluno' + (aguardando.length === 1 ? '' : 's') + ')</button> '
+                    : '') +
+                '<button type="button" class="' + (aguardando.length ? 'btn-agenda-secundario' : 'btn-aprovar-solicitacao') + '" data-acao="aprovar" data-id="' + escaparHtml(a.id) + '"' + (conflitos.length ? ' disabled' : '') + '>' + (aguardando.length ? 'Aprovar só a visita' : 'Aprovar disponibilidade') + '</button> ' +
                 '<button type="button" class="btn-recusar-solicitacao" data-acao="recusar" data-id="' + escaparHtml(a.id) + '">Reprovar</button>' +
                 '</div></div>';
         } else if (a.status === 'Aprovado' || a.status === 'Recusado') {
-            extra += '<div class="botoes-solicitacao"><button type="button" class="btn-agenda-secundario" data-acao="reabrir" data-id="' + escaparHtml(a.id) + '">Reavaliar (volta pra análise)</button></div>';
+            extra += blocoAlunos + (aguardando.length
+                ? '<div class="botoes-solicitacao"><button type="button" class="btn-aprovar-solicitacao" data-acao="aprovar-alunos" data-id="' + escaparHtml(a.id) + '">Aprovar os ' + aguardando.length + ' aluno' + (aguardando.length === 1 ? '' : 's') + ' aguardando</button></div>'
+                : '') + '<div class="botoes-solicitacao"><button type="button" class="btn-agenda-secundario" data-acao="reabrir" data-id="' + escaparHtml(a.id) + '">Reavaliar (volta pra análise)</button></div>';
         }
         return '<div class="card-agenda-dev" data-id="' + escaparHtml(a.id) + '">' +
             htmlCartaoAgendamento(a, { mostrarTurma: true }).replace(/<\/div>$/, extra + '</div>') + '</div>';
@@ -657,8 +639,7 @@ document.getElementById('filtro-status-agenda').addEventListener('change', rende
 
 escutarAgendamentos(function (lista) {
     todosAgendamentos = lista;
-    renderizarAgendamentosDev();
-    renderizarSolicitacoes();   // o bloco da visita dentro de cada solicitação acompanha
+    renderizarSolicitacoes();   // contadores + cartões das visitas (com os alunos de cada turma)
 });
 
 document.getElementById('lista-agendamentos').addEventListener('click', function (evento) {
@@ -669,6 +650,44 @@ document.getElementById('lista-agendamentos').addEventListener('click', function
     if (!a) return;
 
     if (botao.dataset.acao === 'reabrir') { reabrirAgendamento(id); return; }
+
+    // ---- Alunos solicitados (aprovar a turma toda ou um por um) ----
+    var acaoX = botao.dataset.acao;
+    var cardX = botao.closest('.card-agenda-dev');
+    var campoRespX = cardX ? cardX.querySelector('.campo-resposta-agenda') : null;
+    var respostaX = campoRespX ? campoRespX.value.trim() : '';
+    if (acaoX === 'aluno-aprovar' || acaoX === 'aluno-recusar' || acaoX === 'aluno-reabrir') {
+        var sol = todasSolicitacoes.filter(function (x) { return x.id === botao.dataset.sid; })[0];
+        if (!sol) return;
+        if (acaoX === 'aluno-reabrir') { reabrirComoDesenvolvedor(sol.id); return; }
+        if (acaoX === 'aluno-aprovar') aprovarComoDesenvolvedor(sol.id, respostaX); else recusarComoDesenvolvedor(sol.id, respostaX);
+        avisarDecisao(sol, acaoX === 'aluno-aprovar', respostaX);
+        return;
+    }
+    if (acaoX === 'aprovar-turma' || acaoX === 'aprovar-alunos') {
+        var aguardandoX = alunosDaVisita(a).filter(function (x) { return x.status === 'Aguardando Desenvolvedor'; });
+        var ids = aguardandoX.map(function (x) { return x.id; });
+        var comVisita = acaoX === 'aprovar-turma';
+        if (comVisita) {
+            if (agConflitosAprovados(a.dataInicio, todosAgendamentos, a.id).length) {
+                var m = cardX && cardX.querySelector('.msg-agenda');
+                if (m) { m.textContent = 'Estas datas já estão aprovadas para outra turma.'; m.hidden = false; }
+                return;
+            }
+            aprovarAgendamento(a.id, respostaX);
+        }
+        responderVariasSolicitacoes(ids, 'Aprovado', respostaX, 'Desenvolvedor', true);
+        mostrarPopupAviso({
+            emoji: '🟢', classe: 'popup-aprovado',
+            titulo: comVisita ? 'Turma toda aprovada' : 'Alunos aprovados',
+            mensagem: (comVisita ? 'A visita da turma ' + a.turma + ' está autorizada para ' + agPeriodoTexto(a) + ' e ' : 'Foram aprovados ') +
+                ids.length + ' aluno' + (ids.length === 1 ? '' : 's') + (comVisita ? ' foram confirmados.' : ' da turma ' + a.turma + '.'),
+            linhas: [comVisita ? '<strong>Horário:</strong> ' + escaparHtml(a.entrada) + ' às ' + escaparHtml(a.saida) : '',
+                respostaX ? '<strong>Sua resposta:</strong> “' + escaparHtml(respostaX) + '”' : '',
+                'A Diretoria, o professor e os alunos já veem o novo status.'].filter(Boolean)
+        });
+        return;
+    }
 
     var card = botao.closest('.card-agenda-dev');
     var resposta = card.querySelector('.campo-resposta-agenda').value.trim();
@@ -724,42 +743,6 @@ function avisarDecisao(s, aprovou, resposta, visita) {
         linhas: linhas
     });
 }
-
-document.getElementById('lista-solicitacoes').addEventListener('click', function (evento) {
-    var refazer = evento.target.closest('.btn-refazer-solicitacao');
-    var aprovar = evento.target.closest('.btn-aprovar-solicitacao');
-    var recusar = evento.target.closest('.btn-recusar-solicitacao');
-
-    if (refazer) {
-        reabrirComoDesenvolvedor(refazer.dataset.id);
-        return;
-    }
-
-    if (!aprovar && !recusar) return;
-
-    var botao = aprovar || recusar;
-    var id = botao.dataset.id;
-    var card = botao.closest('.card-solicitacao');
-    var campoTexto = card.querySelector('.campo-resposta');
-    var resposta = campoTexto ? campoTexto.value.trim() : '';
-    var solicitacao = todasSolicitacoes.filter(function (x) { return x.id === id; })[0];
-
-    var visitaJunto = null;
-    if (aprovar) {
-        aprovarComoDesenvolvedor(id, resposta);
-        var chk = card.querySelector('.chk-aprovar-visita');
-        if (chk && chk.checked) {
-            var v = todosAgendamentos.filter(function (x) { return x.id === chk.dataset.visita; })[0];
-            if (v && v.status === 'Pendente' && !agConflitosAprovados(v.dataInicio, todosAgendamentos, v.id).length) {
-                aprovarAgendamento(v.id, resposta);
-                visitaJunto = v;
-            }
-        }
-    } else {
-        recusarComoDesenvolvedor(id, resposta);
-    }
-    if (solicitacao) avisarDecisao(solicitacao, !!aprovar, resposta, visitaJunto);
-});
 
 // ---- Dados brutos (localStorage / sessionStorage) ------------------------
 function atualizarDadosBrutos() {

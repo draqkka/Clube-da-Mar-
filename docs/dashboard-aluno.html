@@ -115,7 +115,7 @@
     </div>
 
     <div id="erro-sem-dados" style="display:none;">
-        <p>Não encontramos sua média e frequência na planilha ainda. Fale com a secretaria da escola.</p>
+        <p>O professor ainda não colocou suas notas e frequências. Assim que ele adicionar a planilha, sua média e frequência aparecem aqui.</p>
     </div>
 
 </main>
@@ -203,6 +203,11 @@ carregarAlunoPorEmail(resumo.email)
 .then(function (aluno) {
     document.getElementById('carregando').style.display = 'none';
 
+    // Tem conta (e-mail e senha)? Vale tanto a cadastrada pelo professor (banco)
+    // quanto a escrita direto no usuarios.js.
+    var contaDoAluno = (typeof buscarEstudantePorEmail === 'function') ? buscarEstudantePorEmail(resumo.email) : null;
+    resumo.cadastradoPeloProfessor = !!contaDoAluno;
+
     if (!aluno || aluno.origem === 'usuarios') {
         resumo.encontradoNaPlanilha = false;
         guardarResumo();
@@ -264,6 +269,7 @@ carregarAlunoPorEmail(resumo.email)
         guardarResumo();
     }
     _dadosCarregados = true;
+    atualizarStatusDoAluno(_ultimaSolicitacao);   // agora que sabemos que o aluno está cadastrado
     atualizarFormularioAluno();
     verificarConfeteAluno();
 })
@@ -287,7 +293,7 @@ function aplicarStatusReprovado() {
 // ---- Status da solicitação de participação (feita pelo professor) -------
 // Vem do localStorage e atualiza sozinho (sem recarregar) se a Direção ou a
 // equipe Clube da Maré responderem enquanto o aluno está com a página aberta.
-escutarStatusAluno(resumo, function (solicitacao) {
+function atualizarStatusDoAluno(solicitacao) {
     var info = statusPainelAluno(solicitacao, resumo);   // mesma lógica da tela inicial (status-aluno.js)
     var caixa = document.getElementById('caixa-solicitacao');
 
@@ -308,7 +314,8 @@ escutarStatusAluno(resumo, function (solicitacao) {
     _ultimaSolicitacao = solicitacao;
     atualizarFormularioAluno();
     verificarConfeteAluno();
-});
+}
+escutarStatusAluno(resumo, atualizarStatusDoAluno);
 
 // ---- Visita da turma ao Clube da Maré (agendamentos-local.js) --------------
 // Vale pra turma inteira: o aluno vê as datas, o horário e se o Clube da Maré

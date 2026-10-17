@@ -15,7 +15,7 @@
 
 // Turmas que aparecem no sistema mesmo sem alunos ainda. Turmas novas que
 // já tenham alunos no banco aparecem sozinhas para Diretoria/Desenvolvedor.
-var TURMAS_DO_SISTEMA = ['2ºA', '3ºA'];
+var TURMAS_DO_SISTEMA = ['1ºA', '1ºB', '2ºA', '2ºB', '3ºA'];
 
 var _planilhaCachePorTurma = {}; // turma -> { pasta, arquivo, turma, novaTurma, notas }
 

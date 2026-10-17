@@ -15,7 +15,8 @@ const { db, turmaCanonica } = require('./_db');
 
 // Pendente  -> a Diretoria pediu; aguardando a autorização do Clube da Maré
 // Aprovado  -> Clube da Maré autorizou (disponibilidade aprovada)
-// Recusado  -> Clube da Maré reprovou a disponibilidade
+// Recusado  -> Clube da Maré reprovou a disponibilidade (com motivo; a Diretoria
+//              negocia o reagendamento pelo campo "negociacao")
 // Cancelado -> a Diretoria desistiu do pedido / da visita
 const STATUS_VALIDOS = ['Pendente', 'Aprovado', 'Recusado', 'Cancelado'];
 
@@ -37,6 +38,26 @@ function hora(v) {
 function inteiro(v, max) {
     const n = parseInt(v, 10);
     return isFinite(n) && n >= 0 ? Math.min(n, max || 5000) : 0;
+}
+
+// Negociação do reagendamento (Clube da Maré <-> Diretoria): lista de mensagens
+// guardada junto do agendamento. "de" = quem escreveu; "tipo" = o que aconteceu.
+const NEG_DE_VALIDOS = ['Clube', 'Diretoria'];
+const NEG_TIPOS = ['reprovacao', 'aprovacao', 'reagendamento', 'mensagem'];
+
+function limparNegociacao(lista) {
+    if (!Array.isArray(lista)) return [];
+    return lista.slice(-50).map(function (m) {
+        if (!m || typeof m !== 'object' || NEG_DE_VALIDOS.indexOf(m.de) === -1) return null;
+        const em = Number(m.em);
+        return {
+            de: m.de,
+            tipo: NEG_TIPOS.indexOf(m.tipo) !== -1 ? m.tipo : 'mensagem',
+            texto: texto(m.texto, 1000),
+            data: dataIso(m.data),
+            em: isFinite(em) && em > 0 ? em : Date.now()
+        };
+    }).filter(Boolean);
 }
 
 // Só os campos conhecidos entram no banco (nada de campo inventado).
@@ -72,6 +93,7 @@ function limpar(a) {
         status: status,
         resposta: texto(a.resposta, 1000),
         dataSugerida: dataIso(a.dataSugerida),               // o Clube pode sugerir outra data ao reprovar
+        negociacao: limparNegociacao(a.negociacao),          // conversa do Clube com a Diretoria sobre o reagendamento
         respondidoEm: isFinite(respondidoEm) && respondidoEm > 0 ? respondidoEm : 0,
         criadoEm: isFinite(criadoEm) && criadoEm > 0 ? criadoEm : Date.now()
     };

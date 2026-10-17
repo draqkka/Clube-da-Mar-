@@ -869,11 +869,11 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     if (typeof confeteQuandoClubeResponder === 'function') {
         if (resumo.perfil === 'professor' && resumo.sessao && resumo.sessao.login) {
             escutarSolicitacoesProfessor(resumo.sessao.login, function (lista) {
-                confeteQuandoClubeResponder('professor', lista);
+                confeteQuandoClubeResponder('professor', lista, 'inicio');
             });
         } else if (resumo.perfil === 'diretoria') {
             escutarTodasSolicitacoes(function (lista) {
-                confeteQuandoClubeResponder('diretoria', lista);
+                confeteQuandoClubeResponder('diretoria', lista, 'inicio');
             });
         }
     }

@@ -28,6 +28,7 @@
 <!-- Solicitações de participação, salvas no localStorage (sem backend) -->
 <script src="solicitacoes-local.js"></script>
 <script src="status-solicitacao.js"></script>
+<script src="agendamentos-local.js"></script>
 <script src="usuarios.js"></script>
 <script src="status-aluno.js"></script>
 </head>
@@ -82,6 +83,13 @@
 
         <div id="caixa-mensagem" class="caixa-mensagem-resultado">
             <p id="texto-mensagem"></p>
+        </div>
+
+        <!-- Visita da turma ao Clube da Maré (2 dias seguidos): pedida pela direção e
+             autorizada pelo Clube. Aparece pra todos os alunos da turma, e muda sozinha. -->
+        <div id="caixa-agendamento" style="margin: 10px 0 20px;">
+            <h2 style="margin-bottom:4px;"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Visita da sua turma ao Clube da Maré</h2>
+            <div id="agendamento-aluno-conteudo"></div>
         </div>
 
         <!--
@@ -300,6 +308,34 @@ escutarStatusAluno(resumo, function (solicitacao) {
     _ultimaSolicitacao = solicitacao;
     atualizarFormularioAluno();
     verificarConfeteAluno();
+});
+
+// ---- Visita da turma ao Clube da Maré (agendamentos-local.js) --------------
+// Vale pra turma inteira: o aluno vê as datas, o horário e se o Clube da Maré
+// já autorizou. Atualiza sozinho quando o Clube responde.
+var _confeteVisitaDisparado = false;
+escutarAgendamentosDaTurma(function () { return resumo.turma; }, function (daTurma) {
+    var visita = agendamentoAtualDaTurma(daTurma, resumo.turma);
+    var conteudo = document.getElementById('agendamento-aluno-conteudo');
+    if (!resumo.turma) {
+        conteudo.innerHTML = '<p class="dica-importar">Não encontramos a sua turma para mostrar a visita.</p>';
+    } else if (!visita) {
+        conteudo.innerHTML = '<p class="dica-importar">A direção ainda não pediu a data da visita da turma ' + _agEsc(resumo.turma) +
+            ' ao Clube da Maré. Quando pedir, o status aparece aqui.</p>';
+    } else {
+        var info = infoStatusAgendamento(visita);
+        conteudo.innerHTML = '<p style="margin:0 0 4px;">' + _agEsc(info.mensagem) + '</p>' +
+            htmlCartaoAgendamento(visita, { mostrarContato: false });
+        // Texto curto que também aparece no cartão da tela inicial.
+        resumo.visita = { turma: resumo.turma, rotulo: info.rotulo, curto: info.curto, classe: info.classe, periodo: agPeriodoTexto(visita), entrada: visita.entrada, saida: visita.saida };
+    }
+    if (!visita) resumo.visita = null;
+    guardarResumo();
+    // Confete uma vez quando o Clube da Maré aprova a data da turma.
+    if (!_confeteVisitaDisparado && visita && visita.status === 'Aprovado' && typeof confeteQuandoClubeResponder === 'function') {
+        _confeteVisitaDisparado = true;
+        confeteQuandoClubeResponder('aluno-visita', [visita]);
+    }
 });
 </script>
 

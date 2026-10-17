@@ -116,6 +116,26 @@ function agPeriodoCurto(a) {
     return agDataBR(a.dataInicio).slice(0, 5) + ' e ' + agDataBR(a.dataFim || agDataFim(a.dataInicio)).slice(0, 5);
 }
 
+// "17/10/2026 às 14:35" a partir de um carimbo de tempo (ms). Sempre no
+// horário de Brasília, não importa o fuso do computador de quem está olhando.
+function agDataHora(ms) {
+    var n = Number(ms);
+    if (!isFinite(n) || n <= 0) return '';
+    try {
+        var partes = new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: false
+        }).formatToParts(new Date(n));
+        var v = {};
+        partes.forEach(function (p) { v[p.type] = p.value; });
+        return v.day + '/' + v.month + '/' + v.year + ' às ' + (v.hour === '24' ? '00' : v.hour) + ':' + v.minute;
+    } catch (e) {
+        var d = new Date(n);
+        function z(x) { return (x < 10 ? '0' : '') + x; }
+        return z(d.getDate()) + '/' + z(d.getMonth() + 1) + '/' + d.getFullYear() + ' às ' + z(d.getHours()) + ':' + z(d.getMinutes());
+    }
+}
+
 // A visita já terminou? (usado pra não bloquear a turma depois da data)
 function agJaPassou(a) {
     return !!a && !!a.dataFim && a.dataFim < agHoje();
@@ -406,6 +426,22 @@ function cancelarAgendamento(id) {
     });
 }
 
+// ---- DIRETORIA: apaga o agendamento de vez (some do banco pra todo mundo) ---
+// Diferente de cancelar (que mantém o registro como "Cancelado"), aqui o
+// agendamento é removido. Se o servidor falhar, a lista local é restaurada
+// e o erro sobe pra tela avisar.
+function apagarAgendamento(id) {
+    var antes = _agLista();
+    var depois = antes.filter(function (a) { return a.id !== id; });
+    if (depois.length === antes.length) return Promise.resolve();
+    _agSalvarLista(depois);
+    return _agEnviar(_agApi('DELETE', URL_AGENDAMENTOS + '?id=' + encodeURIComponent(id)))
+        .catch(function (erro) {
+            _agSalvarLista(antes);
+            throw erro;
+        });
+}
+
 // ---- Desenvolvedor: apaga tudo (uso em testes) ----------------------------
 function limparTodosAgendamentos() {
     _agSalvarLista([]);
@@ -481,6 +517,30 @@ function htmlCartaoAgendamento(a, opcoes) {
         linhas.push('<p class="detalhe-solicitacao">Responsável: ' + cont.join(' · ') + '</p>');
     }
     if (a.observacao) linhas.push('<p class="detalhe-solicitacao">Obs. da direção: ' + _agEsc(a.observacao) + '</p>');
+
+    // Linha do tempo: quando a direção agendou e quando o Clube da Maré respondeu.
+    var historico = [];
+    if (a.criadoEm) {
+        historico.push('<p class="agendamento-historico agendamento-historico-direcao"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> ' +
+            'Agendado pela direção em <strong>' + _agEsc(agDataHora(a.criadoEm)) + '</strong>' +
+            (a.criadoPor ? ' <span class="cartao-agendamento-dias">(por ' + _agEsc(a.criadoPor) + ')</span>' : '') + '</p>');
+    }
+    if (a.respondidoEm) {
+        var quando = _agEsc(agDataHora(a.respondidoEm));
+        if (a.status === 'Aprovado') {
+            historico.push('<p class="agendamento-historico agendamento-historico-aprovado"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ' +
+                'Aprovado pelo Clube da Maré em <strong>' + quando + '</strong></p>');
+        } else if (a.status === 'Recusado') {
+            historico.push('<p class="agendamento-historico agendamento-historico-recusado"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i> ' +
+                'Reprovado pelo Clube da Maré em <strong>' + quando + '</strong></p>');
+        } else if (a.status === 'Cancelado') {
+            historico.push('<p class="agendamento-historico"><i class="fa-solid fa-ban" aria-hidden="true"></i> ' +
+                'Cancelado pela direção em <strong>' + quando + '</strong></p>');
+        }
+    } else if (a.status === 'Pendente') {
+        historico.push('<p class="agendamento-historico"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> Aguardando a aprovação do Clube da Maré</p>');
+    }
+    if (historico.length) linhas.push('<div class="agendamento-historico-caixa">' + historico.join('') + '</div>');
 
     var resposta = '';
     if (a.resposta) {

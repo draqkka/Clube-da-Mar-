@@ -198,6 +198,12 @@ function _alunoSoDeUsuarios(u) {
 // um estudante de usuarios.js (mesmo sem planilha / sem banco): nesse caso vem
 // só nome e turma, sem nota/frequência.
 function carregarAlunoPorEmail(email) {
+    // Antes de procurar, junta os alunos cadastrados pelo professor (guardados no banco).
+    var pronto = (typeof carregarUsuariosCadastrados === 'function') ? carregarUsuariosCadastrados() : Promise.resolve();
+    return pronto.then(function () { return _carregarAlunoPorEmailInterno(email); });
+}
+
+function _carregarAlunoPorEmailInterno(email) {
     var u = buscarEstudantePorEmail(email);
     if (!u) return Promise.resolve(null);
     var meuEmail = emailDoUsuario(u);
@@ -824,7 +830,8 @@ function _processarAba(nomeAba, linhas, res) {
     }
     if (colRa === -1) {
         res.avisos.push('Aba "' + nomeAba + '": a planilha não tem coluna RA — os alunos foram identificados pelo nome. ' +
-            'O aluno só consegue ver o próprio status no painel dele se o RA estiver na planilha.');
+            'O aluno só consegue ver o próprio status no painel dele se tiver o e-mail institucional e a senha cadastrados: ' +
+            'depois de solicitar a participação dele, use o botão \"Cadastrar e-mail e senha\" ao lado, na tabela.');
     }
     if (colSit === -1) {
         res.avisos.push('Aba "' + nomeAba + '": não achei a coluna "Situação" — considerei todos os alunos como Ativos.');

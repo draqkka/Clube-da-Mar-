@@ -138,6 +138,9 @@ function _agLista() {
 
 function _agAvisar() {
     _agOuvintes.forEach(function (atualizar) { atualizar(); });
+    // O status das solicitações dos alunos depende do agendamento da turma
+    // (ver status-solicitacao.js): redesenha essas telas também.
+    if (typeof _avisarOuvintes === 'function') _avisarOuvintes();
 }
 
 function _agSalvarLista(lista) {
@@ -431,8 +434,8 @@ function infoStatusAgendamento(a) {
         return { chave: 'cancelado', classe: 'status-cancelado', emoji: '⚪', rotulo: 'Cancelado pela direção',
                  curto: 'Cancelada', mensagem: 'A direção cancelou este pedido de visita.' };
     }
-    return { chave: 'analise', classe: 'status-aguardando-dev', emoji: '🟡', rotulo: 'Aguardando o Clube da Maré',
-             curto: 'Em análise', mensagem: 'A direção enviou o pedido. Falta o Clube da Maré autorizar a data.' };
+    return { chave: 'analise', classe: 'status-aguardando-dev', emoji: '🟡', rotulo: 'Agendado pela direção — aguardando aprovação do Clube da Maré',
+             curto: 'Aguardando o Clube', mensagem: 'A direção fez o agendamento da visita e está esperando a aprovação do Clube da Maré.' };
 }
 
 // Contagem por status (cartões de resumo).

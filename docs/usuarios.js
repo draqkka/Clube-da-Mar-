@@ -43,6 +43,7 @@ var USUARIOS = [
 // senha (exata) e perfil. Retorna o objeto do usuário ou null.
 function buscarUsuario(login, senha, perfil) {
     var encontrado = USUARIOS.find(function (u) {
+        if (u.doBanco) return false;   // alunos do banco não têm senha aqui (ver loginUsuarioCadastrado)
         return String(u.login).trim().toLowerCase() === login.toLowerCase() &&
                String(u.senha) === senha &&
                String(u.perfil).trim().toLowerCase() === perfil;
@@ -80,4 +81,53 @@ function buscarEstudantePorEmail(email) {
     var alvo = String(email || '').trim().toLowerCase();
     if (!alvo) return null;
     return listarEstudantes().filter(function (u) { return emailDoUsuario(u) === alvo; })[0] || null;
+}
+
+
+// ==========================================================================
+// ALUNOS CADASTRADOS PELO PROFESSOR (ficam no banco, não neste arquivo)
+//
+// O professor cadastra o e-mail institucional + senha do aluno pelo botão
+// "Cadastrar e-mail e senha" do painel dele. Como o site publicado não consegue
+// escrever dentro deste arquivo, esses cadastros são guardados no banco
+// (/api/alunos-cadastrados) e entram na lista USUARIOS quando a página chama
+// carregarUsuariosCadastrados() — a partir daí funcionam como qualquer
+// estudante daqui (aparecem em listarEstudantes, buscarEstudantePorEmail...).
+// A senha NÃO vem pro navegador; o login é conferido no servidor.
+// ==========================================================================
+var _usuariosCadastradosPromessa = null;
+
+function carregarUsuariosCadastrados(forcar) {
+    if (_usuariosCadastradosPromessa && !forcar) return _usuariosCadastradosPromessa;
+    _usuariosCadastradosPromessa = fetch('/api/alunos-cadastrados', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : { usuarios: [] }; })
+        .then(function (corpo) {
+            for (var i = USUARIOS.length - 1; i >= 0; i--) {
+                if (USUARIOS[i].doBanco) USUARIOS.splice(i, 1);
+            }
+            (corpo.usuarios || []).forEach(function (u) {
+                var email = String(u.login || '').trim().toLowerCase();
+                var jaTem = USUARIOS.some(function (x) { return emailDoUsuario(x) === email; });
+                if (!email || jaTem) return;
+                USUARIOS.push({ login: email, senha: null, perfil: 'estudante', nome: u.nome, ra: u.ra || '', turmas: u.turmas || '', doBanco: true });
+            });
+            return USUARIOS;
+        })
+        .catch(function () { return USUARIOS; });
+    return _usuariosCadastradosPromessa;
+}
+
+// Login de aluno cadastrado pelo professor. Devolve o usuário ou null (senha errada).
+function loginUsuarioCadastrado(email, senha) {
+    return fetch('/api/alunos-cadastrados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'login', email: email, senha: senha })
+    }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (corpo) {
+            if (r.status === 401) return null;
+            if (!r.ok) throw new Error(corpo.erro || ('Erro ' + r.status));
+            return corpo.usuario || null;
+        });
+    });
 }

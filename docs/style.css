@@ -3953,3 +3953,10 @@ body { animation: mareEntrada .45s ease both; }
 @media (max-width: 600px){
     .form-agendamento{ grid-template-columns: 1fr; }
 }
+
+/* Linha do tempo do agendamento (quando a direção agendou / quando o Clube respondeu) */
+.agendamento-historico-caixa{ margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(128,128,128,.45); }
+.agendamento-historico{ margin: 3px 0; font-size: .88rem; }
+.agendamento-historico i{ width: 1.2em; text-align: center; margin-right: 4px; }
+.agendamento-historico-aprovado{ color: #1e7e34; }
+.agendamento-historico-recusado{ color: #b02a37; }

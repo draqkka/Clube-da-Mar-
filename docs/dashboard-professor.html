@@ -305,9 +305,14 @@ window.resolverEscolaSolicitacao = function (s) {
 // O aluno já tem e-mail/senha? (usuarios.js ou cadastrado pelo professor no banco)
 function usuarioCadastradoDoAluno(aluno) {
     if (typeof listarEstudantes !== 'function') return null;
-    return listarEstudantes(aluno.turma).filter(function (u) {
-        return nomesCompativeis(u.nome, aluno.nome) || (u.ra && mesmoRa(u.ra, aluno.ra));
-    })[0] || null;
+    var daTurma = listarEstudantes(aluno.turma);
+    // 1) pelo RA guardado no cadastro (separa alunos de mesmo nome)
+    var porRa = daTurma.filter(function (u) { return u.ra && mesmoRa(u.ra, aluno.ra); })[0];
+    if (porRa) return porRa;
+    // 2) pelo nome — mas se há outro aluno com nome igual na turma, não dá pra saber quem é quem
+    var mesmoNome = ((dadosTurmaAtual && dadosTurmaAtual.notas) || []).filter(function (x) { return nomesCompativeis(x.nome, aluno.nome); });
+    if (mesmoNome.length > 1) return null;
+    return daTurma.filter(function (u) { return nomesCompativeis(u.nome, aluno.nome); })[0] || null;
 }
 // Junta os alunos cadastrados pelo professor e redesenha a tabela.
 if (typeof carregarUsuariosCadastrados === 'function') {
@@ -673,12 +678,19 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                 return recarregarPlanilha(g.turma).then(function (atual) {
                     // Planilha sem coluna RA: se o aluno já está salvo (mesmo nome), reaproveita
                     // o RA dele — assim não duplica e o aluno continua achando o próprio status.
+                    // Com nomes repetidos na turma, cada um recebe o RA antigo na ordem (1º com 1º, 2º com 2º).
                     var raPorNome = {};
                     atual.notas.forEach(function (n) {
-                        if (!/^NOME/.test(String(n.ra))) raPorNome[_normalizarTexto(n.nome)] = n.ra;
+                        if (/^NOME/.test(String(n.ra))) return;
+                        var k = _normalizarTexto(n.nome);
+                        (raPorNome[k] = raPorNome[k] || []).push(n.ra);
                     });
+                    var vistoPorNome = {};
                     g.alunos.forEach(function (a) {
-                        var existente = raPorNome[_normalizarTexto(a.nome)];
+                        var k = _normalizarTexto(a.nome);
+                        var pos = vistoPorNome[k] || 0;
+                        vistoPorNome[k] = pos + 1;
+                        var existente = (raPorNome[k] || [])[pos];
                         if (/^NOME/.test(String(a.ra)) && existente) a.ra = existente;
                     });
                     // A planilha oficial é a lista COMPLETA da turma: quem não está nela
@@ -703,6 +715,7 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
                 linhas.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>';
             if (deOutros.length) html += '<p>Abas de outras turmas ignoradas: ' + escaparHtml(deOutros.map(function (g) { return g.turma; }).join(', ')) + '.</p>';
             if (lido.ignoradas.length) html += '<p>Abas não lidas: ' + escaparHtml(lido.ignoradas.map(function (g) { return '"' + g.aba + '" (' + g.motivo + ')'; }).join('; ')) + '.</p>';
+            (lido.infos || []).forEach(function (t) { html += '<p>ℹ️ ' + escaparHtml(t) + '</p>'; });
             if (lido.avisos.length) html += '<p>Atenção: ' + escaparHtml(lido.avisos.slice(0, 5).join(' ')) +
                 (lido.avisos.length > 5 ? ' (e mais ' + (lido.avisos.length - 5) + ')' : '') + '</p>';
             status.innerHTML = html;

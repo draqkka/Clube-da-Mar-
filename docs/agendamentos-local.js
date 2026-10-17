@@ -389,10 +389,19 @@ function criarAgendamento(d) {
     });
 }
 
+// Registra uma mensagem no histórico da negociação do reagendamento (a.negociacao).
+// "soSeJaHouverConversa": a aprovação só entra no histórico se já havia conversa.
+function _agNegociar(a, de, tipo, texto, data, soSeJaHouverConversa) {
+    if (!Array.isArray(a.negociacao)) a.negociacao = [];
+    if (soSeJaHouverConversa && !a.negociacao.length) return;
+    a.negociacao.push({ de: de, tipo: tipo, texto: String(texto || '').trim(), data: data || '', em: Date.now() });
+}
+
 // ---- CLUBE DA MARÉ (Desenvolvedor): responde ------------------------------
 function aprovarAgendamento(id, resposta) {
     return _agAlterar(id, function (a) {
         a.status = 'Aprovado';
+        _agNegociar(a, 'Clube', 'aprovacao', resposta, '', true);
         a.resposta = resposta || '';
         a.dataSugerida = '';
         a.respondidoEm = Date.now();
@@ -402,6 +411,7 @@ function aprovarAgendamento(id, resposta) {
 function recusarAgendamento(id, resposta, dataSugerida) {
     return _agAlterar(id, function (a) {
         a.status = 'Recusado';
+        _agNegociar(a, 'Clube', 'reprovacao', resposta, dataSugerida, false);
         a.resposta = resposta || '';
         a.dataSugerida = dataSugerida || '';
         a.respondidoEm = Date.now();
@@ -416,6 +426,54 @@ function reabrirAgendamento(id) {
         a.dataSugerida = '';
         a.respondidoEm = 0;
     });
+}
+
+// ---- NEGOCIAÇÃO DO REAGENDAMENTO (Clube da Maré <-> Diretoria) --------------
+// Depois de uma reprovação, o Clube pode sugerir outra data e a Diretoria responde:
+// aceita a data sugerida, propõe outra ou só manda uma mensagem. Tudo fica
+// registrado em a.negociacao e aparece no cartão do agendamento.
+
+// Diretoria: remarca a MESMA visita para outra data e reenvia ao Clube (volta a "Pendente").
+function reagendarAgendamento(id, novaDataInicio, mensagem) {
+    return _agAlterar(id, function (a) {
+        a.dataInicio = novaDataInicio;
+        a.dataFim = agDataFim(novaDataInicio);
+        a.status = 'Pendente';
+        a.resposta = '';
+        a.dataSugerida = '';
+        a.respondidoEm = 0;
+        _agNegociar(a, 'Diretoria', 'reagendamento', mensagem, novaDataInicio, false);
+    });
+}
+
+// Mensagem na negociação (de = 'Clube' ou 'Diretoria'), com uma data sugerida opcional.
+function enviarMensagemNegociacao(id, de, mensagem, dataSugerida) {
+    return _agAlterar(id, function (a) {
+        var quem = de === 'Clube' ? 'Clube' : 'Diretoria';
+        _agNegociar(a, quem, 'mensagem', mensagem, dataSugerida || '', false);
+        // a última data sugerida pelo Clube é a que a Diretoria pode aceitar com um clique
+        if (quem === 'Clube' && dataSugerida && a.status === 'Recusado') a.dataSugerida = dataSugerida;
+    });
+}
+
+// Erros (em português) de uma nova data proposta pra uma visita; lista vazia = pode reagendar.
+function validarReagendamento(a, novaData, lista) {
+    var erros = [];
+    if (!novaData || !agParseIso(novaData)) return ['Escolha a nova data de início da visita.'];
+    if (novaData < agPrimeiroDiaPermitido()) {
+        erros.push('O primeiro dia precisa ser a partir de ' + agDataBR(agPrimeiroDiaPermitido()) + '.');
+    } else {
+        var conflitos = agConflitosAprovados(novaData, lista, a.id);
+        if (conflitos.length) {
+            erros.push('O Clube da Maré já tem uma visita aprovada nesses dias (' + agPeriodoCurto(conflitos[0]) + '). Escolha outra data.');
+        }
+    }
+    var ativo = agendamentoAtivoDaTurma(lista, a.turma);
+    if (ativo && ativo.id !== a.id) {
+        erros.push('A turma ' + _agTurma(a.turma) + ' já tem outro agendamento ' +
+            (ativo.status === 'Aprovado' ? 'aprovado' : 'em análise') + ' (' + agPeriodoCurto(ativo) + ').');
+    }
+    return erros;
 }
 
 // ---- DIRETORIA: desiste do pedido ou da visita ------------------------------
@@ -450,8 +508,8 @@ function limparTodosAgendamentos() {
 
 // ---- STATUS (os mesmos textos em todos os painéis) -------------------------
 //   Pendente  -> 🟡 Aguardando o Clube da Maré
-//   Aprovado  -> 🟢 Data aprovada pelo Clube da Maré
-//   Recusado  -> 🔴 Data reprovada pelo Clube da Maré
+//   Aprovado  -> 🟢 Aprovado pelo Clube
+//   Recusado  -> 🔴 Reprovado pelo Clube (mostra o motivo e a negociação do reagendamento)
 //   Cancelado -> ⚪ Cancelado pela direção
 function infoStatusAgendamento(a) {
     if (!a) {
@@ -459,12 +517,12 @@ function infoStatusAgendamento(a) {
                  curto: 'Não agendada', mensagem: 'A direção ainda não pediu a data da visita ao Clube da Maré.' };
     }
     if (a.status === 'Aprovado') {
-        return { chave: 'aprovado', classe: 'status-aprovado', emoji: '🟢', rotulo: 'Data aprovada pelo Clube da Maré',
-                 curto: 'Aprovada', mensagem: 'O Clube da Maré autorizou a visita nas datas pedidas. 🎉' };
+        return { chave: 'aprovado', classe: 'status-aprovado', emoji: '🟢', rotulo: 'Aprovado pelo Clube',
+                 curto: 'Aprovado', mensagem: 'O Clube da Maré autorizou a visita nas datas pedidas. 🎉' };
     }
     if (a.status === 'Recusado') {
-        return { chave: 'reprovado', classe: 'status-recusado', emoji: '🔴', rotulo: 'Data reprovada pelo Clube da Maré',
-                 curto: 'Reprovada', mensagem: 'O Clube da Maré não tem disponibilidade nessas datas. A direção pode pedir outras datas.' };
+        return { chave: 'reprovado', classe: 'status-recusado', emoji: '🔴', rotulo: 'Reprovado pelo Clube',
+                 curto: 'Reprovado', mensagem: 'O Clube da Maré não autorizou a visita nessas datas. Veja o motivo abaixo e combine o reagendamento com a direção.' };
     }
     if (a.status === 'Cancelado') {
         return { chave: 'cancelado', classe: 'status-cancelado', emoji: '⚪', rotulo: 'Cancelado pela direção',
@@ -485,6 +543,56 @@ function contarAgendamentosPorStatus(lista) {
         else if (a.status === 'Cancelado') c.cancelado++;
     });
     return c;
+}
+
+// ---- HTML: motivo da reprovação e conversa da negociação -------------------
+var _AG_NEG_ACOES = {
+    reprovacao: 'reprovou as datas',
+    aprovacao: 'aprovou as datas',
+    reagendamento: 'propôs uma nova data',
+    mensagem: ''
+};
+
+// Destaque com o motivo da reprovação (a resposta atual do Clube) e a data que ele sugeriu.
+function htmlMotivoReprovacao(a) {
+    var motivo = String(a.resposta || '').trim();
+    var html = '<div class="agendamento-motivo" style="margin-top:10px; padding:10px 12px; border-left:4px solid #d32f2f; background:#fff1f0; color:#3a1210; border-radius:8px;">' +
+        '<p style="margin:0 0 4px;"><strong>🔴 Motivo da reprovação (Clube da Maré):</strong></p>' +
+        '<p style="margin:0;">' + (motivo ? _agEsc(motivo) : 'O Clube da Maré não informou o motivo.') + '</p>';
+    if (a.dataSugerida) {
+        html += '<p style="margin:6px 0 0;">📅 <strong>Data sugerida pelo Clube:</strong> ' +
+            _agEsc(agPeriodoTexto({ dataInicio: a.dataSugerida, dataFim: agDataFim(a.dataSugerida) })) + '</p>';
+    }
+    return html + '</div>';
+}
+
+// Conversa entre o Clube da Maré e a Diretoria sobre o reagendamento (só leitura).
+function htmlNegociacaoAgendamento(a) {
+    if (!a) return '';
+    var msgs = (Array.isArray(a.negociacao) ? a.negociacao.slice() : []).sort(function (x, y) { return (x.em || 0) - (y.em || 0); });
+    if (a.status === 'Recusado') {
+        // a reprovação atual já aparece no destaque do motivo: não repete na conversa
+        var ultima = -1;
+        msgs.forEach(function (m, i) { if (m.tipo === 'reprovacao') ultima = i; });
+        if (ultima !== -1) msgs.splice(ultima, 1);
+    } else if (!msgs.length) {
+        return '';
+    }
+    var corpo = msgs.length ? msgs.map(function (m) {
+        var clube = m.de === 'Clube';
+        var acao = _AG_NEG_ACOES[m.tipo] || '';
+        var html = '<p style="margin:0 0 2px; font-size:.8rem; opacity:.8;"><strong>' + (clube ? 'Clube da Maré' : 'Diretoria') + '</strong>' +
+            (acao ? ' ' + acao : '') + (m.em ? ' · ' + _agEsc(agDataHora(m.em)) : '') + '</p>';
+        if (m.texto) html += '<p style="margin:0;">' + _agEsc(m.texto) + '</p>';
+        if (m.data) {
+            html += '<p style="margin:4px 0 0;">📅 ' + (m.tipo === 'reagendamento' ? 'Nova data proposta' : 'Data sugerida') + ': <strong>' +
+                _agEsc(agPeriodoTexto({ dataInicio: m.data, dataFim: agDataFim(m.data) })) + '</strong></p>';
+        }
+        return '<div style="margin:6px 0; padding:8px 10px; background:#fff; color:#222; border-radius:8px; border-left:4px solid ' +
+            (clube ? '#0a5cff' : '#ff7a00') + ';' + (clube ? '' : ' margin-left:18px;') + '">' + html + '</div>';
+    }).join('') : '<p style="margin:0; font-style:italic;">Ainda sem resposta: a direção pode aceitar a data sugerida ou propor outra data ao Clube.</p>';
+    return '<div class="agendamento-negociacao" style="margin-top:10px; padding:10px 12px; border:1px dashed rgba(0,0,0,.35); background:rgba(255,255,255,.55); color:#222; border-radius:8px;">' +
+        '<p style="margin:0 0 6px;"><strong>💬 Negociação do reagendamento</strong></p>' + corpo + '</div>';
 }
 
 // ---- HTML do cartão de um agendamento (Diretoria, professor, aluno e Clube) --
@@ -543,13 +651,13 @@ function htmlCartaoAgendamento(a, opcoes) {
     if (historico.length) linhas.push('<div class="agendamento-historico-caixa">' + historico.join('') + '</div>');
 
     var resposta = '';
-    if (a.resposta) {
+    if (a.status === 'Recusado') {
+        resposta += htmlMotivoReprovacao(a);
+    } else if (a.resposta && !(a.negociacao && a.negociacao.length)) {
         resposta += '<p class="cartao-agendamento-resposta"><strong>Resposta do Clube da Maré:</strong> ' + _agEsc(a.resposta) + '</p>';
     }
-    if (a.status === 'Recusado' && a.dataSugerida) {
-        resposta += '<p class="cartao-agendamento-resposta"><strong>Data sugerida pelo Clube:</strong> ' +
-            _agEsc(agPeriodoTexto({ dataInicio: a.dataSugerida, dataFim: agDataFim(a.dataSugerida) })) + '</p>';
-    }
+    // opcoes.mostrarNegociacao === false esconde a conversa (o motivo da reprovação sempre aparece).
+    if (opcoes.mostrarNegociacao !== false) resposta += htmlNegociacaoAgendamento(a);
 
     return '<div class="cartao-agendamento ' + info.classe + '" data-ag-id="' + _agEsc(a.id) + '">' +
         '<p class="cartao-agendamento-titulo">' + info.emoji + ' ' + _agEsc(opcoes.titulo || info.rotulo) + '</p>' +

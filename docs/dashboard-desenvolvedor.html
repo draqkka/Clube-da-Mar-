@@ -558,10 +558,29 @@ function renderizarSolicitacoes() {
             (s.resposta ? '<p class="detalhe-solicitacao">Resposta (' + escaparHtml(s.respondidoPor === 'Desenvolvedor' ? 'Você' : (s.respondidoPor || 'Diretoria')) + '): ' + escaparHtml(s.resposta) + '</p>' : '');
 
         if (podeConfirmar) {
-            html += '<div style="margin-top:10px;">' +
+            // Visita da turma: se a Diretoria já pediu as datas, dá pra confirmar tudo de uma vez.
+            var visitaDaTurma = agendamentoAtualDaTurma(todosAgendamentos, s.turma);
+            var blocoVisita = '', rotuloAprovar = 'Confirmar aprovação (final)';
+            if (visitaDaTurma && visitaDaTurma.status === 'Pendente') {
+                var conflito = agConflitosAprovados(visitaDaTurma.dataInicio, todosAgendamentos, visitaDaTurma.id).length > 0;
+                blocoVisita = '<div class="aviso-agendamento ' + (conflito ? 'erro' : 'atencao') + '" style="margin-bottom:8px;">' +
+                    '📅 A Diretoria também pediu a <strong>visita da turma ' + escaparHtml(s.turma) + '</strong>: ' + escaparHtml(agPeriodoTexto(visitaDaTurma)) +
+                    ', ' + escaparHtml(visitaDaTurma.entrada) + ' às ' + escaparHtml(visitaDaTurma.saida) + '.' +
+                    (conflito
+                        ? ' ⛔ Essas datas já estão aprovadas para outra turma — resolva no bloco de agendamentos acima.'
+                        : '<label style="display:block; margin-top:6px; cursor:pointer;"><input type="checkbox" class="chk-aprovar-visita" data-visita="' + escaparHtml(visitaDaTurma.id) + '" checked> ' +
+                          'Confirmar também a visita (as datas) junto com esta aprovação</label>') +
+                    '</div>';
+                if (!conflito) rotuloAprovar = 'Confirmar aprovação + visita';
+            } else if (visitaDaTurma && visitaDaTurma.status === 'Aprovado') {
+                blocoVisita = '<p class="detalhe-solicitacao">📅 Visita da turma já confirmada: ' + escaparHtml(agPeriodoTexto(visitaDaTurma)) + '.</p>';
+            } else {
+                blocoVisita = '<p class="detalhe-solicitacao">📅 A Diretoria ainda não pediu as datas da visita desta turma.</p>';
+            }
+            html += '<div style="margin-top:10px;">' + blocoVisita +
                 '<textarea class="form-login-campo campo-resposta" data-id="' + escaparHtml(s.id) + '" placeholder="Resposta (motivo/orientação)..." rows="2" style="width:100%; margin-bottom: 8px;"></textarea>' +
                 '<div class="botoes-solicitacao">' +
-                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">Confirmar aprovação (final)</button> ' +
+                '<button type="button" class="btn-aprovar-solicitacao" data-id="' + escaparHtml(s.id) + '">' + rotuloAprovar + '</button> ' +
                 '<button type="button" class="btn-recusar-solicitacao" data-id="' + escaparHtml(s.id) + '">Recusar</button>' +
                 '</div></div>';
         } else if (s.status === 'Aprovado' || (s.status === 'Recusado' && solicitacaoPassouDirecao(s))) {
@@ -639,6 +658,7 @@ document.getElementById('filtro-status-agenda').addEventListener('change', rende
 escutarAgendamentos(function (lista) {
     todosAgendamentos = lista;
     renderizarAgendamentosDev();
+    renderizarSolicitacoes();   // o bloco da visita dentro de cada solicitação acompanha
 });
 
 document.getElementById('lista-agendamentos').addEventListener('click', function (evento) {
@@ -685,11 +705,12 @@ document.getElementById('lista-agendamentos').addEventListener('click', function
 });
 
 // Pop-up de aviso depois de cada decisão (um por aluno).
-function avisarDecisao(s, aprovou, resposta) {
+function avisarDecisao(s, aprovou, resposta, visita) {
     var escola = escolaDaSolicitacao(s);
     var linhas = ['<strong>Aluno(a):</strong> ' + escaparHtml(s.nomeAluno) + ' (' + escaparHtml(s.turma) + ')'];
     if (escola) linhas.push('<strong>Escola:</strong> ' + escaparHtml(escola));
     if (resposta) linhas.push('<strong>Sua resposta:</strong> “' + escaparHtml(resposta) + '”');
+    if (visita) linhas.push('<strong>Visita da turma também confirmada:</strong> ' + escaparHtml(agPeriodoTexto(visita)) + ', ' + escaparHtml(visita.entrada) + ' às ' + escaparHtml(visita.saida));
     linhas.push('A Direção, o professor e o aluno já veem o novo status.');
     mostrarPopupAviso(aprovou ? {
         emoji: '🟢', classe: 'popup-aprovado',
@@ -723,12 +744,21 @@ document.getElementById('lista-solicitacoes').addEventListener('click', function
     var resposta = campoTexto ? campoTexto.value.trim() : '';
     var solicitacao = todasSolicitacoes.filter(function (x) { return x.id === id; })[0];
 
+    var visitaJunto = null;
     if (aprovar) {
         aprovarComoDesenvolvedor(id, resposta);
+        var chk = card.querySelector('.chk-aprovar-visita');
+        if (chk && chk.checked) {
+            var v = todosAgendamentos.filter(function (x) { return x.id === chk.dataset.visita; })[0];
+            if (v && v.status === 'Pendente' && !agConflitosAprovados(v.dataInicio, todosAgendamentos, v.id).length) {
+                aprovarAgendamento(v.id, resposta);
+                visitaJunto = v;
+            }
+        }
     } else {
         recusarComoDesenvolvedor(id, resposta);
     }
-    if (solicitacao) avisarDecisao(solicitacao, !!aprovar, resposta);
+    if (solicitacao) avisarDecisao(solicitacao, !!aprovar, resposta, visitaJunto);
 });
 
 // ---- Dados brutos (localStorage / sessionStorage) ------------------------

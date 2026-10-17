@@ -11,7 +11,8 @@
 //
 // O que cada pessoa LÊ na tela:
 //   Pendente                 -> 🟡 Aguardando a direção
-//   Aguardando Desenvolvedor -> 🟢 Aprovado pela direção › 🔵 Esperando contato equipe Clube da Maré
+//   Aguardando Desenvolvedor -> 🟢 Direção aprovou e fez o agendamento › 🔵 Esperando aprovação do Clube da Maré
+//                               (sem agendamento ainda: 🟡 Direção ainda vai agendar a visita)
 //   Aprovado                 -> 🟢 Aprovado pela direção › 🟢 Confirmada pela equipe Clube da Maré
 //   Recusado (direção)       -> 🔴 Reprovada pela direção
 //   Recusado (equipe)        -> 🟢 Aprovado pela direção › 🔴 Reprovada pela equipe Clube da Maré
@@ -65,6 +66,15 @@ function _quemRespondeu(s) {
     return s.respondidoPor === 'Desenvolvedor' ? 'Equipe Clube da Maré' : 'Direção';
 }
 
+// O agendamento da visita da turma (agendamentos-local.js), se a página o carrega.
+// undefined = sem como saber; null = turma sem agendamento.
+function _visitaDaSolicitacao(s) {
+    try {
+        if (!s || typeof agendamentoAtualDaTurma !== 'function' || typeof _agLista !== 'function') return undefined;
+        return agendamentoAtualDaTurma(_agLista(), s.turma) || null;
+    } catch (e) { return undefined; }
+}
+
 // { chave, classe, emoji, rotulo, titulo, mensagem, etapas:[{emoji,texto}] }
 // A última etapa de "etapas" é a situação atual.
 function infoStatusSolicitacao(s) {
@@ -105,11 +115,32 @@ function infoStatusSolicitacao(s) {
         };
     }
     if (s.status === 'Aguardando Desenvolvedor') {
+        var visita = _visitaDaSolicitacao(s);
+        var ativa = visita && (visita.status === 'Pendente' || visita.status === 'Aprovado');
+        if (visita === undefined || ativa) {
+            var feito = { emoji: '🟢', texto: visita === undefined ? 'Aprovado pela direção' : 'Direção aprovou e fez o agendamento' };
+            return {
+                chave: 'esperando-contato', classe: 'status-aguardando-dev', emoji: '🔵', rotulo: 'Esperando aprovação do Clube da Maré',
+                titulo: 'Esperando aprovação do Clube da Maré',
+                mensagem: visita === undefined
+                    ? 'A direção já aprovou. Agora falta a equipe Clube da Maré aprovar — assim que ela responder, o status muda aqui.'
+                    : 'A direção aprovou e já fez o agendamento da visita da turma. Agora falta a equipe Clube da Maré aprovar — assim que ela responder, o status muda aqui.',
+                etapas: [prof, feito, { emoji: '🔵', texto: 'Esperando aprovação do Clube da Maré' }]
+            };
+        }
+        if (visita && visita.status === 'Recusado') {
+            return {
+                chave: 'esperando-agendamento', classe: 'status-recusado', emoji: '🔴', rotulo: 'Data reprovada — direção vai reagendar',
+                titulo: 'Data reprovada — direção vai reagendar',
+                mensagem: 'A direção aprovou, mas o Clube da Maré reprovou as datas da visita. A direção vai pedir outra data.',
+                etapas: [prof, dirOk, { emoji: '🔴', texto: 'Data reprovada — direção vai reagendar' }]
+            };
+        }
         return {
-            chave: 'esperando-contato', classe: 'status-aguardando-dev', emoji: '🔵', rotulo: 'Esperando contato equipe Clube da Maré',
-            titulo: 'Esperando contato equipe Clube da Maré',
-            mensagem: 'A direção já aprovou. Agora falta a equipe Clube da Maré confirmar o contato — assim que ela responder, o status muda aqui.',
-            etapas: [prof, dirOk, { emoji: '🔵', texto: 'Esperando contato equipe Clube da Maré' }]
+            chave: 'esperando-agendamento', classe: 'status-pendente', emoji: '🟡', rotulo: 'Direção ainda vai agendar a visita',
+            titulo: 'Direção ainda vai agendar a visita',
+            mensagem: 'A direção aprovou. Falta a direção agendar os dias da visita ao Clube da Maré — depois o Clube aprova tudo junto.',
+            etapas: [prof, dirOk, { emoji: '🟡', texto: 'Direção ainda vai agendar a visita' }]
         };
     }
     return {

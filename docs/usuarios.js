@@ -32,7 +32,7 @@
 // é migrar login/senha pra um backend de verdade (ex.: Firebase Auth).
 // ==========================================================================
 var USUARIOS = [
-    { login: 'prof.mariasoares@edu.sp.br', senha: 'Edu@2026', perfil: 'professor', nome: 'Maria Soares', ra: '', turmas: '2ºA,3ºA' },
+    { login: 'prof.mariasoares@edu.sp.br', senha: 'Edu@2026', perfil: 'professor', nome: 'Maria Soares', ra: '', turmas: '1ºA,1ºB,2ºA,2ºB,3ºA' },
     { login: 'gabrieladiretoria@edu.sp.br', senha: 'Seduc@2026', perfil: 'diretoria', nome: 'Gabriela', ra: '', turmas: '' },
     { login: 'dev@clubedamare.com.br', senha: 'Maré@2026', perfil: 'desenvolvedor', nome: 'Desenvolvedor', ra: '', turmas: '' },
     { login: '0000108327708xsp@al.educacao.sp.gov.br', senha: 'Apparecid@25', perfil: 'estudante', nome: 'Julia Victória', ra: '108327708xsp', turmas: '3ºA' },
@@ -93,14 +93,13 @@ function buscarEstudantePorEmail(email) {
 // (/api/alunos-cadastrados) e entram na lista USUARIOS quando a página chama
 // carregarUsuariosCadastrados() — a partir daí funcionam como qualquer
 // estudante daqui (aparecem em listarEstudantes, buscarEstudantePorEmail...).
-// A senha só vem pro navegador no painel do desenvolvedor (?senhas=1); o login é conferido no servidor.
+// A senha NÃO vem pro navegador; o login é conferido no servidor.
 // ==========================================================================
 var _usuariosCadastradosPromessa = null;
 
-// comSenhas = true só no painel do desenvolvedor (traz também a senha pra "mostrar").
-function carregarUsuariosCadastrados(forcar, comSenhas) {
+function carregarUsuariosCadastrados(forcar) {
     if (_usuariosCadastradosPromessa && !forcar) return _usuariosCadastradosPromessa;
-    _usuariosCadastradosPromessa = fetch('/api/alunos-cadastrados' + (comSenhas ? '?senhas=1' : ''), { cache: 'no-store' })
+    _usuariosCadastradosPromessa = fetch('/api/alunos-cadastrados', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : { usuarios: [] }; })
         .then(function (corpo) {
             for (var i = USUARIOS.length - 1; i >= 0; i--) {
@@ -110,7 +109,7 @@ function carregarUsuariosCadastrados(forcar, comSenhas) {
                 var email = String(u.login || '').trim().toLowerCase();
                 var jaTem = USUARIOS.some(function (x) { return emailDoUsuario(x) === email; });
                 if (!email || jaTem) return;
-                USUARIOS.push({ login: email, senha: u.senha || null, perfil: 'estudante', nome: u.nome, ra: u.ra || '', turmas: u.turmas || '', doBanco: true });
+                USUARIOS.push({ login: email, senha: null, perfil: 'estudante', nome: u.nome, ra: u.ra || '', turmas: u.turmas || '', doBanco: true });
             });
             return USUARIOS;
         })

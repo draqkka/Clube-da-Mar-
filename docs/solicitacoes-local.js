@@ -298,6 +298,27 @@ function responderSolicitacao(id, novoStatus, resposta, respondidoPor, aprovadoD
     });
 }
 
+// ---- Várias de uma vez (turma toda): muda o status de todas e grava num lote só.
+// Devolve uma Promise com a quantidade alterada.
+function responderVariasSolicitacoes(ids, novoStatus, resposta, respondidoPor, aprovadoDirecao) {
+    var lista = _lerSolicitacoes();
+    var alteradas = lista.filter(function (s) { return ids.indexOf(s.id) !== -1; });
+    if (!alteradas.length) return Promise.resolve(0);
+    alteradas.forEach(function (s) {
+        s.status = novoStatus;
+        s.resposta = resposta || '';
+        s.respondidoPor = respondidoPor || '';
+        s.aprovadoDirecao = !!aprovadoDirecao;
+    });
+    _salvarSolicitacoes(lista);
+    var total = alteradas.length;
+    var pedacos = [];
+    for (var i = 0; i < alteradas.length; i += 200) pedacos.push(alteradas.slice(i, i + 200));
+    return Promise.all(pedacos.map(function (lote) {
+        return _enviarAoServidor(_chamarApi('POST', URL_SOLICITACOES, { lote: lote })).catch(function () {});
+    })).then(function () { return total; });
+}
+
 // ---- Diretoria: aprova uma solicitação pendente. Isso NÃO é a aprovação
 // final — só passa a solicitação pra etapa de confirmação do Desenvolvedor.
 function aprovarComoDiretoria(id, resposta) {

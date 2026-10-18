@@ -506,13 +506,13 @@
        
         <div class="mapa-container" id="mapa-clube">
 
-            <img src="imagens/Mapa/mapa-base.png" alt="Mapa ilustrado do Clube da Maré com 16 pontos numerados" class="mapa-base">
+            <img src="imagens/Mapa/mapa-base.png" alt="Mapa ilustrado do Clube da Maré com 20 pontos numerados" class="mapa-base">
             <!-- ALT: imagem base do mapa interativo -->
 
 
             <button class="ponto c-lazer" style="top:23.8%; left:18.7%;" data-local="1"><span class="tooltip">Piscinas e Praia Artificial</span></button>
             <button class="ponto c-lazer" style="top:16.9%; left:48.6%;" data-local="2"><span class="tooltip">Tirolesa</span></button>
-            <button class="ponto c-lazer" style="top:26.8%; left:71.4%;" data-local="3"><span class="tooltip">Parede de Escalada</span></button>
+            <button class="ponto c-lazer" style="top:25.0%; left:63.3%;" data-local="3"><span class="tooltip">Parede de Escalada</span></button>
             <button class="ponto c-lazer" style="top:40.1%; left:84.7%;" data-local="4"><span class="tooltip">Touro Mecânico</span></button>
             <button class="ponto c-lazer" style="top:37.7%; left:43.3%;" data-local="5"><span class="tooltip">Circuito de Desafios</span></button>
             <button class="ponto c-lazer" style="top:50.3%; left:64.6%;" data-local="6"><span class="tooltip">Espaço Karaokê e Palco</span></button>
@@ -529,6 +529,11 @@
             <button class="ponto c-servico" style="top:75.7%; left:31.1%;" data-local="14"><span class="tooltip">Vestiários e Banheiros</span></button>
             <button class="ponto c-servico" style="top:77.0%; left:70.1%;" data-local="15"><span class="tooltip">Posto Médico</span></button>
             <button class="ponto c-servico" style="top:89.1%; left:44.6%;" data-local="16"><span class="tooltip">Estacionamento</span></button>
+
+            <button class="ponto c-servico" style="top:11.5%; left:5.5%;" data-local="17"><span class="tooltip">Dormitório Feminino</span></button>
+            <button class="ponto c-servico" style="top:75.5%; left:8.5%;" data-local="18"><span class="tooltip">Dormitório Masculino</span></button>
+            <button class="ponto c-servico" style="top:87.3%; left:7.5%;" data-local="19"><span class="tooltip">Depósito e Apoio</span></button>
+            <button class="ponto c-servico" style="top:90.5%; left:83.5%;" data-local="20"><span class="tooltip">Bar / Apoio</span></button>
         </div>
 
         <div class="painel-local" id="painel-local">
@@ -585,6 +590,10 @@
                     <li><span class="numero-legenda c-servico">14</span> Vestiários e Banheiros</li>
                     <li><span class="numero-legenda c-servico">15</span> Posto Médico</li>
                     <li><span class="numero-legenda c-servico">16</span> Estacionamento</li>
+                    <li><span class="numero-legenda c-servico">17</span> Dormitório Feminino</li>
+                    <li><span class="numero-legenda c-servico">18</span> Dormitório Masculino</li>
+                    <li><span class="numero-legenda c-servico">19</span> Depósito e Apoio</li>
+                    <li><span class="numero-legenda c-servico">20</span> Bar / Apoio</li>
                 </ul>
             </div>
         </div>
@@ -592,12 +601,15 @@
         <div class="icones-apoio">
             <h4>Ícones de Apoio no Mapa</h4>
             <div class="icones-apoio-lista">
-                <span><i class="fa-solid fa-restroom"></i> Banheiros</span>
+                <span><i class="fa-solid fa-person-dress"></i> Banheiros Feminino</span>
+                <span><i class="fa-solid fa-person"></i> Banheiros Masculino</span>
                 <span><i class="fa-solid fa-utensils"></i> Alimentação</span>
-                <span><i class="fa-solid fa-lock"></i> Armários</span>
-                <span><i class="fa-solid fa-suitcase-medical"></i> Posto Médico</span>
+                <span><i class="fa-solid fa-suitcase-medical"></i> Posto Médico / Primeiros Socorros</span>
                 <span><i class="fa-solid fa-droplet"></i> Bebedouros</span>
                 <span><i class="fa-solid fa-umbrella-beach"></i> Pontos de Descanso</span>
+                <span><i class="fa-solid fa-bed"></i> Dormitórios Feminino e Masculino</span>
+                <span><i class="fa-solid fa-box"></i> Depósito e Apoio</span>
+                <span><i class="fa-solid fa-martini-glass-citrus"></i> Bar / Apoio</span>
                 <span><i class="fa-solid fa-person-running"></i> Saídas de Emergência</span>
             </div>
         </div>
@@ -664,11 +676,11 @@ document.querySelectorAll('.ponto').forEach(function (ponto) {
     });
 });
 
-// Pré-carrega as 16 imagens dos locais em segundo plano (depois que a
+// Pré-carrega as 20 imagens dos locais em segundo plano (depois que a
 // página carregou), pra o modal abrir na hora ao clicar num ponto.
 window.addEventListener('load', function () {
     setTimeout(function () {
-        for (var i = 1; i <= 16; i++) { new Image().src = 'imagens/Mapa/Local' + i + '.webp'; }
+        for (var i = 1; i <= 20; i++) { new Image().src = 'imagens/Mapa/Local' + i + '.webp'; }
     }, 1500);
 });
 

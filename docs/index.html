@@ -755,7 +755,11 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
      Os 30 depoimentos ficam na lista "DEPOIMENTOS" no script abaixo.
      FOTOS: já estão embutidas no próprio index.html (lista FOTOS_DEPOIMENTOS, logo abaixo).
      Sem foto, aparece um espaço reservado com as iniciais. -->
-<section id="depoimentos" class="secao-depoimentos">
+<!-- Endereços das imagens de fundo da seção (ficam na pasta imagens). Para trocar uma imagem, mude só o caminho aqui. -->
+<section id="depoimentos" class="secao-depoimentos"
+    style="--fundo-depoimentos-desktop: url('imagens/fundo-depoimento.webp');
+           --fundo-depoimentos-mobile-titulo: url('imagens/fundo-depoimento-mobile-titulo.webp');
+           --fundo-depoimentos-mobile-cena: url('imagens/fundo-depoimento-mobile-cena.webp');">
     <h2>Depoimentos</h2>
     <p class="depoimentos-sub">Quem já viveu o Clube da Maré conta como foi.</p>
 

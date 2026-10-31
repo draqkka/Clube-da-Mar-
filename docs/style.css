@@ -4316,22 +4316,39 @@ html, body { overflow-anchor: none; }
 
 
 /* =========================================================================
-   PAINEL DO DASHBOARD NA TELA INICIAL (faixa "Olá, ...") — fundo transparente
-   A foto do banner aparece por trás. Sombra leve nas letras mantém a leitura.
-   Para voltar ao azul, apague este bloco.
+   PAINEL DO DASHBOARD NA TELA INICIAL (faixa "Olá, ...") — vidro translúcido
+   A foto do banner aparece por trás, mas com um véu escuro + desfoque para
+   as letras brancas e as "pílulas" (Média, Frequência...) ficarem legíveis.
+   Para mais/menos transparência mude o último número dos rgba (.62 / .42).
    ========================================================================= */
 .hero .resumo-aluno.resumo-faixa,
 .resumo-aluno.resumo-faixa,
 .resumo-aluno.resumo-faixa.resumo-clicavel,
 .resumo-aluno.resumo-faixa.resumo-clicavel:hover,
 .resumo-aluno.resumo-faixa.resumo-clicavel:focus-visible {
-    background: transparent !important;
-    box-shadow: none !important;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+    background: linear-gradient(to bottom, rgba(4, 18, 52, .62), rgba(4, 18, 52, .42)) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(8px) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .18) !important;
 }
 .resumo-faixa h2,
 .resumo-faixa .resumo-aluno-texto,
 .resumo-faixa .card-status-rotulo {
-    text-shadow: 0 1px 3px rgba(0, 0, 0, .75), 0 0 8px rgba(0, 0, 0, .45);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .75);
+}
+/* pílulas brancas translúcidas atrás de Status / Média / Frequência / Desempenho */
+.resumo-faixa .grid-status .card-status,
+.resumo-faixa .card-status {
+    background: rgba(255, 255, 255, .24);
+    border: 1px solid rgba(255, 255, 255, .34);
+}
+.resumo-faixa .card-status-diretoria.status-aprovado { background: var(--cor-verde-claro); }
+
+/* Celular: com a faixa acima do banner, a logo fica no canto de cima do banner
+   (o banner tem 240px de altura e começa logo depois da faixa). */
+@media (max-width: 768px) {
+    #inicio.tem-faixa .hero-logo {
+        top: calc(100% - 230px);
+        bottom: auto;
+    }
 }

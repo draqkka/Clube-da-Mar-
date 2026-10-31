@@ -1229,5 +1229,24 @@ var LINK_VIDEO_DRIVE = 'https://drive.google.com/file/d/1aJJa1cvt2tMrg9Evl4WBi2V
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fecharModal(); });
 })();
 </script>
+<script>
+// Efeito dos cards de evento no celular: o "hover" não existe no toque,
+// então ao tocar num card ele ganha a classe .ativo (zoom + sombra);
+// tocar em outro card ou fora dos cards tira o efeito.
+(function () {
+    var cards = document.querySelectorAll('.card-evento');
+    cards.forEach(function (card) {
+        card.addEventListener('click', function (e) {
+            var jaAtivo = card.classList.contains('ativo');
+            cards.forEach(function (c) { c.classList.remove('ativo'); });
+            if (!jaAtivo) card.classList.add('ativo');
+            e.stopPropagation();
+        });
+    });
+    document.addEventListener('click', function () {
+        cards.forEach(function (c) { c.classList.remove('ativo'); });
+    });
+})();
+</script>
 </body>
 </html>

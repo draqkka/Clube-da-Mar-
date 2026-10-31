@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="docs/imagens/chatbot.png">
 <title>Clube da Maré</title>
+<script src="carregamento.js"></script>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -36,6 +37,7 @@
     <a href="#eventos">Eventos</a>
     <a href="#mapa">Mapa</a>
     <a href="#ingressos">Ingressos</a>
+    <a href="#depoimentos">Depoimentos</a>
     <a href="#feedback">Feedback</a>
 
     </div>
@@ -119,11 +121,18 @@
         <!-- ALT: logo do clube sobreposta no canto do banner principal -->
     </a>
 
-    <!-- RESUMO DO ALUNO — aparece depois do "Sair" do painel do aluno.
-         Dados guardados por dashboard-aluno.html (ver status-aluno.js). -->
-    <section id="resumo-aluno" class="resumo-aluno" style="display:none;" aria-live="polite">
-        <button type="button" class="resumo-aluno-fechar" id="resumo-aluno-fechar" aria-label="Ocultar resumo">&times;</button>
-        <h2 id="resumo-aluno-nome">Aluno</h2>
+    <!-- PAINEL DO ALUNO — faixa azul reta no alto do banner, aparece depois do
+         "Sair" do painel do aluno. Nome + status lado a lado e o botão
+         Logoff na ponta direita. Dados guardados por dashboard-aluno.html
+         (ver status-aluno.js). -->
+    <section id="resumo-aluno" class="resumo-aluno resumo-faixa" style="display:none;" aria-live="polite">
+        <div class="faixa-nome">
+            <h2 id="resumo-aluno-nome">Aluno</h2>
+            <div class="card-status card-status-diretoria" id="resumo-aluno-card">
+                <span class="card-status-rotulo">Status</span>
+                <span class="card-status-valor" id="resumo-aluno-status">—</span>
+            </div>
+        </div>
         <div class="grid-status">
             <div class="card-status">
                 <span class="card-status-rotulo">Média</span>
@@ -137,27 +146,32 @@
                 <span class="card-status-rotulo">Desempenho</span>
                 <span class="card-status-valor" id="resumo-aluno-desempenho">—</span>
             </div>
-            <div class="card-status card-status-diretoria" id="resumo-aluno-card">
-                <span class="card-status-rotulo">Status</span>
-                <span class="card-status-valor" id="resumo-aluno-status">—</span>
-            </div>
         </div>
-        <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
-        <p id="resumo-aluno-visita" class="resumo-aluno-texto" style="display:none;"></p>
-        <p id="resumo-aluno-mensagem" class="resumo-aluno-texto"></p>
-        <p class="resumo-aluno-dica"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i>Clique no cartão para abrir seu painel completo</p>
+        <button type="button" class="resumo-faixa-logoff" id="resumo-aluno-fechar" aria-label="Fazer logoff do perfil">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Logoff
+        </button>
+        <div class="faixa-textos">
+            <p id="resumo-aluno-texto" class="resumo-aluno-texto"></p>
+            <p id="resumo-aluno-visita" class="resumo-aluno-texto" style="display:none;"></p>
+            <p id="resumo-aluno-mensagem" class="resumo-aluno-texto"></p>
+        </div>
     </section>
 
-    <!-- RESUMO DO PROFESSOR / DIRETORIA — mesmo cartão, aparece depois do
+    <!-- PAINEL DO PROFESSOR / DIRETORIA / DEV — mesma faixa azul, aparece depois do
          "Voltar ao site" dos painéis (dados guardados por resumo-painel.js).
-         Clicar em qualquer parte dele abre o painel inteiro. -->
-    <section id="resumo-painel" class="resumo-aluno" style="display:none;" aria-live="polite">
-        <button type="button" class="resumo-aluno-fechar" id="resumo-painel-fechar" aria-label="Ocultar resumo">&times;</button>
-        <span class="resumo-aluno-perfil" id="resumo-painel-perfil">Perfil</span>
-        <h2 id="resumo-painel-nome">Olá!</h2>
+         Clicar na faixa (fora do Logoff) abre o painel inteiro. -->
+    <section id="resumo-painel" class="resumo-aluno resumo-faixa" style="display:none;" aria-live="polite">
+        <div class="faixa-nome">
+            <h2 id="resumo-painel-nome">Olá!</h2>
+            <span class="resumo-aluno-perfil" id="resumo-painel-perfil">Perfil</span>
+        </div>
         <div class="grid-status" id="resumo-painel-cartoes"></div>
-        <p id="resumo-painel-texto" class="resumo-aluno-texto"></p>
-        <p class="resumo-aluno-dica"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i>Clique no cartão para abrir seu painel completo</p>
+        <button type="button" class="resumo-faixa-logoff" id="resumo-painel-fechar" aria-label="Fazer logoff do perfil">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Logoff
+        </button>
+        <div class="faixa-textos">
+            <p id="resumo-painel-texto" class="resumo-aluno-texto"></p>
+        </div>
     </section>
 </div>
 </main>
@@ -737,6 +751,142 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 
 
+<!-- DEPOIMENTOS — carrossel automático (passa sozinho a cada 5 segundos).
+     Para trocar/adicionar depoimentos, edite a lista "DEPOIMENTOS" no script
+     logo abaixo (estrelas de 1 a 5, função, nome e foto do participante). -->
+<section id="depoimentos" class="secao-depoimentos">
+    <h2>Depoimentos</h2>
+    <p class="depoimentos-sub">Quem já viveu o Clube da Maré conta como foi.</p>
+
+    <div class="carrossel-depoimentos" id="carrossel-depoimentos" aria-roledescription="carrossel" aria-label="Depoimentos de participantes">
+        <button type="button" class="carrossel-seta anterior" id="carrossel-anterior" aria-label="Depoimento anterior">&#8249;</button>
+        <div class="carrossel-janela">
+            <div class="carrossel-trilho" id="carrossel-trilho" aria-live="off"></div>
+        </div>
+        <button type="button" class="carrossel-seta proximo" id="carrossel-proximo" aria-label="Próximo depoimento">&#8250;</button>
+        <div class="carrossel-pontos" id="carrossel-pontos"></div>
+    </div>
+</section>
+
+<script>
+// ===== DEPOIMENTOS (carrossel automático) =====
+// ⚠️ Textos e nomes abaixo são EXEMPLOS — troque pelos depoimentos reais.
+// "foto": caminho da foto do participante (ex.: 'imagens/Depoimentos/ana.jpg').
+// Deixando vazio, aparece um círculo com as iniciais do nome.
+var DEPOIMENTOS = [
+    { estrelas: 5, funcao: 'Aluna do 3º ano', nome: 'Ana Souza', foto: '',
+      texto: 'Foi um dia inesquecível! As atividades, os desafios e o karaokê deixaram tudo muito animado.' },
+    { estrelas: 5, funcao: 'Professor de Educação Física', nome: 'Carlos Mendes', foto: '',
+      texto: 'Estrutura excelente e equipe atenciosa. Os alunos se divertiram e trabalharam o espírito de equipe.' },
+    { estrelas: 4, funcao: 'Aluno do 2º ano', nome: 'Pedro Lima', foto: '',
+      texto: 'Gostei muito das quadras de areia e das gincanas. Quero voltar na próxima edição!' },
+    { estrelas: 5, funcao: 'Coordenadora pedagógica', nome: 'Marina Alves', foto: '',
+      texto: 'A organização do ingresso digital facilitou tudo. Nenhuma fila e muita tranquilidade para a escola.' }
+];
+
+(function () {
+    var trilho = document.getElementById('carrossel-trilho');
+    var pontos = document.getElementById('carrossel-pontos');
+    var carrossel = document.getElementById('carrossel-depoimentos');
+    if (!trilho || !DEPOIMENTOS.length) return;
+
+    function iniciais(nome) {
+        var p = String(nome || '').trim().split(/\s+/);
+        return ((p[0] || '').charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : '')).toUpperCase();
+    }
+
+    DEPOIMENTOS.forEach(function (d, i) {
+        var slide = document.createElement('div');
+        slide.className = 'depoimento-slide';
+        slide.setAttribute('role', 'group');
+        slide.setAttribute('aria-label', (i + 1) + ' de ' + DEPOIMENTOS.length);
+
+        var cartao = document.createElement('article');
+        cartao.className = 'depoimento-cartao';
+
+        // 1) Estrelinhas de avaliação, em cima
+        var est = document.createElement('div');
+        est.className = 'depoimento-estrelas';
+        est.setAttribute('aria-label', 'Avaliação: ' + d.estrelas + ' de 5 estrelas');
+        for (var e = 1; e <= 5; e++) {
+            var st = document.createElement('span');
+            st.className = e > d.estrelas ? 'vazia' : '';
+            st.textContent = '\u2605';
+            st.setAttribute('aria-hidden', 'true');
+            est.appendChild(st);
+        }
+        cartao.appendChild(est);
+
+        // 2) Depoimento
+        var txt = document.createElement('p');
+        txt.className = 'depoimento-texto';
+        txt.textContent = '\u201C' + d.texto + '\u201D';
+        cartao.appendChild(txt);
+
+        // 3) Foto do participante + função + nome
+        var autor = document.createElement('div');
+        autor.className = 'depoimento-autor';
+        var foto;
+        if (d.foto) {
+            foto = document.createElement('img');
+            foto.src = d.foto;
+            foto.alt = 'Foto de ' + d.nome;
+            foto.loading = 'lazy';
+            foto.className = 'depoimento-foto';
+        } else {
+            foto = document.createElement('span');
+            foto.className = 'depoimento-foto';
+            foto.setAttribute('aria-hidden', 'true');
+            foto.textContent = iniciais(d.nome);
+        }
+        var quem = document.createElement('div');
+        var f = document.createElement('span');
+        f.className = 'depoimento-funcao';
+        f.textContent = d.funcao;
+        var n = document.createElement('span');
+        n.className = 'depoimento-nome';
+        n.textContent = d.nome;
+        quem.appendChild(f);
+        quem.appendChild(n);
+        autor.appendChild(foto);
+        autor.appendChild(quem);
+        cartao.appendChild(autor);
+
+        slide.appendChild(cartao);
+        trilho.appendChild(slide);
+
+        var ponto = document.createElement('button');
+        ponto.type = 'button';
+        ponto.className = 'carrossel-ponto';
+        ponto.setAttribute('aria-label', 'Ir para o depoimento ' + (i + 1));
+        ponto.addEventListener('click', function () { ir(i); reiniciar(); });
+        pontos.appendChild(ponto);
+    });
+
+    var atual = 0, timer = null, INTERVALO = 5000;
+
+    function ir(i) {
+        atual = (i + DEPOIMENTOS.length) % DEPOIMENTOS.length;
+        trilho.style.transform = 'translateX(-' + (atual * 100) + '%)';
+        Array.prototype.forEach.call(pontos.children, function (p, k) {
+            p.classList.toggle('ativo', k === atual);
+        });
+    }
+    function iniciar() { parar(); timer = setInterval(function () { ir(atual + 1); }, INTERVALO); }
+    function parar() { if (timer) { clearInterval(timer); timer = null; } }
+    function reiniciar() { iniciar(); }
+
+    document.getElementById('carrossel-anterior').addEventListener('click', function () { ir(atual - 1); reiniciar(); });
+    document.getElementById('carrossel-proximo').addEventListener('click', function () { ir(atual + 1); reiniciar(); });
+
+    // Pausa só quando a aba fica escondida (economiza bateria); volta sozinho.
+    document.addEventListener('visibilitychange', function () { document.hidden ? parar() : iniciar(); });
+
+    ir(0);
+    iniciar();
+})();
+</script>
+
 <!-- CONTATO -->
 <section id="feedback" class="pagina-contato">
     <img src="imagens/contato.png" class="background-contato" alt="Fundo praiano da seção de Contato">
@@ -779,6 +929,7 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
             <a href="#eventos">Eventos</a>
             <a href="#mapa">Mapa</a>
             <a href="#ingressos">Ingressos</a>
+            <a href="#depoimentos">Depoimentos</a>
             <a href="#feedback">Contato</a>
         </nav>
     </div>
@@ -794,6 +945,21 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 <script src="status-aluno.js"></script>
 <script src="resumo-painel.js"></script>
 <script>
+// Logoff pela faixa azul: limpa tudo que guarda o perfil logado, esconde a
+// faixa e leva de volta pro menu inicial (topo da página).
+function fazerLogoffDaFaixa(secao) {
+    try { if (typeof apagarResumoAluno === 'function') apagarResumoAluno(); } catch (e) {}
+    try { if (typeof apagarResumoPainel === 'function') apagarResumoPainel(); } catch (e) {}
+    try { sessionStorage.removeItem('cdm_sessao'); } catch (e) {}
+    if (secao) secao.style.display = 'none';
+    document.querySelectorAll('.resumo-faixa').forEach(function (f) { f.style.display = 'none'; });
+    var inicio = document.getElementById('inicio');
+    if (inicio) inicio.classList.remove('tem-faixa');
+    window.location.hash = '#inicio';
+    window.scrollTo(0, 0);
+}
+</script>
+<script>
 (function () {
     var resumo = lerResumoAluno();
     if (!resumo || !resumo.nome) return;
@@ -808,16 +974,19 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
     document.getElementById('resumo-aluno-frequencia').textContent = formatarFrequencia(resumo.presenca);
     document.getElementById('resumo-aluno-desempenho').innerHTML = htmlComportamentoChave(resumo.comportamento);
     document.getElementById('resumo-aluno-mensagem').textContent = mensagemPainelAluno(resumo);
-    secao.style.display = 'block';
+    secao.style.display = 'flex';
+    document.getElementById('inicio').classList.add('tem-faixa');
 
     // Clicar em QUALQUER parte do cartão (ou no nome) volta pro painel do aluno,
     // com as informações que o professor disponibilizou, em tela cheia.
     tornarCartaoClicavel(secao, function () { abrirPainelGuardado(resumo); },
         'Abrir o painel completo de ' + nomeCurtoAluno(resumo.nome));
 
-    document.getElementById('resumo-aluno-fechar').addEventListener('click', function () {
-        apagarResumoAluno();
-        secao.style.display = 'none';
+    // LOGOFF: apaga o resumo e a sessão guardada, some com a faixa e volta pro
+    // menu inicial, como se a pessoa tivesse saído do perfil de verdade.
+    document.getElementById('resumo-aluno-fechar').addEventListener('click', function (e) {
+        e.stopPropagation();
+        fazerLogoffDaFaixa(secao);
     });
 
     // Visita da turma ao Clube da Maré (mesmo texto do painel do aluno), ao vivo.
@@ -886,14 +1055,15 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
         card.appendChild(v);
         grade.appendChild(card);
     });
-    secao.style.display = 'block';
+    secao.style.display = 'flex';
+    document.getElementById('inicio').classList.add('tem-faixa');
 
     tornarCartaoClicavel(secao, function () { abrirPainelGuardado(resumo); },
         'Abrir o painel completo de ' + resumo.nome);
 
-    document.getElementById('resumo-painel-fechar').addEventListener('click', function () {
-        apagarResumoPainel();
-        secao.style.display = 'none';
+    document.getElementById('resumo-painel-fechar').addEventListener('click', function (e) {
+        e.stopPropagation();
+        fazerLogoffDaFaixa(secao);
     });
 
     // Confete quando o Clube da Maré aprova uma solicitação (uma vez por solicitação,
@@ -1025,25 +1195,6 @@ var LINK_VIDEO_DRIVE = 'https://drive.google.com/file/d/1aJJa1cvt2tMrg9Evl4WBi2V
     fechar.addEventListener('click', fecharModal);
     fundo.addEventListener('click', function (e) { if (e.target === fundo) fecharModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fecharModal(); });
-})();
-</script>
-<script>
-// Efeito dos cards de evento no celular: o "hover" não existe no toque,
-// então ao tocar num card ele ganha a classe .ativo (zoom + sombra);
-// tocar em outro card ou fora dos cards tira o efeito.
-(function () {
-    var cards = document.querySelectorAll('.card-evento');
-    cards.forEach(function (card) {
-        card.addEventListener('click', function (e) {
-            var jaAtivo = card.classList.contains('ativo');
-            cards.forEach(function (c) { c.classList.remove('ativo'); });
-            if (!jaAtivo) card.classList.add('ativo');
-            e.stopPropagation();
-        });
-    });
-    document.addEventListener('click', function () {
-        cards.forEach(function (c) { c.classList.remove('ativo'); });
-    });
 })();
 </script>
 </body>

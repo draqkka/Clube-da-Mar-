@@ -4344,11 +4344,23 @@ html, body { overflow-anchor: none; }
 }
 .resumo-faixa .card-status-diretoria.status-aprovado { background: var(--cor-verde-claro); }
 
-/* Celular: com a faixa acima do banner, a logo fica no canto de cima do banner
-   (o banner tem 240px de altura e começa logo depois da faixa). */
+/* Celular: Logoff ao lado do nome; logo no canto de cima da FOTO do banner
+   (abaixo da faixa, sem encostar no texto dela). */
 @media (max-width: 768px) {
-    #inicio.tem-faixa .hero-logo {
-        top: calc(100% - 230px);
-        bottom: auto;
+    /* "dissolve" a caixa nome+status para os itens poderem ser reordenados */
+    .resumo-faixa .faixa-nome { display: contents; }
+    .resumo-faixa h2 { order: 1; flex: 1 1 auto; min-width: 0; }
+    .resumo-faixa .resumo-faixa-logoff { order: 2; margin-left: auto; flex: 0 0 auto; }
+    .resumo-faixa .faixa-nome > :not(h2) { order: 3; }
+    .resumo-faixa .faixa-nome > .card-status { flex: 1 1 100%; justify-content: center; }
+    .resumo-faixa .grid-status { order: 4; flex: 1 1 100%; }
+    .resumo-faixa .faixa-textos { order: 5; }
+
+    /* o link da logo vira uma linha de altura zero logo acima da foto, e a logo
+       fica posicionada em relação a ela (= topo da foto) */
+    #inicio.tem-faixa > a[aria-label="Acesso do desenvolvedor"] {
+        order: 0; position: relative; display: block; height: 0; width: 100%;
     }
+    #inicio.tem-faixa > img:first-child { order: 1; }
+    #inicio.tem-faixa .hero-logo { top: 14px; bottom: auto; }
 }

@@ -37,7 +37,7 @@
 
 <header>
 <nav class="topnav">
-    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+    <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Voltar ao site</a>
     <button type="button" id="botao-logoff" class="botao-logoff-topo"><i class="fa-solid fa-power-off" aria-hidden="true"></i> Logoff</button>
 </nav>
 </header>
@@ -145,7 +145,7 @@ var FORMULARIOS = {
 // Saudação inicial.
 document.getElementById('titulo-boas-vindas').textContent = 'Olá, ' + nomeCurtoAluno(sessao.nome || '') + '!';
 
-// Resumo que também aparece na tela inicial depois do "Sair".
+// Resumo que também aparece na tela inicial depois do "Voltar ao site".
 var resumo = {
     perfil: sessao ? sessao.perfil : '',
     email: sessao ? String(sessao.email || sessao.login || '').trim().toLowerCase() : '',

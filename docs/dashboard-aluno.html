@@ -38,6 +38,7 @@
 <header>
 <nav class="topnav">
     <a href="#" id="link-sair" class="link-sair-topo"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+    <button type="button" id="botao-logoff" class="botao-logoff-topo"><i class="fa-solid fa-power-off" aria-hidden="true"></i> Logoff</button>
 </nav>
 </header>
 
@@ -159,6 +160,7 @@ var resumo = {
     destino: 'dashboard-aluno.html'
 };
 function guardarResumo() {
+    if (window.cdmLogoff) return;
     salvarResumoAluno(resumo);
     // só um cartão por vez na tela inicial: o do professor/diretoria sai
     try { localStorage.removeItem('cdm_resumo_painel'); } catch (e) {}
@@ -346,5 +348,6 @@ escutarAgendamentosDaTurma(function () { return resumo.turma; }, function (daTur
 </script>
 
 <script src="menu.js"></script>
+<script src="logoff.js"></script>
 </body>
 </html>

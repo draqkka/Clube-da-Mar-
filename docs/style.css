@@ -4132,3 +4132,15 @@ html, body { overflow-anchor: none; }
     .carrossel-seta.anterior { left: 4px; }
     .carrossel-seta.proximo { right: 4px; }
 }
+
+/* ---- Botão Logoff nos painéis: canto direito da faixa azul ---- */
+.topnav .botao-logoff-topo {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 16px;
+    border: 0; border-radius: 999px;
+    background: var(--cor-branco);
+    color: var(--cor-azul-profundo);
+    font-family: inherit; font-size: .95rem; font-weight: bold; line-height: 1;
+    cursor: pointer;
+}

@@ -4313,3 +4313,25 @@ html, body { overflow-anchor: none; }
         padding-top: calc(27vw + var(--faixa-topo));
     }
 }
+
+
+/* =========================================================================
+   PAINEL DO DASHBOARD NA TELA INICIAL (faixa "Olá, ...") — fundo transparente
+   A foto do banner aparece por trás. Sombra leve nas letras mantém a leitura.
+   Para voltar ao azul, apague este bloco.
+   ========================================================================= */
+.hero .resumo-aluno.resumo-faixa,
+.resumo-aluno.resumo-faixa,
+.resumo-aluno.resumo-faixa.resumo-clicavel,
+.resumo-aluno.resumo-faixa.resumo-clicavel:hover,
+.resumo-aluno.resumo-faixa.resumo-clicavel:focus-visible {
+    background: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+.resumo-faixa h2,
+.resumo-faixa .resumo-aluno-texto,
+.resumo-faixa .card-status-rotulo {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .75), 0 0 8px rgba(0, 0, 0, .45);
+}

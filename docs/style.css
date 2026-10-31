@@ -119,6 +119,7 @@ html {
 #eventos,
 #mapa,
 #ingressos,
+#depoimentos,
 #feedback {
     scroll-margin-top: 90px;
 }
@@ -553,17 +554,7 @@ html {
 }
 
 
-.card-evento:hover,
-.card-evento.ativo{   /* .ativo = card tocado no celular (ver script no fim do index.html) */
-
-    transform:scale(1.07);
-
-    box-shadow:
-    0 20px 40px rgba(0,0,0,.35);
-
-    z-index:20;
-
-}
+/* (efeito de hover removido) */
 
 /* Observação: as regras ".cards-eventos" (com "s") abaixo eram de uma versão
    anterior do layout (flex, cards de largura fixa) e não são mais usadas no
@@ -749,19 +740,9 @@ html {
 
 }
 
-.item-wellness:hover i{
+/* (efeito de hover removido) */
 
-    color:var(--cor-amarelo-wellness-hover);
-
-    transform:translateY(-6px) scale(1.1);
-
-}
-
-.item-wellness:hover h3{
-
-    color:var(--cor-amarelo-wellness-hover);
-
-}
+/* (efeito de hover removido) */
 
 /* RESPONSIVO */
 
@@ -998,17 +979,9 @@ html {
 
 /* HOVER */
 
-.timeline-item:hover .timeline-icon{
+/* (efeito de hover removido) */
 
-    transform:translateY(-12px) scale(1.12);
-
-    background:var(--cor-azul-escuro);
-}
-
-.timeline-item:hover .timeline-icon i{
-
-    color:var(--cor-branco);
-}
+/* (efeito de hover removido) */
 
 /* HORA */
 
@@ -1083,10 +1056,7 @@ html {
     transition:.3s;
 }
 
-.evento-item:hover{
-
-    transform:translateX(40px);
-}
+/* (efeito de hover removido) */
 
 .data{
 
@@ -1299,9 +1269,7 @@ html {
         padding: 10px 0;
     }
 
-    .evento-item:hover {
-        transform: translateX(15px);
-    }
+    /* (efeito de hover removido) */
 
     .data {
         width: 70px;
@@ -1638,14 +1606,9 @@ html {
     transition: .3s;
 }
 
-.lista-legenda li:hover {
-    transform: translateX(15px);
-}
+/* (efeito de hover removido) */
 
-.lista-legenda li:hover {
-    background-color: #fff59d;
-    color: #1f1f1f;
-}
+/* (efeito de hover removido) */
 
 .legenda-categorias {
     display: grid;
@@ -1738,16 +1701,9 @@ html {
     transition: .3s;
 }
 
-.icones-apoio-lista span:hover i {
-    color: #007bc2;
-    transform: translateY(-4px) scale(1.15);
-    display: inline-block;
-}
+/* (efeito de hover removido) */
 
-.icones-apoio-lista span:hover {
-    color: #007bc2;
-    
-}
+/* (efeito de hover removido) */
 
 
 /* ===== Responsivo ===== */
@@ -3133,11 +3089,7 @@ body{
     }
     /* O efeito de "zoom" voltou no celular, mais suave pra não estourar a tela:
        aparece ao tocar no card (e some ao tocar fora). */
-    .card-evento:hover,
-    .card-evento.ativo {
-        transform: scale(1.04);
-        box-shadow: 0 12px 26px rgba(0, 0, 0, .4);
-    }
+    /* (efeito de hover removido) */
     .info-evento h3 {
         font-size: 15px;
         overflow-wrap: anywhere;
@@ -3693,13 +3645,7 @@ body.fonte-profissional h3, body.fonte-profissional h4 { line-height: 1.25; }
     backdrop-filter: blur(6px);
     transition: transform .15s, box-shadow .15s, background .15s;
 }
-.resumo-aluno.resumo-clicavel:hover,
-.resumo-aluno.resumo-clicavel:focus-visible {
-    transform: translateY(-2px);
-    background: rgba(8, 12, 24, .88);
-    box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
-    outline: none;
-}
+/* (efeito de hover removido) */
 .resumo-aluno.resumo-clicavel:focus-visible { box-shadow: 0 0 0 3px var(--cor-dourado); }
 .resumo-aluno-dica {
     margin: 8px 0 0;
@@ -3726,12 +3672,8 @@ main > section, .conteudo-pagina > section, .area-avaliacao-professores, .rodape
 .topnav a, .menu-dropdown a, .rodape-site a, .rodape-nav a {
   transition: color .25s ease, background-color .25s ease, transform .25s ease, text-shadow .25s ease;
 }
-.topnav a:hover, .menu-dropdown a:hover, .rodape-site a:hover, .rodape-nav a:hover {
-  transform: translateY(-2px); text-shadow: 0 4px 14px rgba(255, 205, 35, .38);
-}
-.area-avaliacao-professores:hover, .rodape-site:hover {
-  box-shadow: 0 14px 34px rgba(0, 35, 70, .16);
-}
+/* (efeito de hover removido) */
+/* (efeito de hover removido) */
 .filtro-escola-dev { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0 18px; }
 .filtro-escola-dev label { font-weight:700; }
 .filtro-escola-dev select { min-width:min(100%, 320px); padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); background:#fff; color:#18314c; font:inherit; box-shadow:0 5px 16px rgba(0,0,0,.08); }
@@ -3960,3 +3902,187 @@ body { animation: mareEntrada .45s ease both; }
 .agendamento-historico i{ width: 1.2em; text-align: center; margin-right: 4px; }
 .agendamento-historico-aprovado{ color: #1e7e34; }
 .agendamento-historico-recusado{ color: #b02a37; }
+
+
+/* =========================================================================
+   ALTERAÇÕES — FAIXA DO PAINEL, CARREGAMENTO COMPLETO E CARROSSEL
+   ========================================================================= */
+
+/* ---- 1) Painel (aluno/professor/diretoria) em FAIXA RETA e AZUL -----------
+   Fica logo abaixo do menu, de ponta a ponta. Nome + status lado a lado e o
+   botão de Logoff na ponta direita. Sem efeito de hover. */
+.hero .resumo-aluno.resumo-faixa,
+.resumo-aluno.resumo-faixa {
+    position: absolute;
+    top: 56px; left: 0; right: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 10px 5%;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 0;                      /* faixa reta */
+    background: var(--cor-barra-menu-painel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .3);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+    z-index: 6;
+    transition: none;
+}
+.resumo-faixa.resumo-clicavel { cursor: pointer; }
+.resumo-faixa .faixa-nome {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+}
+.hero .resumo-faixa h2,
+.resumo-faixa h2 {
+    margin: 0; padding: 0;
+    font-size: 1.25rem; line-height: 1.2;
+    color: var(--cor-branco);
+    overflow-wrap: anywhere;
+}
+.resumo-faixa .resumo-aluno-perfil { margin: 0; }
+.resumo-faixa .grid-status {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 8px 10px; margin: 0;
+}
+.resumo-faixa .grid-status .card-status,
+.resumo-faixa .card-status {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    padding: 3px 12px; margin: 0;
+    min-width: 0;
+    border: 0; border-radius: 999px;
+    background: rgba(255, 255, 255, .16);
+    color: var(--cor-branco);
+}
+.resumo-faixa .card-status-rotulo { display: inline; font-size: .75rem; opacity: .85; color: inherit; }
+.resumo-faixa .card-status-valor { color: inherit; }
+.resumo-faixa .card-status { box-shadow: none; }
+.resumo-faixa .card-status-valor { display: inline; font-size: .95rem; }
+.resumo-faixa .card-status-diretoria.status-pendente { background: #4a3d10; }
+.resumo-faixa .card-status-diretoria.status-aprovado { background: var(--cor-verde-claro); color: var(--cor-preto); }
+.resumo-faixa .card-status-diretoria.status-recusado { background: #4a1010; }
+.resumo-faixa .card-status-diretoria.status-aguardando-dev { background: #0f2d4a; }
+.resumo-faixa .faixa-textos { flex: 1 1 100%; order: 5; }
+.resumo-faixa .resumo-aluno-texto {
+    margin: 0; font-size: .8rem; line-height: 1.35; color: rgba(255, 255, 255, .88);
+}
+.resumo-faixa .resumo-aluno-texto:empty { display: none; }
+
+/* Botão de logoff — lado direito da faixa azul */
+.resumo-faixa .resumo-faixa-logoff {
+    position: static;
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 16px;
+    border: 0; border-radius: 999px;
+    background: var(--cor-branco);
+    color: var(--cor-azul-profundo);
+    font-family: inherit; font-size: .9rem; font-weight: bold; line-height: 1;
+    cursor: pointer;
+    transition: none;
+}
+
+/* A logo desce um pouco para não ficar embaixo da faixa */
+#inicio.tem-faixa .hero-logo { top: 175px; }
+@media (max-width: 768px) {
+    /* No celular o banner é pequeno: a faixa fica ACIMA da imagem (sem cobrir)
+       e a logo vai pro cantinho de baixo do banner. */
+    #inicio.hero.tem-faixa { display: flex; flex-direction: column; }
+    .hero .resumo-aluno.resumo-faixa,
+    .resumo-aluno.resumo-faixa {
+        position: relative; top: auto; left: auto; right: auto;
+        order: -1; margin: 0; padding: 8px 12px;
+    }
+    .hero .resumo-faixa h2, .resumo-faixa h2 { font-size: 1.05rem; padding: 0; }
+    #inicio.tem-faixa .hero-logo { top: auto; bottom: 12px; }
+    .resumo-faixa .resumo-faixa-logoff { padding: 6px 12px; font-size: .8rem; }
+}
+
+/* ---- 2) Tela de carregamento: a página só aparece depois de carregar tudo --
+   carregamento.js coloca a classe .cdm-carregando no <html> logo no início
+   e tira quando imagens/fontes terminam de carregar. */
+html.cdm-carregando::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 99999;
+    background: var(--cor-barra-menu, #0a5cff);
+}
+html.cdm-carregando::after {
+    content: "";
+    position: fixed; z-index: 100000;
+    top: 50%; left: 50%;
+    width: 54px; height: 54px; margin: -27px 0 0 -27px;
+    border: 5px solid rgba(255, 255, 255, .35);
+    border-top-color: #ffd000;
+    border-radius: 50%;
+    animation: cdm-girar .8s linear infinite;
+}
+@keyframes cdm-girar { to { transform: rotate(360deg); } }
+html.cdm-carregando body { overflow: hidden; }
+/* sem fade/entrada animada do corpo (a tela de carregamento já cuida disso) */
+body { animation: none !important; }
+
+/* ---- 3) Carrossel automático de depoimentos ------------------------------ */
+.secao-depoimentos {
+    position: relative;
+    padding: 70px 5% 80px;
+    background: linear-gradient(180deg, #0a0a0a 0%, var(--cor-barra-menu-painel) 100%);
+    color: var(--cor-branco);
+    text-align: center;
+    overflow: hidden;
+}
+.secao-depoimentos h2 {
+    margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--cor-titulo-eventos, #ffd000);
+}
+.secao-depoimentos .depoimentos-sub { margin: 0 0 34px; color: var(--cor-cinza); }
+.carrossel-depoimentos { position: relative; max-width: 820px; margin: 0 auto; }
+.carrossel-janela { overflow: hidden; border-radius: 18px; }
+.carrossel-trilho { display: flex; transition: transform .6s ease; will-change: transform; }
+.depoimento-slide { flex: 0 0 100%; min-width: 0; padding: 4px; box-sizing: border-box; }
+.depoimento-cartao {
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .22);
+    border-radius: 18px;
+    padding: 30px 28px 26px;
+    min-height: 280px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    box-sizing: border-box;
+}
+.depoimento-estrelas { color: #ffd000; font-size: 1.35rem; letter-spacing: 3px; }
+.depoimento-estrelas .vazia { color: rgba(255, 255, 255, .3); }
+.depoimento-texto { margin: 0; font-size: 1.1rem; line-height: 1.6; max-width: 640px; }
+.depoimento-autor { margin-top: auto; display: flex; align-items: center; gap: 14px; text-align: left; }
+.depoimento-foto {
+    width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: 0 0 64px;
+    border: 3px solid #ffd000; background: var(--cor-azul-profundo);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--fonte-titulos); font-size: 1.4rem; color: var(--cor-branco);
+}
+.depoimento-nome { display: block; font-family: var(--fonte-titulos); font-size: 1.1rem; }
+.depoimento-funcao { display: block; font-size: .9rem; color: var(--cor-cinza); }
+.carrossel-seta {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 42px; height: 42px; border-radius: 50%; border: 0;
+    background: rgba(0, 0, 0, .45); color: var(--cor-branco);
+    font-size: 1.8rem; line-height: 1; padding: 0 0 4px; cursor: pointer; z-index: 2;
+}
+.carrossel-seta.anterior { left: -8px; }
+.carrossel-seta.proximo { right: -8px; }
+.carrossel-pontos { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.carrossel-ponto {
+    width: 11px; height: 11px; padding: 0; border-radius: 50%; border: 0;
+    background: rgba(255, 255, 255, .35); cursor: pointer;
+}
+.carrossel-ponto.ativo { background: #ffd000; }
+@media (max-width: 600px) {
+    .depoimento-cartao { padding: 24px 16px 20px; min-height: 320px; }
+    .depoimento-texto { font-size: 1rem; }
+    .carrossel-seta { display: none; }
+}
+
+/* a faixa entra no alto da página: sem isso o navegador "ancora" o scroll e a página abre rolada */
+html, body { overflow-anchor: none; }

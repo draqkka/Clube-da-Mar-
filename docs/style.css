@@ -4259,3 +4259,57 @@ html, body { overflow-anchor: none; }
         padding-bottom: 50vw;
     }
 }
+
+
+/* =========================================================================
+   DEPOIMENTOS — degradê de transição com a seção de cima (Ingressos) e a de
+   baixo (Contato). Mesmo esquema das outras emendas do site: cada lado do
+   encontro usa a MESMA cor (a do fim de Ingressos / começo de Contato).
+   Para mudar o tamanho do degradê, edite --faixa-topo e os "height" abaixo.
+   ========================================================================= */
+.secao-depoimentos {
+    --faixa-topo: clamp(60px, 8vw, 120px);             /* faixa escura acima da imagem: o título não fica sob o degradê */
+    --fade-sobre-imagem: clamp(24px, 2.6vw, 44px);     /* quanto do degradê invade o topo da imagem */
+    --cor-emenda: linear-gradient(to right, #07121c, #04121e, #001424, #071623, #0c141c);
+    --mascara-some-p-baixo: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,.972) 10%, rgba(0,0,0,.896) 20%, rgba(0,0,0,.784) 30%, rgba(0,0,0,.648) 40%, rgba(0,0,0,.5) 50%, rgba(0,0,0,.352) 60%, rgba(0,0,0,.216) 70%, rgba(0,0,0,.104) 80%, rgba(0,0,0,.028) 90%, rgba(0,0,0,0) 100%);
+    --mascara-surge-p-baixo: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,.028) 10%, rgba(0,0,0,.104) 20%, rgba(0,0,0,.216) 30%, rgba(0,0,0,.352) 40%, rgba(0,0,0,.5) 50%, rgba(0,0,0,.648) 60%, rgba(0,0,0,.784) 70%, rgba(0,0,0,.896) 80%, rgba(0,0,0,.972) 90%, rgba(0,0,0,1) 100%);
+
+    background:
+        var(--fundo-depoimentos-desktop) center var(--faixa-topo) / 100% auto no-repeat,
+        #001734;
+    min-height: calc(50vw + var(--faixa-topo));
+    padding-top: calc(clamp(135px, 15.5vw, 300px) + var(--faixa-topo));
+}
+/* Ingressos → Depoimentos — metade de baixo (começo da seção) */
+.secao-depoimentos::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: calc(var(--faixa-topo) + var(--fade-sobre-imagem)); pointer-events: none; z-index: 0;
+    background: var(--cor-emenda);
+    /* opaco por toda a faixa escura e só então some devagar sobre a imagem (esconde o corte do topo dela) */
+    -webkit-mask: linear-gradient(#000, #000) 0 0 / 100% var(--faixa-topo) no-repeat,
+                  var(--mascara-some-p-baixo) 0 var(--faixa-topo) / 100% calc(100% - var(--faixa-topo)) no-repeat;
+    mask: linear-gradient(#000, #000) 0 0 / 100% var(--faixa-topo) no-repeat,
+          var(--mascara-some-p-baixo) 0 var(--faixa-topo) / 100% calc(100% - var(--faixa-topo)) no-repeat;
+}
+/* Depoimentos → Contato — metade de cima (fim da seção) */
+.secao-depoimentos::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: clamp(70px, 10vw, 150px); pointer-events: none; z-index: 0;
+    background: var(--cor-emenda);
+    -webkit-mask-image: var(--mascara-surge-p-baixo);
+    mask-image: var(--mascara-surge-p-baixo);
+}
+.secao-depoimentos .carrossel-depoimentos { z-index: 1; }   /* o cartão fica acima do degradê */
+
+@media (max-width: 760px) {
+    .secao-depoimentos {
+        --faixa-topo: 40px;
+        --fade-sobre-imagem: 12px;
+        background:
+            var(--fundo-depoimentos-mobile-cena) center bottom / 100% auto no-repeat,
+            var(--fundo-depoimentos-mobile-titulo) center var(--faixa-topo) / 100% auto no-repeat,
+            #001734;
+        min-height: 0;
+        padding-top: calc(27vw + var(--faixa-topo));
+    }
+}

@@ -4364,3 +4364,39 @@ html, body { overflow-anchor: none; }
     #inicio.tem-faixa > img:first-child { order: 1; }
     #inicio.tem-faixa .hero-logo { top: 14px; bottom: auto; }
 }
+
+
+/* Celular: linha preta fininha entre o banner e "Quem Somos".
+   O fundo preto do banner aparecia numa frestinha (fração de pixel) quando a
+   altura do banner não era um número inteiro (acontece com a faixa do painel).
+   Agora os últimos pixels do fundo têm a cor do degradê que liga as duas seções. */
+@media (max-width: 768px) {
+    #inicio.hero {
+        background: linear-gradient(to bottom, #000 0, #000 calc(100% - 4px), #1a898c calc(100% - 4px), #1a898c 100%);
+    }
+    /* e Quem Somos sobe 1px por cima do banner, cobrindo qualquer frestinha */
+    .quemsomos-container { margin-top: -1px; }
+}
+
+
+/* =========================================================================
+   LINHA ESCURA ENTRE AS SEÇÕES (todas as emendas, celular e computador)
+   Cada seção é uma "caixa" separada e, quando a altura de uma delas termina
+   numa fração de pixel (acontece com zoom/tela de alta densidade), o fundo
+   preto da página aparece numa frestinha. Cada seção agora sobe 1px por
+   cima do fim da anterior, cobrindo a frestinha. Nada mais muda no layout.
+   ========================================================================= */
+.quemsomos-container,
+.hero-eventos,
+.hero-wellness,
+.hero-eventos-programacao,
+.hero-mapa,
+.mapa-interativo-container,
+.legenda-mapa,
+.pagina-ingressos,
+.secao-depoimentos,
+.pagina-contato {
+    margin-top: -1px;
+}
+/* o mapa passa por cima da última linha de pixels da foto do topo do mapa */
+.mapa-interativo-container { position: relative; z-index: 4; }

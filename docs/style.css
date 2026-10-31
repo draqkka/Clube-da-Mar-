@@ -554,7 +554,17 @@ html {
 }
 
 
-/* (efeito de hover removido) */
+.card-evento:hover,
+.card-evento.ativo{   /* .ativo = card tocado no celular (ver script no fim do index.html) */
+
+    transform:scale(1.07);
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,.35);
+
+    z-index:20;
+
+}
 
 /* Observação: as regras ".cards-eventos" (com "s") abaixo eram de uma versão
    anterior do layout (flex, cards de largura fixa) e não são mais usadas no
@@ -740,9 +750,19 @@ html {
 
 }
 
-/* (efeito de hover removido) */
+.item-wellness:hover i{
 
-/* (efeito de hover removido) */
+    color:var(--cor-amarelo-wellness-hover);
+
+    transform:translateY(-6px) scale(1.1);
+
+}
+
+.item-wellness:hover h3{
+
+    color:var(--cor-amarelo-wellness-hover);
+
+}
 
 /* RESPONSIVO */
 
@@ -979,9 +999,17 @@ html {
 
 /* HOVER */
 
-/* (efeito de hover removido) */
+.timeline-item:hover .timeline-icon{
 
-/* (efeito de hover removido) */
+    transform:translateY(-12px) scale(1.12);
+
+    background:var(--cor-azul-escuro);
+}
+
+.timeline-item:hover .timeline-icon i{
+
+    color:var(--cor-branco);
+}
 
 /* HORA */
 
@@ -1056,7 +1084,10 @@ html {
     transition:.3s;
 }
 
-/* (efeito de hover removido) */
+.evento-item:hover{
+
+    transform:translateX(40px);
+}
 
 .data{
 
@@ -1269,7 +1300,9 @@ html {
         padding: 10px 0;
     }
 
-    /* (efeito de hover removido) */
+    .evento-item:hover {
+        transform: translateX(15px);
+    }
 
     .data {
         width: 70px;
@@ -1606,9 +1639,14 @@ html {
     transition: .3s;
 }
 
-/* (efeito de hover removido) */
+.lista-legenda li:hover {
+    transform: translateX(15px);
+}
 
-/* (efeito de hover removido) */
+.lista-legenda li:hover {
+    background-color: #fff59d;
+    color: #1f1f1f;
+}
 
 .legenda-categorias {
     display: grid;
@@ -1701,9 +1739,16 @@ html {
     transition: .3s;
 }
 
-/* (efeito de hover removido) */
+.icones-apoio-lista span:hover i {
+    color: #007bc2;
+    transform: translateY(-4px) scale(1.15);
+    display: inline-block;
+}
 
-/* (efeito de hover removido) */
+.icones-apoio-lista span:hover {
+    color: #007bc2;
+    
+}
 
 
 /* ===== Responsivo ===== */
@@ -3089,7 +3134,11 @@ body{
     }
     /* O efeito de "zoom" voltou no celular, mais suave pra não estourar a tela:
        aparece ao tocar no card (e some ao tocar fora). */
-    /* (efeito de hover removido) */
+    .card-evento:hover,
+    .card-evento.ativo {
+        transform: scale(1.04);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, .4);
+    }
     .info-evento h3 {
         font-size: 15px;
         overflow-wrap: anywhere;
@@ -3645,7 +3694,13 @@ body.fonte-profissional h3, body.fonte-profissional h4 { line-height: 1.25; }
     backdrop-filter: blur(6px);
     transition: transform .15s, box-shadow .15s, background .15s;
 }
-/* (efeito de hover removido) */
+.resumo-aluno.resumo-clicavel:hover,
+.resumo-aluno.resumo-clicavel:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(8, 12, 24, .88);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
+    outline: none;
+}
 .resumo-aluno.resumo-clicavel:focus-visible { box-shadow: 0 0 0 3px var(--cor-dourado); }
 .resumo-aluno-dica {
     margin: 8px 0 0;
@@ -3672,8 +3727,12 @@ main > section, .conteudo-pagina > section, .area-avaliacao-professores, .rodape
 .topnav a, .menu-dropdown a, .rodape-site a, .rodape-nav a {
   transition: color .25s ease, background-color .25s ease, transform .25s ease, text-shadow .25s ease;
 }
-/* (efeito de hover removido) */
-/* (efeito de hover removido) */
+.topnav a:hover, .menu-dropdown a:hover, .rodape-site a:hover, .rodape-nav a:hover {
+  transform: translateY(-2px); text-shadow: 0 4px 14px rgba(255, 205, 35, .38);
+}
+.area-avaliacao-professores:hover, .rodape-site:hover {
+  box-shadow: 0 14px 34px rgba(0, 35, 70, .16);
+}
 .filtro-escola-dev { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0 18px; }
 .filtro-escola-dev label { font-weight:700; }
 .filtro-escola-dev select { min-width:min(100%, 320px); padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); background:#fff; color:#18314c; font:inherit; box-shadow:0 5px 16px rgba(0,0,0,.08); }
@@ -4143,4 +4202,13 @@ html, body { overflow-anchor: none; }
     color: var(--cor-azul-profundo);
     font-family: inherit; font-size: .95rem; font-weight: bold; line-height: 1;
     cursor: pointer;
+}
+
+
+/* ---- Hover: mantido como era no site; só a faixa do painel fica parada ---- */
+.resumo-aluno.resumo-faixa.resumo-clicavel:hover,
+.resumo-aluno.resumo-faixa.resumo-clicavel:focus-visible {
+    transform: none;
+    background: var(--cor-barra-menu-painel);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .3);
 }

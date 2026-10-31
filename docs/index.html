@@ -752,8 +752,10 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
 
 
 <!-- DEPOIMENTOS — carrossel automático (passa sozinho a cada 5 segundos).
-     Para trocar/adicionar depoimentos, edite a lista "DEPOIMENTOS" no script
-     logo abaixo (estrelas de 1 a 5, função, nome e foto do participante). -->
+     Os 30 depoimentos ficam na lista "DEPOIMENTOS" no script abaixo.
+     FOTOS: coloque as imagens na pasta  imagens/Depoimentos/  com os nomes
+     depoimento-01.jpg, depoimento-02.jpg ... depoimento-30.jpg (na mesma
+     ordem da lista). Se a foto não existir, aparece um espaço reservado. -->
 <section id="depoimentos" class="secao-depoimentos">
     <h2>Depoimentos</h2>
     <p class="depoimentos-sub">Quem já viveu o Clube da Maré conta como foi.</p>
@@ -764,36 +766,90 @@ document.getElementById('modal-local').addEventListener('click', function (e) {
             <div class="carrossel-trilho" id="carrossel-trilho" aria-live="off"></div>
         </div>
         <button type="button" class="carrossel-seta proximo" id="carrossel-proximo" aria-label="Próximo depoimento">&#8250;</button>
-        <div class="carrossel-pontos" id="carrossel-pontos"></div>
+        <div class="carrossel-contador" id="carrossel-contador" aria-live="polite"></div>
     </div>
 </section>
 
 <script>
 // ===== DEPOIMENTOS (carrossel automático) =====
 // ⚠️ Textos e nomes abaixo são EXEMPLOS — troque pelos depoimentos reais.
-// "foto": caminho da foto do participante (ex.: 'imagens/Depoimentos/ana.jpg').
-// Deixando vazio, aparece um círculo com as iniciais do nome.
+// "foto": deixe '' para usar automaticamente imagens/Depoimentos/depoimento-NN.jpg
+// (NN = posição na lista, 01 a 30), ou escreva outro caminho. Pode ser .jpg, .png ou .webp
+// se você informar o caminho completo aqui.
+var PASTA_FOTOS_DEPOIMENTOS = 'imagens/Depoimentos/';
 var DEPOIMENTOS = [
-    { estrelas: 5, funcao: 'Aluna do 3º ano', nome: 'Ana Souza', foto: '',
-      texto: 'Foi um dia inesquecível! As atividades, os desafios e o karaokê deixaram tudo muito animado.' },
-    { estrelas: 5, funcao: 'Professor de Educação Física', nome: 'Carlos Mendes', foto: '',
-      texto: 'Estrutura excelente e equipe atenciosa. Os alunos se divertiram e trabalharam o espírito de equipe.' },
-    { estrelas: 4, funcao: 'Aluno do 2º ano', nome: 'Pedro Lima', foto: '',
-      texto: 'Gostei muito das quadras de areia e das gincanas. Quero voltar na próxima edição!' },
-    { estrelas: 5, funcao: 'Coordenadora pedagógica', nome: 'Marina Alves', foto: '',
-      texto: 'A organização do ingresso digital facilitou tudo. Nenhuma fila e muita tranquilidade para a escola.' }
+    { estrelas: 5, funcao: "Aluna do 3º ano", nome: "Ana Souza", foto: '',
+      texto: "Foi um dia inesquecível! As atividades, os desafios e o karaokê deixaram tudo muito animado." },
+    { estrelas: 5, funcao: "Professor de Educação Física", nome: "Carlos Mendes", foto: '',
+      texto: "Estrutura excelente e equipe atenciosa. Os alunos se divertiram e trabalharam o espírito de equipe." },
+    { estrelas: 4, funcao: "Aluno do 2º ano", nome: "Pedro Lima", foto: '',
+      texto: "Gostei muito das quadras de areia e das gincanas. Quero voltar na próxima edição!" },
+    { estrelas: 5, funcao: "Coordenadora pedagógica", nome: "Marina Alves", foto: '',
+      texto: "O ingresso digital facilitou tudo. Nenhuma fila e muita tranquilidade para a escola." },
+    { estrelas: 5, funcao: "Diretor escolar", nome: "Roberto Figueiredo", foto: '',
+      texto: "Uma recompensa que motiva os estudantes a manterem notas e presença. Projeto muito bem pensado." },
+    { estrelas: 5, funcao: "Mãe de aluno", nome: "Patrícia Nogueira", foto: '',
+      texto: "Meu filho voltou radiante e contando cada detalhe. Foi o melhor passeio da escola até hoje." },
+    { estrelas: 4, funcao: "Aluno do 1º ano", nome: "Lucas Ferreira", foto: '',
+      texto: "A piscina e o karaokê foram os melhores momentos. Só faltou mais tempo para aproveitar tudo!" },
+    { estrelas: 5, funcao: "Professora de Matemática", nome: "Juliana Castro", foto: '',
+      texto: "Ver a turma inteira se esforçando para chegar ao Clube foi emocionante. Valeu cada prova." },
+    { estrelas: 5, funcao: "Aluna do 3º ano", nome: "Beatriz Martins", foto: '',
+      texto: "Fiz amizade com gente de outras turmas nas gincanas. Foi um dia leve, divertido e especial." },
+    { estrelas: 5, funcao: "Pai de aluna", nome: "Marcelo Tavares", foto: '',
+      texto: "Organização impecável e segurança em todos os espaços. Deixei minha filha tranquilo." },
+    { estrelas: 4, funcao: "Monitor de turma", nome: "Rafael Duarte", foto: '',
+      texto: "A equipe do Clube recebeu muito bem a gente. A logística de entrada pelo QR Code funcionou bem." },
+    { estrelas: 5, funcao: "Aluno do 2º ano", nome: "Gabriel Oliveira", foto: '',
+      texto: "O torneio na areia foi demais! Nossa sala ficou em segundo e ainda assim foi épico." },
+    { estrelas: 5, funcao: "Professora de Português", nome: "Camila Rocha", foto: '',
+      texto: "Os alunos voltaram mais unidos e participativos em sala. O efeito do passeio foi muito positivo." },
+    { estrelas: 5, funcao: "Vice-diretora", nome: "Sandra Azevedo", foto: '',
+      texto: "Parceria transparente e atendimento rápido. Conseguimos agendar a data da visita sem complicação." },
+    { estrelas: 4, funcao: "Aluna do 1º ano", nome: "Larissa Gomes", foto: '',
+      texto: "Amei os decks e o pôr do sol. As fotos que tirei com as amigas ficaram lindas." },
+    { estrelas: 5, funcao: "Responsável por aluno", nome: "Fernanda Barbosa", foto: '',
+      texto: "Acompanhei tudo pelo painel e foi ótimo ver o status do meu filho. Muito prático." },
+    { estrelas: 5, funcao: "Professor de História", nome: "André Lacerda", foto: '',
+      texto: "Atividades recreativas bem planejadas e toda a equipe preparada para receber estudantes." },
+    { estrelas: 5, funcao: "Aluno do 3º ano", nome: "Thiago Ribeiro", foto: '',
+      texto: "Foi a melhor forma de fechar o ensino médio. Vou levar essas memórias para sempre." },
+    { estrelas: 4, funcao: "Nutricionista da escola", nome: "Helena Prado", foto: '',
+      texto: "A área gastronômica tinha boas opções para todos os gostos e atendeu bem as restrições alimentares." },
+    { estrelas: 5, funcao: "Aluna do 2º ano", nome: "Isabela Carvalho", foto: '',
+      texto: "Eu estava com medo de não alcançar a nota, mas me dediquei e consegui. Valeu muito a pena!" },
+    { estrelas: 5, funcao: "Motorista do ônibus escolar", nome: "Seu Antônio Pereira", foto: '',
+      texto: "Fiz o transporte da turma e vi a alegria da molecada na ida e na volta. Dia lindo!" },
+    { estrelas: 5, funcao: "Coordenador de esportes", nome: "Eduardo Martins", foto: '',
+      texto: "As quadras de areia são ótimas e os desafios estimulam a cooperação entre os alunos." },
+    { estrelas: 4, funcao: "Aluno do 1º ano", nome: "Matheus Souza", foto: '',
+      texto: "Foi muito legal, principalmente as gincanas. Queria que o dia fosse o dobro do tamanho." },
+    { estrelas: 5, funcao: "Mãe de aluno", nome: "Cláudia Ramos", foto: '',
+      texto: "Minha filha é tímida e voltou falando com todo mundo. O Clube fez bem para ela." },
+    { estrelas: 5, funcao: "Professora de Biologia", nome: "Renata Siqueira", foto: '',
+      texto: "Ambiente tropical lindo, cuidado com a natureza e muita diversão. Recomendo para outras escolas." },
+    { estrelas: 5, funcao: "Ex-aluno", nome: "Vinícius Andrade", foto: '',
+      texto: "Participei quando estava no 3º ano e até hoje lembro do dia. Foi marcante demais." },
+    { estrelas: 5, funcao: "Aluna do 3º ano", nome: "Carolina Dias", foto: '',
+      texto: "O karaokê foi hilário! Toda a sala cantando junto, um momento que vou guardar com carinho." },
+    { estrelas: 4, funcao: "Inspetor de alunos", nome: "Seu José Almeida", foto: '',
+      texto: "Tudo muito organizado e a turma se comportou bem. A equipe do Clube ajudou em tudo." },
+    { estrelas: 5, funcao: "Mentor do projeto", nome: "Paulo Henrique Teixeira", foto: '',
+      texto: "Ver o sistema de notas, presença e ingresso funcionando junto mostra como a tecnologia ajuda a educação." },
+    { estrelas: 5, funcao: "Responsável pela turma", nome: "Luciana Moraes", foto: '',
+      texto: "Fomos muito bem recebidos. Já estamos combinando a próxima visita com as outras turmas!" }
 ];
 
 (function () {
     var trilho = document.getElementById('carrossel-trilho');
-    var pontos = document.getElementById('carrossel-pontos');
-    var carrossel = document.getElementById('carrossel-depoimentos');
+    var contador = document.getElementById('carrossel-contador');
     if (!trilho || !DEPOIMENTOS.length) return;
 
     function iniciais(nome) {
         var p = String(nome || '').trim().split(/\s+/);
         return ((p[0] || '').charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : '')).toUpperCase();
     }
+    function dois(n) { return (n < 10 ? '0' : '') + n; }
 
     DEPOIMENTOS.forEach(function (d, i) {
         var slide = document.createElement('div');
@@ -804,7 +860,27 @@ var DEPOIMENTOS = [
         var cartao = document.createElement('article');
         cartao.className = 'depoimento-cartao';
 
-        // 1) Estrelinhas de avaliação, em cima
+        // ESPAÇO DA FOTO (esquerda no computador, em cima no celular)
+        var moldura = document.createElement('div');
+        moldura.className = 'depoimento-foto-moldura';
+        var reserva = document.createElement('span');
+        reserva.className = 'depoimento-foto-reserva';
+        reserva.setAttribute('aria-hidden', 'true');
+        reserva.textContent = iniciais(d.nome);
+        moldura.appendChild(reserva);
+        var img = document.createElement('img');
+        img.className = 'depoimento-foto';
+        img.alt = 'Foto de ' + d.nome;
+        img.loading = 'lazy';
+        img.addEventListener('error', function () { img.remove(); });
+        img.src = d.foto || (PASTA_FOTOS_DEPOIMENTOS + 'depoimento-' + dois(i + 1) + '.jpg');
+        moldura.appendChild(img);
+        cartao.appendChild(moldura);
+
+        // CONTEÚDO
+        var corpo = document.createElement('div');
+        corpo.className = 'depoimento-corpo';
+
         var est = document.createElement('div');
         est.className = 'depoimento-estrelas';
         est.setAttribute('aria-label', 'Avaliação: ' + d.estrelas + ' de 5 estrelas');
@@ -815,31 +891,15 @@ var DEPOIMENTOS = [
             st.setAttribute('aria-hidden', 'true');
             est.appendChild(st);
         }
-        cartao.appendChild(est);
+        corpo.appendChild(est);
 
-        // 2) Depoimento
         var txt = document.createElement('p');
         txt.className = 'depoimento-texto';
         txt.textContent = '\u201C' + d.texto + '\u201D';
-        cartao.appendChild(txt);
+        corpo.appendChild(txt);
 
-        // 3) Foto do participante + função + nome
-        var autor = document.createElement('div');
-        autor.className = 'depoimento-autor';
-        var foto;
-        if (d.foto) {
-            foto = document.createElement('img');
-            foto.src = d.foto;
-            foto.alt = 'Foto de ' + d.nome;
-            foto.loading = 'lazy';
-            foto.className = 'depoimento-foto';
-        } else {
-            foto = document.createElement('span');
-            foto.className = 'depoimento-foto';
-            foto.setAttribute('aria-hidden', 'true');
-            foto.textContent = iniciais(d.nome);
-        }
         var quem = document.createElement('div');
+        quem.className = 'depoimento-quem';
         var f = document.createElement('span');
         f.className = 'depoimento-funcao';
         f.textContent = d.funcao;
@@ -848,19 +908,11 @@ var DEPOIMENTOS = [
         n.textContent = d.nome;
         quem.appendChild(f);
         quem.appendChild(n);
-        autor.appendChild(foto);
-        autor.appendChild(quem);
-        cartao.appendChild(autor);
+        corpo.appendChild(quem);
 
+        cartao.appendChild(corpo);
         slide.appendChild(cartao);
         trilho.appendChild(slide);
-
-        var ponto = document.createElement('button');
-        ponto.type = 'button';
-        ponto.className = 'carrossel-ponto';
-        ponto.setAttribute('aria-label', 'Ir para o depoimento ' + (i + 1));
-        ponto.addEventListener('click', function () { ir(i); reiniciar(); });
-        pontos.appendChild(ponto);
     });
 
     var atual = 0, timer = null, INTERVALO = 5000;
@@ -868,18 +920,13 @@ var DEPOIMENTOS = [
     function ir(i) {
         atual = (i + DEPOIMENTOS.length) % DEPOIMENTOS.length;
         trilho.style.transform = 'translateX(-' + (atual * 100) + '%)';
-        Array.prototype.forEach.call(pontos.children, function (p, k) {
-            p.classList.toggle('ativo', k === atual);
-        });
+        contador.textContent = (atual + 1) + ' / ' + DEPOIMENTOS.length;
     }
     function iniciar() { parar(); timer = setInterval(function () { ir(atual + 1); }, INTERVALO); }
     function parar() { if (timer) { clearInterval(timer); timer = null; } }
-    function reiniciar() { iniciar(); }
 
-    document.getElementById('carrossel-anterior').addEventListener('click', function () { ir(atual - 1); reiniciar(); });
-    document.getElementById('carrossel-proximo').addEventListener('click', function () { ir(atual + 1); reiniciar(); });
-
-    // Pausa só quando a aba fica escondida (economiza bateria); volta sozinho.
+    document.getElementById('carrossel-anterior').addEventListener('click', function () { ir(atual - 1); iniciar(); });
+    document.getElementById('carrossel-proximo').addEventListener('click', function () { ir(atual + 1); iniciar(); });
     document.addEventListener('visibilitychange', function () { document.hidden ? parar() : iniciar(); });
 
     ir(0);
@@ -1092,21 +1139,6 @@ function fazerLogoffDaFaixa(secao) {
 })();
 </script>
 
-<script>
-// Transição de entrada para cada seção durante a rolagem, incluindo o rodapé.
-(function () {
-    var seletores = 'main > section, .conteudo-pagina > section, .rodape-site';
-    var secoes = Array.prototype.slice.call(document.querySelectorAll(seletores));
-    secoes.forEach(function (secao) { secao.classList.add('mare-revelar'); });
-    if (!('IntersectionObserver' in window)) { secoes.forEach(function (s) { s.classList.add('mare-visivel'); }); return; }
-    var observador = new IntersectionObserver(function (entradas) {
-        entradas.forEach(function (entrada) {
-            if (entrada.isIntersecting) { entrada.target.classList.add('mare-visivel'); observador.unobserve(entrada.target); }
-        });
-    }, { threshold: 0.08, rootMargin: '0px 0px -35px 0px' });
-    secoes.forEach(function (secao) { observador.observe(secao); });
-})();
-</script>
 
 <!-- Assistente virtual (Botpress) -->
 <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>

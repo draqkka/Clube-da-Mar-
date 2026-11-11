@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube da Maré - Verificação do Ingresso</title>
+<style>
+/* Tela mostrada na portaria quando o QR Code do ingresso é lido.
+   Inspirada no app "CNH do Brasil": cabeçalho azul, cartão claro,
+   círculo verde com check e barra de progresso. */
+* { box-sizing: border-box; }
+body {
+    margin: 0; min-height: 100vh;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #0b2a5b;
+    display: flex; flex-direction: column; align-items: center;
+}
+header { width: 100%; text-align: center; color: #fff; padding: 28px 16px 22px; }
+header img { height: 44px; vertical-align: middle; margin-right: 10px; background: #fff; border-radius: 10px; padding: 3px 8px; }
+header h1 { display: inline; font-size: 1.35rem; font-weight: 700; vertical-align: middle; }
+main {
+    width: 100%; max-width: 440px; flex: 1;
+    background: #eef3fb; border-radius: 28px 28px 0 0;
+    padding: 32px 22px 40px; text-align: center;
+}
+.selo {
+    width: 120px; height: 120px; border-radius: 50%;
+    margin: 6px auto 18px; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 3.4rem;
+}
+.selo.ok { background: #0f7a4d; animation: pop .45s ease-out; }
+.selo.erro { background: #c0392b; }
+.selo.espera { background: transparent; border: 10px solid #cfdcf2; border-top-color: #0a5cff; animation: gira 1s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
+.barra { height: 8px; border-radius: 6px; background: #cfdcf2; margin: 0 8px 18px; overflow: hidden; }
+.barra > span { display: block; height: 100%; border-radius: 6px; }
+.barra.ok > span { width: 100%; background: #0f7a4d; }
+.barra.espera > span { width: 40%; background: #0a5cff; animation: vai 1.4s ease-in-out infinite; }
+.barra.erro > span { width: 100%; background: #c0392b; }
+@keyframes vai { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+.sub { color: #44536b; margin: 0 0 26px; font-size: 1.05rem; line-height: 1.4; }
+.dados { text-align: left; background: #fff; border-radius: 18px; padding: 6px 0; box-shadow: 0 2px 10px rgba(11,42,91,.08); }
+.dados div { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid #e6ecf6; color: #0b2a5b; }
+.dados div:last-child { border-bottom: none; }
+.dados b { color: #5a6b86; font-weight: 600; }
+.rodape { margin-top: 22px; font-size: .85rem; color: #6b7a93; }
+.oculto { display: none; }
+</style>
+</head>
+<body>
+<header>
+    <img src="imagens/Menu inicial/logo-clube-da-mare.png" alt="" onerror="this.style.display='none'">
+    <h1>Clube da Maré</h1>
+</header>
+
+<main aria-live="polite">
+    <div id="selo" class="selo espera"></div>
+    <h2 id="titulo">Verificando ingresso...</h2>
+    <div id="barra" class="barra espera"><span></span></div>
+    <p id="subtitulo" class="sub">Aguardando a aprovação do Clube da Maré. Não feche esta tela.</p>
+
+    <div id="dados" class="dados oculto">
+        <div><b>Nome</b><span id="d-nome"></span></div>
+        <div><b>Tipo</b><span id="d-tipo"></span></div>
+        <div id="l-turma"><b>Turma</b><span id="d-turma"></span></div>
+        <div><b>Ingresso</b><span id="d-id"></span></div>
+    </div>
+    <p class="rodape">Ingresso nominal e intransferível.</p>
+</main>
+
+<script>
+(function () {
+    var params = new URLSearchParams(location.search);
+    var id = (params.get('id') || '').replace(/[^A-Za-z0-9_-]/g, '');
+    var el = function (x) { return document.getElementById(x); };
+    var timer = null;
+    var ICONES = {
+        check: '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+        x: '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+    };
+
+    function tela(estado, titulo, sub, icone) {
+        el('selo').className = 'selo ' + estado;
+        el('selo').innerHTML = ICONES[icone] || '';
+        el('barra').className = 'barra ' + estado;
+        el('titulo').textContent = titulo;
+        el('subtitulo').textContent = sub;
+    }
+
+    function mostrarDados(i) {
+        el('d-nome').textContent = i.nome;
+        el('d-tipo').textContent = i.tipo || 'Aluno';
+        el('d-turma').textContent = i.turma || '';
+        el('l-turma').style.display = i.turma ? '' : 'none';
+        el('d-id').textContent = '#' + String(i.id).slice(0, 6).toUpperCase();
+        el('dados').classList.remove('oculto');
+    }
+
+    function atualizar() {
+        if (!id) {
+            tela('erro', 'Ingresso inválido', 'Leia o QR Code do ingresso novamente.', 'x');
+            return;
+        }
+        fetch('/api/ingressos?id=' + encodeURIComponent(id), { cache: 'no-store' })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+            .then(function (res) {
+                if (!res.ok) {
+                    tela('erro', 'Ingresso não encontrado', 'Procure a organização do Clube da Maré.', 'x');
+                    clearInterval(timer);
+                    return;
+                }
+                var i = res.j.ingresso;
+                mostrarDados(i);
+                if (i.status === 'Aprovado') {
+                    tela('ok', 'Verificação concluída', 'Acesso liberado. Aproveite o Clube da Maré!', 'check');
+                    clearInterval(timer);   // aprovado: não precisa mais consultar
+                } else if (i.status === 'Recusado') {
+                    tela('erro', 'Acesso não liberado', 'Procure a organização do Clube da Maré.', 'x');
+                } else {
+                    tela('espera', 'Verificando ingresso...', 'Aguardando a aprovação do Clube da Maré. Não feche esta tela.', '');
+                }
+            })
+            .catch(function () {
+                // Sem internet no momento: continua tentando, mantém a tela de carregamento.
+                tela('espera', 'Verificando ingresso...', 'Sem conexão. Tentando novamente...', '');
+            });
+    }
+
+    atualizar();
+    if (id) timer = setInterval(atualizar, 3000);
+})();
+</script>
+</body>
+</html>

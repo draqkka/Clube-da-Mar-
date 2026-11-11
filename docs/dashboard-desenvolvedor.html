@@ -124,6 +124,34 @@
     </section>
 
 
+    <!-- Ingressos digitais: o Desenvolvedor APROVA aqui e a tela do aluno/monitor
+         (ingresso.html, aberta pelo QR Code) muda de "carregando" para "Acesso liberado". -->
+    <section class="area-avaliacao-professores" id="area-ingressos-dev" style="margin-top: 30px;">
+        <h2><i class="fa-solid fa-ticket" aria-hidden="true"></i> Ingressos digitais (aprovação)</h2>
+        <p class="dica-importar">Gere o ingresso do aluno ou monitor e envie o link/QR Code por e-mail. Enquanto estiver <strong>Pendente</strong>, a tela do ingresso fica carregando; ao <strong>aprovar</strong>, aparece <strong>Verificação concluída — Acesso liberado</strong>.</p>
+        <form id="form-ingresso" class="form-ingresso">
+            <input id="ing-nome" class="form-login-campo" placeholder="Nome completo" required maxlength="150">
+            <select id="ing-tipo" class="form-login-campo"><option>Aluno</option><option>Monitor</option></select>
+            <input id="ing-turma" class="form-login-campo" placeholder="Turma (ex.: 3ºA)" maxlength="20">
+            <input id="ing-ra" class="form-login-campo" placeholder="RA (opcional)" maxlength="30">
+            <button type="submit" class="btn-ing">Gerar ingresso</button>
+        </form>
+        <p id="msg-ingressos" class="dica-importar" style="word-break:break-all;"></p>
+        <div id="caixa-qr" style="display:none;background:#fff;color:#000;padding:14px;border-radius:10px;width:fit-content;max-width:100%;margin-bottom:12px;"></div>
+        <div class="filtro-status-agenda">
+            <label for="filtro-status-ingresso" style="font-weight:bold;">Mostrar:</label>
+            <select id="filtro-status-ingresso" class="form-login-campo" style="flex:none; min-width:220px;">
+                <option value="Pendente">Aguardando aprovação</option>
+                <option value="Aprovado">Aprovados</option>
+                <option value="Recusado">Recusados</option>
+                <option value="">Todos</option>
+            </select>
+        </div>
+        <div id="lista-ingressos"></div>
+        <p id="sem-ingressos" style="display:none;">Nenhum ingresso neste filtro.</p>
+    </section>
+
+
     <!-- Todos os alunos, de todas as turmas -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
         <h2>Alunos da turma selecionada</h2>
@@ -215,6 +243,12 @@
     font-size: .75rem;
     cursor: pointer;
 }
+.form-ingresso { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.form-ingresso .form-login-campo { flex:1 1 180px; }
+.linha-ingresso { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; padding:12px 14px; margin:8px 0; background:rgba(255,255,255,.08); border-radius:10px; }
+.botoes-ing { display:flex; flex-wrap:wrap; gap:6px; }
+.btn-ing { background:#19d263; color:#06210f; border:none; border-radius:8px; padding:8px 14px; font-weight:700; cursor:pointer; }
+.btn-ing.sec { background:transparent; color:inherit; border:1px solid rgba(255,255,255,.4); }
 </style>
 
 <script>
@@ -772,6 +806,8 @@ document.getElementById('btn-apagar-tudo').addEventListener('click', function ()
 
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="ingressos-dev.js"></script>
 <script src="menu.js"></script>
 <script src="confete.js"></script>
 <script src="logoff.js"></script>

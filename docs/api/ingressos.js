@@ -5,7 +5,8 @@
 //
 // GET  /api/ingressos?id=XYZ  -> { ingresso: {...} }   (tela do aluno/monitor)
 // GET  /api/ingressos         -> { ingressos: [...] }  (painel do Desenvolvedor)
-// POST /api/ingressos         -> { ingresso: { nome, turma, ra } }  cria (Pendente)
+// POST /api/ingressos         -> { ingresso: { nome, turma, ra, chave } }  cria (Pendente)
+//      Com "chave" (e-mail do aluno), cada aluno tem um só ingresso: se ele já existe, devolve o mesmo.
 // POST /api/ingressos         -> { id, status }  muda o status (Aprovado/Pendente/Recusado)
 // DELETE /api/ingressos?id=XYZ -> apaga um ingresso
 const crypto = require('crypto');
@@ -52,7 +53,9 @@ module.exports = async function handler(req, res) {
             if (id) {
                 const l = await sql`SELECT dados FROM ingressos WHERE id = ${id}`;
                 if (!l.length) return res.status(404).json({ erro: 'Ingresso não encontrado.' });
-                return res.status(200).json({ ingresso: l[0].dados });
+                const publico = Object.assign({}, l[0].dados);
+                delete publico.chave;   // o e-mail do aluno não sai pela tela pública do ingresso
+                return res.status(200).json({ ingresso: publico });
             }
             const linhas = await sql`SELECT dados FROM ingressos`;
             const lista = linhas.map(function (l) { return l.dados; })
@@ -82,6 +85,16 @@ module.exports = async function handler(req, res) {
             const novo = corpo.ingresso || {};
             const nome = texto(novo.nome, 150);
             if (!nome) return res.status(400).json({ erro: 'Informe o nome do aluno/monitor.' });
+            // Ingresso do próprio aluno: um só por aluno (chave = e-mail do login).
+            const chave = texto(novo.chave, 120).toLowerCase();
+            if (chave) {
+                const ja = await sql`SELECT dados FROM ingressos WHERE dados->>'chave' = ${chave} LIMIT 1`;
+                if (ja.length) {
+                    const igual = Object.assign({}, ja[0].dados);
+                    delete igual.chave;
+                    return res.status(200).json({ ok: true, existente: true, ingresso: igual });
+                }
+            }
             const i = {
                 id: crypto.randomBytes(9).toString('hex'),   // difícil de adivinhar (ingresso nominal)
                 nome: nome,
@@ -92,8 +105,11 @@ module.exports = async function handler(req, res) {
                 criadoEm: Date.now(),
                 respondidoEm: 0
             };
+            if (chave) i.chave = chave;
             await gravar(sql, i);
-            return res.status(200).json({ ok: true, ingresso: i });
+            const criado = Object.assign({}, i);
+            delete criado.chave;
+            return res.status(200).json({ ok: true, ingresso: criado });
         }
 
         if (req.method === 'DELETE') {

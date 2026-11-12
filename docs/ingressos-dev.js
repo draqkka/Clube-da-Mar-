@@ -41,7 +41,7 @@
             botoes += '<button type="button" class="btn-ing sec" data-qr="' + esc(i.id) + '">QR Code</button>';
             botoes += '<button type="button" class="btn-ing sec" data-apagar="' + esc(i.id) + '">Apagar</button>';
             return '<div class="linha-ingresso">' +
-                '<div><strong>' + esc(i.nome) + '</strong> <small>(' + esc(i.tipo || 'Aluno') + (i.turma ? ' • ' + esc(i.turma) : '') + (i.ra ? ' • RA ' + esc(i.ra) : '') + ')</small>' +
+                '<div><strong>' + esc(i.nome) + '</strong> <small>(' + esc(i.tipo || 'Aluno') + (i.turma ? ' • ' + esc(i.turma) : '') + (i.escola ? ' • ' + esc(i.escola) : '') + (i.ra ? ' • RA ' + esc(i.ra) : '') + ')</small>' +
                 '<br><span style="color:' + cor + ';font-weight:700;">' + esc(i.status) + '</span></div>' +
                 '<div class="botoes-ing">' + botoes + '</div></div>';
         }).join('');
@@ -61,6 +61,7 @@
             nome: document.getElementById('ing-nome').value,
             tipo: document.getElementById('ing-tipo').value,
             turma: document.getElementById('ing-turma').value,
+            escola: document.getElementById('ing-escola').value,
             ra: document.getElementById('ing-ra').value
         } };
         chamar('POST', '/api/ingressos', corpo).then(function (j) {

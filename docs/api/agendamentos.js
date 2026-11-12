@@ -81,6 +81,7 @@ function limpar(a) {
         dataFim: dataFim,
         entrada: entrada,
         saida: saida,
+        saidaConcedida: hora(a.saidaConcedida),              // horário de saída que o Clube concedeu (vazio = o pedido)
         responsavel: texto(a.responsavel, 150),
         cargo: texto(a.cargo, 80),
         telefone: texto(a.telefone, 40),

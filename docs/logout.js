@@ -1,9 +1,9 @@
 // ==========================================================================
-// LOGOFF NOS PAINÉIS (aluno, professor, diretoria e desenvolvedor)
+// LOGOUT NOS PAINÉIS (aluno, professor, diretoria e desenvolvedor)
 //
-// O botão "Logoff" fica no canto direito da faixa azul do topo, ao lado do
+// O botão "Logout" fica no canto direito da faixa azul do topo, ao lado do
 // "Voltar ao site". Diferente do "Voltar ao site" (que deixa a faixa do painel
-// na tela inicial), o Logoff encerra o perfil de verdade: apaga a sessão e os
+// na tela inicial), o Logout encerra o perfil de verdade: apaga a sessão e os
 // resumos guardados e volta pro menu inicial sem nenhum painel.
 // ==========================================================================
 (function () {

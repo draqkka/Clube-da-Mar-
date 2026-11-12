@@ -32,6 +32,8 @@
 <script src="agendamentos-local.js"></script>
 <script src="usuarios.js"></script>
 <script src="status-aluno.js"></script>
+<!-- QR Code do ingresso digital -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="fonte-profissional">
 
@@ -114,6 +116,18 @@
                 Preencher formulário
             </a>
         </div>
+
+        <!-- Ingresso digital: aparece junto com o formulário, assim que a equipe Clube da Maré confirma
+             a participação (ver prepararIngressoAluno no JS). O QR Code é desenhado no quadrado branco da imagem. -->
+        <div id="area-ingresso" style="display:none;margin-top:24px;">
+            <h2>Seu ingresso digital</h2>
+            <p class="dica-importar">Baixe o ingresso e salve no celular. Na portaria, apresente o QR Code: o acesso é liberado depois da aprovação do Clube da Maré.</p>
+            <canvas id="canvas-ingresso" width="1536" height="1024" role="img" aria-label="Ingresso digital do Clube da Maré com QR Code" style="width:100%;max-width:640px;height:auto;display:block;margin:12px 0;"></canvas>
+            <p id="status-ingresso" role="status" style="margin:0 0 12px;font-weight:bold;"></p>
+            <button type="button" id="botao-baixar-ingresso" class="btn-planilha-atalho" disabled style="border:0;cursor:pointer;">
+                <i class="fa-solid fa-download" aria-hidden="true"></i> Baixar ingresso
+            </button>
+        </div>
     </div>
 
     <div id="erro-sem-dados" style="display:none;">
@@ -190,7 +204,107 @@ function atualizarFormularioAluno() {
         linkFormulario.textContent = formulario.texto;
     }
     document.getElementById('area-formulario').style.display = liberado ? 'block' : 'none';
+    if (liberado) prepararIngressoAluno();
+    else document.getElementById('area-ingresso').style.display = 'none';
 }
+
+// ---- Ingresso digital -------------------------------------------------------
+// Aparece logo abaixo do formulário quando a equipe Clube da Maré confirma o aluno.
+// O ingresso é criado sozinho (um por aluno, pelo e-mail do login) e nasce "Pendente";
+// o Desenvolvedor aprova no painel dele e a tela da portaria (ingresso.html) libera o acesso.
+// O QR Code é desenhado no quadrado branco da imagem imagens/ingresso-digital.png (1536x1024).
+// Se trocar a imagem, ajuste QR_CAIXA (x, y e lado do quadrado, em pixels da imagem).
+var QR_CAIXA = { x: 1100, y: 400, lado: 280 };
+var _ingressoAluno = null, _ingressoIniciado = false, _ingressoImg = null;
+
+function linkDoIngresso(id) {
+    return location.origin + location.pathname.replace(/[^\/]*$/, '') + 'ingresso.html?id=' + id;
+}
+function pedirIngressos(metodo, url, corpo) {
+    return fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: corpo ? JSON.stringify(corpo) : undefined
+    }).then(function (r) {
+        return r.json().then(function (j) {
+            if (!r.ok) throw new Error(j.erro || 'Erro no servidor.');
+            return j;
+        });
+    });
+}
+function desenharIngresso() {
+    var canvas = document.getElementById('canvas-ingresso');
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(_ingressoImg, 0, 0, canvas.width, canvas.height);
+    var caixa = document.createElement('div');
+    new QRCode(caixa, { text: linkDoIngresso(_ingressoAluno.id), width: 560, height: 560, correctLevel: QRCode.CorrectLevel.M });
+    var qr = caixa.querySelector('canvas');
+    if (qr) ctx.drawImage(qr, QR_CAIXA.x, QR_CAIXA.y, QR_CAIXA.lado, QR_CAIXA.lado);
+}
+function mostrarStatusIngresso() {
+    var textos = {
+        'Pendente': 'Aguardando a aprovação do Clube da Maré. Guarde o ingresso: ele vale quando for aprovado.',
+        'Aprovado': 'Ingresso aprovado! Apresente o QR Code na portaria.',
+        'Recusado': 'Ingresso não aprovado. Procure a organização do Clube da Maré.'
+    };
+    document.getElementById('status-ingresso').textContent = textos[_ingressoAluno.status] || '';
+}
+function atualizarStatusIngresso() {
+    if (!_ingressoAluno) return;
+    pedirIngressos('GET', '/api/ingressos?id=' + encodeURIComponent(_ingressoAluno.id)).then(function (j) {
+        _ingressoAluno.status = j.ingresso.status;
+        mostrarStatusIngresso();
+    }).catch(function () {});
+}
+function prepararIngressoAluno() {
+    document.getElementById('area-ingresso').style.display = 'block';
+    if (_ingressoIniciado) return;
+    _ingressoIniciado = true;
+    document.getElementById('status-ingresso').textContent = 'Gerando seu ingresso...';
+
+    var imagem = new Image();
+    var imagemPronta = new Promise(function (ok, falha) {
+        imagem.onload = ok;
+        imagem.onerror = function () { falha(new Error('imagem do ingresso não encontrada')); };
+    });
+    imagem.src = 'imagens/ingresso-digital.png';
+    _ingressoImg = imagem;
+
+    var criado = pedirIngressos('POST', '/api/ingressos', { ingresso: {
+        nome: resumo.nome || sessao.nome || 'Aluno',
+        turma: resumo.turma,
+        ra: resumo.ra,
+        tipo: 'Aluno',
+        chave: resumo.email || resumo.ra
+    } });
+
+    Promise.all([criado, imagemPronta]).then(function (r) {
+        _ingressoAluno = r[0].ingresso;
+        desenharIngresso();
+        mostrarStatusIngresso();
+        document.getElementById('botao-baixar-ingresso').disabled = false;
+        setInterval(atualizarStatusIngresso, 5000);   // aprovação do Desenvolvedor aparece sozinha
+    }).catch(function (erro) {
+        _ingressoIniciado = false;
+        document.getElementById('status-ingresso').textContent =
+            'Não foi possível gerar o ingresso agora (' + erro.message + '). Atualize a página para tentar de novo.';
+    });
+}
+document.getElementById('botao-baixar-ingresso').addEventListener('click', function () {
+    document.getElementById('canvas-ingresso').toBlob(function (blob) {
+        if (!blob) return;
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'ingresso-clube-da-mare.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    }, 'image/png');
+});
 
 function verificarConfeteAluno() {
     if (_confeteAlunoDisparado || !_dadosCarregados) return;

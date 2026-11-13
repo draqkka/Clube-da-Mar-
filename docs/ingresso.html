@@ -44,7 +44,8 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
 .dados { text-align: left; background: #fff; border-radius: 18px; padding: 6px 0; box-shadow: 0 2px 10px rgba(11,42,91,.08); }
 .dados div { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid #e6ecf6; color: #0b2a5b; }
 .dados div:last-child { border-bottom: none; }
-.dados b { color: #5a6b86; font-weight: 600; }
+.dados b { color: #5a6b86; font-weight: 600; flex: none; }
+.dados span { text-align: right; }
 .rodape { margin-top: 22px; font-size: .85rem; color: #6b7a93; }
 .oculto { display: none; }
 </style>
@@ -64,7 +65,11 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
     <div id="dados" class="dados oculto">
         <div><b>Nome</b><span id="d-nome"></span></div>
         <div><b>Tipo</b><span id="d-tipo"></span></div>
+        <div id="l-escola"><b>Escola</b><span id="d-escola"></span></div>
         <div id="l-turma"><b>Turma</b><span id="d-turma"></span></div>
+        <div id="l-dias"><b>Dias da visita</b><span id="d-dias"></span></div>
+        <div id="l-entrada"><b>Entrada</b><span id="d-entrada"></span></div>
+        <div id="l-saida"><b>Horário de saída</b><span id="d-saida"></span></div>
         <div><b>Ingresso</b><span id="d-id"></span></div>
     </div>
     <p class="rodape">Ingresso nominal e intransferível.</p>
@@ -89,11 +94,27 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
         el('subtitulo').textContent = sub;
     }
 
+    var SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+    function dataCurta(iso, comAno) {
+        var p = String(iso || '').split('-');
+        if (p.length !== 3) return '';
+        var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 12);
+        return SEM[d.getDay()] + ' ' + p[2] + '/' + p[1] + (comAno ? '/' + p[0] : '');
+    }
+    function periodo(v) { return dataCurta(v.dataInicio) + ' e ' + dataCurta(v.dataFim, true); }
+
     function mostrarDados(i) {
         el('d-nome').textContent = i.nome;
         el('d-tipo').textContent = i.tipo || 'Aluno';
         el('d-turma').textContent = i.turma || '';
         el('l-turma').style.display = i.turma ? '' : 'none';
+        var v = i.visita;
+        el('d-escola').textContent = i.escola || '';
+        el('l-escola').style.display = i.escola ? '' : 'none';
+        el('d-dias').textContent = v ? periodo(v) : 'A confirmar';
+        el('d-entrada').textContent = v ? v.entrada : '';
+        el('l-entrada').style.display = v ? '' : 'none';
+        el('d-saida').textContent = v ? v.saida : 'A confirmar';
         el('d-id').textContent = '#' + String(i.id).slice(0, 6).toUpperCase();
         el('dados').classList.remove('oculto');
     }

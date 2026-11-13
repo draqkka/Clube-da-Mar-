@@ -100,61 +100,60 @@
 
 
     <!--
-        AGENDAMENTOS DE VISITA — a Diretoria pede 2 dias seguidos para uma turma
-        e o Clube da Maré (aqui) AUTORIZA ou REPROVA a disponibilidade. Mostra
-        todas as turmas (o filtro de turma da página não se aplica aqui, pra
-        você enxergar conflitos de data entre turmas).
+        AGENDAMENTOS DE VISITA + INGRESSOS (uma coisa só). A Diretoria pede 2 dias seguidos
+        para a turma e o Clube da Maré (aqui) AUTORIZA ou REPROVA — por turma, sem aprovar
+        aluno por aluno nem ingresso por ingresso. Ao aprovar, o sistema pergunta se deve
+        GERAR os ingressos; quem aprova cada ingresso é o próprio sistema, na leitura do QR Code
+        (ver api/ingressos.js). A chamada da visita fica numa seção separada, mais abaixo.
     -->
     <section class="area-avaliacao-professores" id="area-agenda-dev">
         <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Agendamentos de visita (autorização do Clube da Maré)</h2>
-        <p class="dica-importar">A Diretoria pede 2 dias seguidos para a turma e aqui você decide só o <strong>agendamento</strong>: <strong>aprove</strong> ou <strong>reprove</strong> as datas. A decisão aparece na hora para a Diretoria, o professor e os alunos da turma (ao aprovar, os alunos que a Diretoria já encaminhou ficam confirmados junto). Ao reprovar, escreva o <strong>motivo</strong> e, se quiser, sugira outra data: a Diretoria responde e vocês negociam o reagendamento no próprio pedido. Datas já aprovadas para outra turma não podem ser aprovadas de novo.</p>
-        <div class="filtro-status-agenda">
-            <label for="filtro-status-agenda" style="font-weight:bold;">Mostrar:</label>
-            <select id="filtro-status-agenda" class="form-login-campo" style="flex:none; min-width:220px;">
-                <option value="Pendente">Aguardando autorização</option>
-                <option value="Aprovado">Aprovadas</option>
-                <option value="Recusado">Reprovadas</option>
-                <option value="Cancelado">Canceladas pela direção</option>
-                <option value="">Todas</option>
-            </select>
+        <p class="dica-importar">A Diretoria pede 2 dias seguidos para a turma e aqui você autoriza <strong>por turma</strong> — sem aprovar aluno por aluno nem ingresso por ingresso. Escolha a <strong>escola</strong> e a <strong>turma</strong> nos menus, ou use <strong>Aprovar todas as visitas pendentes</strong>. Ao aprovar, os alunos que a Diretoria encaminhou ficam confirmados junto e o sistema já pergunta se deve <strong>gerar os ingressos</strong>. Os ingressos são aprovados pelo próprio sistema: ao ler o QR Code, ele confere o aluno, a visita, a escola e os dias e só então libera o acesso. Ao reprovar, escreva o <strong>motivo</strong> e, se quiser, sugira outra data. Datas já aprovadas para outra turma não podem ser aprovadas de novo.</p>
+        <div class="filtro-status-agenda" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <label style="font-weight:bold;">Escola:
+                <select id="filtro-escola-agenda" class="form-login-campo" style="flex:none; min-width:220px;"></select>
+            </label>
+            <label style="font-weight:bold;">Turma:
+                <select id="filtro-turma-agenda" class="form-login-campo" style="flex:none; min-width:160px;"></select>
+            </label>
+            <label for="filtro-status-agenda" style="font-weight:bold;">Mostrar:
+                <select id="filtro-status-agenda" class="form-login-campo" style="flex:none; min-width:220px;">
+                    <option value="Pendente">Aguardando autorização</option>
+                    <option value="Aprovado">Aprovadas</option>
+                    <option value="Recusado">Reprovadas</option>
+                    <option value="Cancelado">Canceladas pela direção</option>
+                    <option value="">Todas</option>
+                </select>
+            </label>
         </div>
+        <div class="botoes-solicitacao" style="margin:14px 0 6px;">
+            <button type="button" class="btn-aprovar-solicitacao" id="btn-aprovar-todas-visitas">✅ Aprovar todas as visitas pendentes</button>
+            <span id="info-aprovar-todas" class="dica-importar" style="margin-left:8px;"></span>
+        </div>
+        <div id="banner-gerar-ingressos" hidden></div>
         <div id="aviso-sem-visita-dev"></div>
         <div id="lista-agendamentos"></div>
         <p id="sem-agendamentos" style="display:none;">Nenhum agendamento neste filtro.</p>
-    </section>
 
-
-    <!-- Ingressos digitais: o Desenvolvedor APROVA aqui e a tela do aluno/monitor
-         (ingresso.html, aberta pelo QR Code) muda de "carregando" para "Acesso liberado". -->
-    <section class="area-avaliacao-professores" id="area-ingressos-dev" style="margin-top: 30px;">
-        <h2><i class="fa-solid fa-ticket" aria-hidden="true"></i> Ingressos digitais (aprovação)</h2>
-        <p class="dica-importar">O ingresso do aluno aparece aqui sozinho quando o Clube da Maré confirma a participação dele (e já fica disponível na tela do aluno, com botão para baixar). Para monitor, gere o ingresso abaixo e envie o link/QR Code por e-mail. Enquanto estiver <strong>Pendente</strong>, a tela do ingresso fica carregando; ao <strong>aprovar</strong>, aparece <strong>Verificação concluída — Acesso liberado</strong>.</p>
+        <h3 style="margin-top:26px;"><i class="fa-solid fa-ticket" aria-hidden="true"></i> Ingressos da turma selecionada</h3>
+        <p class="dica-importar">Os ingressos dos alunos confirmados são gerados aqui e também aparecem na tela do aluno (com botão para baixar), no painel do professor/monitor e no da Diretoria. Para um <strong>monitor</strong> (ou aluno avulso), gere abaixo e envie o link/QR Code por e-mail — o sistema também confere esse ingresso na leitura.</p>
         <form id="form-ingresso" class="form-ingresso">
             <input id="ing-nome" class="form-login-campo" placeholder="Nome completo" required maxlength="150">
             <select id="ing-tipo" class="form-login-campo"><option>Aluno</option><option>Monitor</option></select>
-            <input id="ing-escola" class="form-login-campo" placeholder="Escola" maxlength="200">
-            <input id="ing-turma" class="form-login-campo" placeholder="Turma (ex.: 3ºA)" maxlength="20">
+            <input id="ing-escola" class="form-login-campo" placeholder="Escola" maxlength="200" list="lista-escolas-dev">
+            <input id="ing-turma" class="form-login-campo" placeholder="Turma (ex.: 3ºA)" maxlength="20" list="lista-turmas-dev">
             <input id="ing-ra" class="form-login-campo" placeholder="RA (opcional)" maxlength="30">
             <button type="submit" class="btn-ing">Gerar ingresso</button>
         </form>
+        <datalist id="lista-escolas-dev"></datalist>
+        <datalist id="lista-turmas-dev"></datalist>
         <p id="msg-ingressos" class="dica-importar" style="word-break:break-all;"></p>
-        <div id="caixa-qr" style="display:none;background:#fff;color:#000;padding:14px;border-radius:10px;width:fit-content;max-width:100%;margin-bottom:12px;"></div>
-        <div class="filtro-status-agenda">
-            <label for="filtro-status-ingresso" style="font-weight:bold;">Mostrar:</label>
-            <select id="filtro-status-ingresso" class="form-login-campo" style="flex:none; min-width:220px;">
-                <option value="Pendente">Aguardando aprovação</option>
-                <option value="Aprovado">Aprovados</option>
-                <option value="Recusado">Recusados</option>
-                <option value="">Todos</option>
-            </select>
-        </div>
-        <div id="lista-ingressos"></div>
-        <p id="sem-ingressos" style="display:none;">Nenhum ingresso neste filtro.</p>
+        <div id="ingressos-turma-dev"></div>
     </section>
 
 
-    <!-- Ingressos por escola/turma + aprovar todos e gerar QR + chamada em tempo real. Ver visita-clube.js -->
-    <div id="visita-clube"></div>
+    <!-- Chamada da visita (seção separada): o professor/monitor marca; aqui o Desenvolvedor só acompanha. Ver visita-clube.js -->
+    <div id="chamada-visita"></div>
 
     <!-- Todos os alunos, de todas as turmas -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
@@ -592,7 +591,10 @@ function alunosConfirmadosDaTurma(turma) {
 // (o Clube não escolhe mais aluno por aluno: ele só decide o agendamento).
 function confirmarAlunosDaTurma(turma) {
     var ids = alunosAguardandoDaTurma(turma).map(function (s) { return s.id; });
-    window._confirmacaoPendente = ids.length ? responderVariasSolicitacoes(ids, 'Aprovado', '', 'Desenvolvedor', true) : Promise.resolve(0);
+    if (ids.length) {
+        window._confirmacoesPendentes = window._confirmacoesPendentes || [];
+        window._confirmacoesPendentes.push(responderVariasSolicitacoes(ids, 'Aprovado', '', 'Desenvolvedor', true));
+    }
     return ids.length;
 }
 
@@ -614,7 +616,77 @@ function htmlNegociarClube(a, d) {
         '</div>';
 }
 
+// ---- Escola e turma registradas no sistema (menus da autorização) -----------
+var agendaEscola = '', agendaTurma = '';
+var ingressosDevInst = null, ultimoFiltroIngressos = null;
+function mesmaEscolaDev(a, b) { return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase(); }
+
+function registradosNoSistema() {
+    var escolas = [], turmas = [], escolasDaTurma = {};
+    function add(t, e) {
+        t = turmaCanonica(t); e = String(e || '').trim();
+        if (t && turmas.indexOf(t) === -1) turmas.push(t);
+        if (e && escolas.indexOf(e) === -1) escolas.push(e);
+        if (t && e) {
+            escolasDaTurma[t] = escolasDaTurma[t] || [];
+            if (escolasDaTurma[t].indexOf(e) === -1) escolasDaTurma[t].push(e);
+        }
+    }
+    TURMAS_DO_SISTEMA.forEach(function (t) { add(t, ''); });
+    if (dadosAlunos && Array.isArray(dadosAlunos.porTurma)) {
+        dadosAlunos.porTurma.forEach(function (pt) { add(pt.turma, dadosDaEscola(pt.notas || []).escola); });
+    }
+    todasSolicitacoes.forEach(function (s) { add(s.turma, nomeEscolaDaSolicitacaoDev(s)); });
+    todosAgendamentos.forEach(function (a) { add(a.turma, a.escola); });
+    var ordem = function (x, y) { return String(x).localeCompare(String(y), 'pt-BR'); };
+    return { escolas: escolas.sort(ordem), turmas: turmas.sort(ordem), escolasDaTurma: escolasDaTurma };
+}
+
+function preencherSelectAgenda(sel, opcoes, atual) {
+    var h = opcoes.map(function (o) { return '<option value="' + escaparHtml(o.v) + '">' + escaparHtml(o.t) + '</option>'; }).join('');
+    if (sel.innerHTML !== h) sel.innerHTML = h;
+    sel.value = atual;
+}
+
+function prepararFiltrosAgenda() {
+    var r = registradosNoSistema();
+    if (agendaEscola && r.escolas.indexOf(agendaEscola) === -1) agendaEscola = '';
+    // com uma escola escolhida, o menu de turmas só mostra as turmas dessa escola
+    var turmas = r.turmas.filter(function (t) {
+        if (!agendaEscola) return true;
+        var es = r.escolasDaTurma[t] || [];
+        return es.some(function (e) { return mesmaEscolaDev(e, agendaEscola); });
+    });
+    if (agendaTurma && turmas.indexOf(agendaTurma) === -1) agendaTurma = '';
+    preencherSelectAgenda(document.getElementById('filtro-escola-agenda'),
+        [{ v: '', t: 'Todas as escolas' }].concat(r.escolas.map(function (e) { return { v: e, t: e }; })), agendaEscola);
+    preencherSelectAgenda(document.getElementById('filtro-turma-agenda'),
+        [{ v: '', t: 'Todas as turmas' }].concat(turmas.map(function (t) { return { v: t, t: t }; })), agendaTurma);
+    document.getElementById('lista-escolas-dev').innerHTML = r.escolas.map(function (e) { return '<option value="' + escaparHtml(e) + '">'; }).join('');
+    document.getElementById('lista-turmas-dev').innerHTML = r.turmas.map(function (t) { return '<option value="' + escaparHtml(t) + '">'; }).join('');
+    // a lista de ingressos de baixo segue a escola/turma escolhidas aqui
+    var chave = agendaEscola + '|' + agendaTurma;
+    if (ingressosDevInst && chave !== ultimoFiltroIngressos) {
+        ultimoFiltroIngressos = chave;
+        ingressosDevInst.definirFiltro(agendaEscola, agendaTurma);
+    }
+}
+
+function passaNoFiltroAgenda(a) {
+    if (agendaEscola && !mesmaEscolaDev(a.escola, agendaEscola)) return false;
+    if (agendaTurma && turmaCanonica(a.turma) !== agendaTurma) return false;
+    return true;
+}
+function pendentesDoFiltro() {
+    return todosAgendamentos.filter(function (a) { return a.status === 'Pendente' && passaNoFiltroAgenda(a); })
+        .sort(function (a, b) { return a.dataInicio < b.dataInicio ? -1 : 1; });
+}
+
 function renderizarAgendamentosDev() {
+    prepararFiltrosAgenda();
+    var pend = pendentesDoFiltro();
+    document.getElementById('btn-aprovar-todas-visitas').disabled = !pend.length;
+    document.getElementById('btn-aprovar-todas-visitas').textContent = '✅ Aprovar todas as visitas pendentes' + (pend.length ? ' (' + pend.length + ')' : '');
     var lista = document.getElementById('lista-agendamentos');
     var filtro = document.getElementById('filtro-status-agenda').value;
     var c = contarAgendamentosPorStatus(todosAgendamentos);
@@ -645,7 +717,7 @@ function renderizarAgendamentosDev() {
         };
     });
 
-    var visiveis = todosAgendamentos.filter(function (a) { return !filtro || a.status === filtro; })
+    var visiveis = todosAgendamentos.filter(function (a) { return (!filtro || a.status === filtro) && passaNoFiltroAgenda(a); })
         .sort(function (a, b) { return a.dataInicio < b.dataInicio ? -1 : 1; });   // as datas mais próximas primeiro
     document.getElementById('sem-agendamentos').style.display = visiveis.length ? 'none' : 'block';
 
@@ -691,6 +763,68 @@ function renderizarAgendamentosDev() {
 }
 
 document.getElementById('filtro-status-agenda').addEventListener('change', renderizarAgendamentosDev);
+document.getElementById('filtro-escola-agenda').addEventListener('change', function () { agendaEscola = this.value; renderizarAgendamentosDev(); });
+document.getElementById('filtro-turma-agenda').addEventListener('change', function () { agendaTurma = this.value; renderizarAgendamentosDev(); });
+
+// ---- Depois de aprovar: o sistema pergunta se deve gerar os ingressos -------
+var paraGerarIngressos = [];
+function mostrarBannerGerar(visitas) {
+    visitas.forEach(function (v) {
+        if (!paraGerarIngressos.some(function (x) { return x.turma === v.turma && x.escola === v.escola; })) paraGerarIngressos.push(v);
+    });
+    var b = document.getElementById('banner-gerar-ingressos');
+    b.hidden = false;
+    b.innerHTML = '<div class="aviso-agendamento atencao">🎟️ Visita aprovada para ' +
+        paraGerarIngressos.map(function (v) { return '<strong>' + escaparHtml(v.turma) + '</strong>'; }).join(', ') +
+        '. <strong>Gerar agora os ingressos</strong> dos alunos confirmados? ' +
+        '<div class="botoes-solicitacao" style="margin-top:8px;">' +
+        '<button type="button" class="btn-aprovar-solicitacao" data-gerar="sim">Gerar ingressos agora</button> ' +
+        '<button type="button" class="btn-agenda-secundario" data-gerar="depois">Depois</button></div></div>';
+}
+document.getElementById('banner-gerar-ingressos').addEventListener('click', function (e) {
+    var botao = e.target.closest('button[data-gerar]');
+    if (!botao) return;
+    var b = this;
+    if (botao.dataset.gerar === 'depois') { paraGerarIngressos = []; b.hidden = true; return; }
+    var alvo = paraGerarIngressos.slice();
+    b.innerHTML = '<div class="aviso-agendamento atencao">⏳ Gerando os ingressos e conferindo com os painéis...</div>';
+    // espera os alunos serem confirmados no banco antes de gerar
+    Promise.all(window._confirmacoesPendentes || []).catch(function () {}).then(function () {
+        window._confirmacoesPendentes = [];
+        var resultados = [];
+        return alvo.reduce(function (cadeia, v) {
+            return cadeia.then(function () {
+                return vcGerarLote(v.turma, v.escola).then(function (r) {
+                    resultados.push('<strong>' + escaparHtml(v.turma) + '</strong>: ' + r.criados + ' novo(s), ' + r.aprovados + ' verificado(s)' + (r.pendentes ? ', ' + r.pendentes + ' aguardando' : ''));
+                });
+            });
+        }, Promise.resolve()).then(function () { return resultados; });
+    }).then(function (resultados) {
+        paraGerarIngressos = [];
+        b.innerHTML = '<div class="aviso-agendamento">✅ Ingressos gerados — ' + resultados.join(' · ') + '. O QR Code de cada aluno já está na tela dele, no painel do professor/monitor e no da Diretoria; o sistema aprova cada ingresso na leitura.</div>';
+    }).catch(function (err) {
+        b.innerHTML = '<div class="aviso-agendamento erro">Não foi possível gerar os ingressos: ' + escaparHtml(err.message) + '</div>';
+    });
+});
+
+// ---- Aprovar todas as visitas pendentes (do filtro de escola/turma) de uma vez ----
+document.getElementById('btn-aprovar-todas-visitas').addEventListener('click', function () {
+    var alvo = pendentesDoFiltro();
+    if (!alvo.length) return;
+    var info = document.getElementById('info-aprovar-todas');
+    if (!confirm('Aprovar ' + alvo.length + ' visita(s) (' + alvo.map(function (a) { return a.turma; }).join(', ') + ') com o horário de saída pedido pela Diretoria? Os alunos encaminhados em cada turma ficam confirmados junto.')) return;
+    var simulados = todosAgendamentos.slice();
+    var aprovadas = [], puladas = [];
+    alvo.forEach(function (a) {
+        if (agConflitosAprovados(a.dataInicio, simulados, a.id).length) { puladas.push(a.turma); return; }
+        aprovarAgendamento(a.id, '');
+        confirmarAlunosDaTurma(a.turma);
+        simulados = simulados.map(function (x) { return x.id === a.id ? Object.assign({}, x, { status: 'Aprovado' }) : x; });
+        aprovadas.push({ turma: a.turma, escola: a.escola });
+    });
+    info.textContent = aprovadas.length + ' visita(s) aprovada(s)' + (puladas.length ? ' · puladas por conflito de datas: ' + puladas.join(', ') : '') + '.';
+    if (aprovadas.length) mostrarBannerGerar(aprovadas);
+});
 
 escutarAgendamentos(function (lista) {
     todosAgendamentos = lista;
@@ -744,10 +878,7 @@ document.getElementById('lista-agendamentos').addEventListener('click', function
         if (saidaOk <= a.entrada) { erro('O horário de saída precisa ser depois da entrada (' + a.entrada + ').'); return; }
         aprovarAgendamento(id, resposta, saidaOk);
         var confirmados = confirmarAlunosDaTurma(a.turma);   // os alunos que a Diretoria encaminhou ficam confirmados junto
-        // o ingresso de cada aluno confirmado é gerado na hora (nasce Pendente; "Aprovar todos e gerar QR" libera o acesso)
-        Promise.resolve(window._confirmacaoPendente).then(function () {
-            return typeof vcGerarLote === 'function' ? vcGerarLote(a.turma, a.escola, false) : null;
-        }).catch(function () {});   // os alunos que a Diretoria encaminhou ficam confirmados junto
+        mostrarBannerGerar([{ turma: a.turma, escola: a.escola }]);   // pergunta se deve gerar os ingressos
         mostrarPopupAviso({
             emoji: '🟢', classe: 'popup-aprovado', titulo: 'Aprovado pelo Clube',
             mensagem: 'A visita da turma ' + a.turma + ' está autorizada para ' + agPeriodoTexto(a) + '.',
@@ -821,7 +952,13 @@ document.getElementById('btn-apagar-tudo').addEventListener('click', function ()
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="ingressos-dev.js"></script>
 <script src="visita-clube.js"></script>
-<script>iniciarVisitaClube({ destino: 'visita-clube', perfil: 'desenvolvedor', nome: sessao.nome, turmas: [] });</script>
+<script>
+// lista de ingressos dentro da seção de agendamentos (segue a escola/turma escolhidas lá) + chamada em seção separada
+ingressosDevInst = iniciarVisitaClube({ destino: 'ingressos-turma-dev', modo: 'ingressos', perfil: 'desenvolvedor', nome: sessao.nome, filtrosExternos: true });
+iniciarVisitaClube({ destino: 'chamada-visita', modo: 'chamada', perfil: 'desenvolvedor', nome: sessao.nome, turmas: [] });
+ultimoFiltroIngressos = null;
+if (typeof prepararFiltrosAgenda === 'function') prepararFiltrosAgenda();
+</script>
 <script src="menu.js"></script>
 <script src="confete.js"></script>
 <script src="logout.js"></script>

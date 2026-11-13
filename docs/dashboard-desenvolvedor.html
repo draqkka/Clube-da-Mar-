@@ -132,6 +132,7 @@
         <form id="form-ingresso" class="form-ingresso">
             <input id="ing-nome" class="form-login-campo" placeholder="Nome completo" required maxlength="150">
             <select id="ing-tipo" class="form-login-campo"><option>Aluno</option><option>Monitor</option></select>
+            <input id="ing-escola" class="form-login-campo" placeholder="Escola" maxlength="200">
             <input id="ing-turma" class="form-login-campo" placeholder="Turma (ex.: 3ºA)" maxlength="20">
             <input id="ing-ra" class="form-login-campo" placeholder="RA (opcional)" maxlength="30">
             <button type="submit" class="btn-ing">Gerar ingresso</button>
@@ -151,6 +152,9 @@
         <p id="sem-ingressos" style="display:none;">Nenhum ingresso neste filtro.</p>
     </section>
 
+
+    <!-- Ingressos por escola/turma + aprovar todos e gerar QR + chamada em tempo real. Ver visita-clube.js -->
+    <div id="visita-clube"></div>
 
     <!-- Todos os alunos, de todas as turmas -->
     <section class="area-avaliacao-professores" style="margin-top: 30px;">
@@ -588,7 +592,7 @@ function alunosConfirmadosDaTurma(turma) {
 // (o Clube não escolhe mais aluno por aluno: ele só decide o agendamento).
 function confirmarAlunosDaTurma(turma) {
     var ids = alunosAguardandoDaTurma(turma).map(function (s) { return s.id; });
-    if (ids.length) responderVariasSolicitacoes(ids, 'Aprovado', '', 'Desenvolvedor', true);
+    window._confirmacaoPendente = ids.length ? responderVariasSolicitacoes(ids, 'Aprovado', '', 'Desenvolvedor', true) : Promise.resolve(0);
     return ids.length;
 }
 
@@ -666,6 +670,8 @@ function renderizarAgendamentosDev() {
                     ' junto com a visita.</p>';
             }
             extra += '<div style="margin-top:10px;">' +
+                '<label style="display:block; font-size:.85rem; font-weight:bold; margin-bottom:8px;">Horário de saída concedido à Diretoria (aparece no ingresso): ' +
+                '<input type="time" class="form-login-campo campo-saida-concedida" style="flex:none; width:auto; margin-left:6px;" value="' + escaparHtml(a.saidaConcedida || a.saida) + '"></label>' +
                 '<textarea class="form-login-campo campo-resposta-agenda" rows="2" style="width:100%; box-sizing:border-box; margin-bottom:8px;" placeholder="Resposta à Diretoria (motivo/orientação; obrigatória ao reprovar)...">' + escaparHtml(d.texto) + '</textarea>' +
                 '<label style="font-size:.85rem; font-weight:bold;">Sugerir outra data (opcional, ao reprovar): ' +
                 '<input type="date" class="form-login-campo campo-data-sugerida" style="flex:none; width:auto; margin-left:6px;" min="' + escaparHtml(agPrimeiroDiaPermitido()) + '" value="' + escaparHtml(d.data) + '"></label>' +
@@ -734,12 +740,18 @@ document.getElementById('lista-agendamentos').addEventListener('click', function
 
     if (acao === 'aprovar') {
         if (agConflitosAprovados(a.dataInicio, todosAgendamentos, a.id).length) { erro('Estas datas já estão aprovadas para outra turma.'); return; }
-        aprovarAgendamento(id, resposta);
+        var saidaOk = card.querySelector('.campo-saida-concedida').value || a.saida;
+        if (saidaOk <= a.entrada) { erro('O horário de saída precisa ser depois da entrada (' + a.entrada + ').'); return; }
+        aprovarAgendamento(id, resposta, saidaOk);
         var confirmados = confirmarAlunosDaTurma(a.turma);   // os alunos que a Diretoria encaminhou ficam confirmados junto
+        // o ingresso de cada aluno confirmado é gerado na hora (nasce Pendente; "Aprovar todos e gerar QR" libera o acesso)
+        Promise.resolve(window._confirmacaoPendente).then(function () {
+            return typeof vcGerarLote === 'function' ? vcGerarLote(a.turma, a.escola, false) : null;
+        }).catch(function () {});   // os alunos que a Diretoria encaminhou ficam confirmados junto
         mostrarPopupAviso({
             emoji: '🟢', classe: 'popup-aprovado', titulo: 'Aprovado pelo Clube',
             mensagem: 'A visita da turma ' + a.turma + ' está autorizada para ' + agPeriodoTexto(a) + '.',
-            linhas: ['<strong>Escola:</strong> ' + escaparHtml(a.escola), '<strong>Horário:</strong> ' + escaparHtml(a.entrada) + ' às ' + escaparHtml(a.saida),
+            linhas: ['<strong>Escola:</strong> ' + escaparHtml(a.escola), '<strong>Horário:</strong> ' + escaparHtml(a.entrada) + ' às ' + escaparHtml(saidaOk) + ' (saída concedida)',
                 confirmados ? '<strong>Alunos confirmados junto:</strong> ' + confirmados : '',
                 resposta ? '<strong>Sua resposta:</strong> “' + escaparHtml(resposta) + '”' : '',
                 'A Diretoria, o professor e os alunos da turma já veem o novo status.'].filter(Boolean)
@@ -808,6 +820,8 @@ document.getElementById('btn-apagar-tudo').addEventListener('click', function ()
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="ingressos-dev.js"></script>
+<script src="visita-clube.js"></script>
+<script>iniciarVisitaClube({ destino: 'visita-clube', perfil: 'desenvolvedor', nome: sessao.nome, turmas: [] });</script>
 <script src="menu.js"></script>
 <script src="confete.js"></script>
 <script src="logout.js"></script>

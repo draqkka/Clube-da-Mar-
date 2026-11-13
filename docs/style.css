@@ -1162,6 +1162,66 @@ html {
     background:var(--cor-evento-azul);
 }
 
+.verde{
+    background:var(--cor-evento-verde, #12a36b);
+}
+
+/* Edição especial: subtítulo e "% dos alunos pediram" (resultado do nosso formulário) */
+.sub-eventos{
+    color:var(--cor-azul-escuro);
+    font-weight:700;
+    margin:-8px 0 22px;
+}
+
+/* Evento gamificado (Jogos): fases, ranking e barra de XP */
+.evento-item.gamer{
+    height:auto;
+    min-height:120px;
+    padding:10px 0;
+}
+
+.fases{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:6px;
+}
+
+.fases b{
+    background:rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.6);
+    border-radius:6px;
+    padding:2px 7px;
+    font-size:11px;
+    letter-spacing:.5px;
+}
+
+.xp{
+    display:block;
+    height:8px;
+    max-width:220px;
+    margin-top:5px;
+    border-radius:6px;
+    background:rgba(0,0,0,.25);
+    overflow:hidden;
+}
+
+.xp em{
+    display:block;
+    height:100%;
+    background:#ffe14d;
+    border-radius:6px;
+}
+
+.texto .pedido{
+    display:block;
+    margin-top:4px;
+    font-size:12px;
+    font-weight:700;
+    opacity:.9;
+    letter-spacing:.3px;
+}
+
 /* RESPONSIVO */
 
 @media(max-width:1400px){

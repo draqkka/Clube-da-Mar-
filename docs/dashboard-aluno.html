@@ -122,7 +122,7 @@
         <div id="area-ingresso" style="display:none;margin-top:24px;">
             <h2>Seu ingresso digital</h2>
             <p class="dica-importar">Baixe o ingresso e salve no celular. Na portaria, apresente o QR Code: o acesso é liberado depois da aprovação do Clube da Maré.</p>
-            <canvas id="canvas-ingresso" width="1536" height="1024" role="img" aria-label="Ingresso digital do Clube da Maré com QR Code" style="width:100%;max-width:640px;height:auto;display:block;margin:12px 0;"></canvas>
+            <canvas id="canvas-ingresso" width="1536" height="1344" role="img" aria-label="Ingresso digital do Clube da Maré com QR Code" style="width:100%;max-width:640px;height:auto;display:block;margin:12px 0;"></canvas>
             <p id="status-ingresso" role="status" style="margin:0 0 12px;font-weight:bold;"></p>
             <button type="button" id="botao-baixar-ingresso" class="btn-planilha-atalho" disabled style="border:0;cursor:pointer;">
                 <i class="fa-solid fa-download" aria-hidden="true"></i> Baixar ingresso
@@ -233,11 +233,46 @@ function pedirIngressos(metodo, url, corpo) {
         });
     });
 }
+// Faixa de dados embaixo da imagem do ingresso: nome, escola/turma, dias da visita e horário de saída.
+var SEMANA_CURTA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+function dataCurtaIngresso(iso, comAno) {
+    var p = String(iso || '').split('-');
+    if (p.length !== 3) return '';
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 12);
+    return SEMANA_CURTA[d.getDay()] + ' ' + p[2] + '/' + p[1] + (comAno ? '/' + p[0] : '');
+}
+function textoAjustado(ctx, txt, x, y, larguraMax, tamanho, peso) {
+    var t = tamanho;
+    do { ctx.font = peso + ' ' + t + 'px "Segoe UI", Arial, sans-serif'; t -= 2; }
+    while (ctx.measureText(txt).width > larguraMax && t > 20);
+    ctx.fillText(txt, x, y);
+}
+function desenharFaixaDados(ctx) {
+    var topo = 1024, i = _ingressoAluno, v = i.visita;
+    ctx.fillStyle = '#f4ecdc';
+    ctx.fillRect(0, topo, 1536, 320);
+    ctx.fillStyle = '#0b2a5b';
+    ctx.fillRect(0, topo, 1536, 6);
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    var X = 70, L = 1396;
+    ctx.fillStyle = '#0b2a5b';
+    textoAjustado(ctx, i.nome || '', X, topo + 70, L, 52, '700');
+    ctx.fillStyle = '#44536b';
+    var linha2 = (i.escola ? i.escola + '  •  ' : '') + 'Turma ' + (i.turma || '') + '  •  Ingresso #' + String(i.id).slice(0, 6).toUpperCase();
+    textoAjustado(ctx, linha2, X, topo + 126, L, 38, '400');
+    ctx.fillStyle = '#0b2a5b';
+    var dias = v ? 'Dias da visita: ' + dataCurtaIngresso(v.dataInicio) + ' e ' + dataCurtaIngresso(v.dataFim, true) : 'Dias da visita: a confirmar';
+    textoAjustado(ctx, dias, X, topo + 200, L, 46, '700');
+    var hor = v ? 'Entrada ' + v.entrada + '  •  Saída ' + v.saida : 'Horário de saída: a confirmar';
+    textoAjustado(ctx, hor, X, topo + 266, L, 46, '700');
+}
 function desenharIngresso() {
     var canvas = document.getElementById('canvas-ingresso');
     var ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(_ingressoImg, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(_ingressoImg, 0, 0, canvas.width, 1024);
+    desenharFaixaDados(ctx);
     var caixa = document.createElement('div');
     new QRCode(caixa, { text: linkDoIngresso(_ingressoAluno.id), width: 560, height: 560, correctLevel: QRCode.CorrectLevel.M });
     var qr = caixa.querySelector('canvas');
@@ -254,7 +289,9 @@ function mostrarStatusIngresso() {
 function atualizarStatusIngresso() {
     if (!_ingressoAluno) return;
     pedirIngressos('GET', '/api/ingressos?id=' + encodeURIComponent(_ingressoAluno.id)).then(function (j) {
-        _ingressoAluno.status = j.ingresso.status;
+        var mudouDados = JSON.stringify([_ingressoAluno.escola, _ingressoAluno.visita]) !== JSON.stringify([j.ingresso.escola, j.ingresso.visita]);
+        _ingressoAluno = j.ingresso;
+        if (mudouDados) desenharIngresso();   // o Clube aprovou/alterou a visita: o ingresso se atualiza sozinho
         mostrarStatusIngresso();
     }).catch(function () {});
 }
@@ -283,6 +320,7 @@ function prepararIngressoAluno() {
     Promise.all([criado, imagemPronta]).then(function (r) {
         _ingressoAluno = r[0].ingresso;
         desenharIngresso();
+        atualizarStatusIngresso();   // busca já os dados da visita (escola, dias e saída)
         mostrarStatusIngresso();
         document.getElementById('botao-baixar-ingresso').disabled = false;
         setInterval(atualizarStatusIngresso, 5000);   // aprovação do Desenvolvedor aparece sozinha

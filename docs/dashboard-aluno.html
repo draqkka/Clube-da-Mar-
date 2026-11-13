@@ -121,7 +121,7 @@
              a participação (ver prepararIngressoAluno no JS). O QR Code é desenhado no quadrado branco da imagem. -->
         <div id="area-ingresso" style="display:none;margin-top:24px;">
             <h2>Seu ingresso digital</h2>
-            <p class="dica-importar">Baixe o ingresso e salve no celular. Na portaria, apresente o QR Code: o acesso é liberado depois da aprovação do Clube da Maré.</p>
+            <p class="dica-importar">Baixe o ingresso e salve no celular. Na portaria, apresente o QR Code: o sistema confere o ingresso na hora (aluno, visita da turma, escola e dias) e libera o acesso sozinho.</p>
             <canvas id="canvas-ingresso" width="1536" height="1344" role="img" aria-label="Ingresso digital do Clube da Maré com QR Code" style="width:100%;max-width:640px;height:auto;display:block;margin:12px 0;"></canvas>
             <p id="status-ingresso" role="status" style="margin:0 0 12px;font-weight:bold;"></p>
             <button type="button" id="botao-baixar-ingresso" class="btn-planilha-atalho" disabled style="border:0;cursor:pointer;">
@@ -210,8 +210,8 @@ function atualizarFormularioAluno() {
 
 // ---- Ingresso digital -------------------------------------------------------
 // Aparece logo abaixo do formulário quando a equipe Clube da Maré confirma o aluno.
-// O ingresso é criado sozinho (um por aluno, pelo e-mail do login) e nasce "Pendente";
-// o Desenvolvedor aprova no painel dele e a tela da portaria (ingresso.html) libera o acesso.
+// O ingresso é criado sozinho (um por aluno, pelo e-mail do login) e nasce "Pendente" e o
+// PRÓPRIO SISTEMA o aprova quando confere com os painéis (aluno confirmado + visita da turma aprovada pelo Clube).
 // O QR Code é desenhado no quadrado branco da imagem imagens/ingresso-digital.png (1536x1024).
 // Se trocar a imagem, ajuste QR_CAIXA (x, y e lado do quadrado, em pixels da imagem).
 var QR_CAIXA = { x: 1100, y: 400, lado: 280 };
@@ -280,8 +280,8 @@ function desenharIngresso() {
 }
 function mostrarStatusIngresso() {
     var textos = {
-        'Pendente': 'Aguardando a aprovação do Clube da Maré. Guarde o ingresso: ele vale quando for aprovado.',
-        'Aprovado': 'Ingresso aprovado! Apresente o QR Code na portaria.',
+        'Pendente': 'O sistema está conferindo seu ingresso com a visita da turma. Assim que o Clube da Maré aprovar a visita, ele é liberado sozinho.',
+        'Aprovado': 'Ingresso verificado pelo sistema! Apresente o QR Code na portaria.',
         'Recusado': 'Ingresso não aprovado. Procure a organização do Clube da Maré.'
     };
     document.getElementById('status-ingresso').textContent = textos[_ingressoAluno.status] || '';
@@ -323,7 +323,7 @@ function prepararIngressoAluno() {
         atualizarStatusIngresso();   // busca já os dados da visita (escola, dias e saída)
         mostrarStatusIngresso();
         document.getElementById('botao-baixar-ingresso').disabled = false;
-        setInterval(atualizarStatusIngresso, 5000);   // aprovação do Desenvolvedor aparece sozinha
+        setInterval(atualizarStatusIngresso, 5000);   // a conferência automática aparece sozinha
     }).catch(function (erro) {
         _ingressoIniciado = false;
         document.getElementById('status-ingresso').textContent =

@@ -88,7 +88,7 @@
             <input type="file" id="arquivo-planilha" accept=".xlsx,.xls,.csv" style="display:none;">
         </div>
         <ul class="passos-planilha dica-importar">
-            <li>O site confere se o título <strong>"Registro e controle do rendimento escolar"</strong> está escrito <em>dentro</em> do arquivo. Sem ele, a planilha é recusada.</li>
+            <li>O site confere só a <strong>turma</strong> que está escrita na planilha ("Turma: ..." no topo): se não for de uma das suas turmas, ele avisa que você pode ter escolhido a planilha errada.</li>
             <li><strong>Cada aba é uma turma</strong> e é salva separadamente — adicionar a planilha da 3ºA nunca altera os alunos da 2ºA. Só entram abas das suas turmas.</li>
             <li>Aparecem só alunos <strong>Ativos</strong> (remanejados, transferidos etc. não pertencem mais à sala e ficam de fora).</li>
             <li><strong>Aprovado</strong> = Ativo + frequência de <strong>85%</strong> ou mais + média de todas as matérias (colunas <strong>M</strong>) <strong>7</strong> ou mais.</li>
@@ -669,8 +669,9 @@ document.getElementById('arquivo-planilha').addEventListener('change', function 
 
         var salvarImportacao = function () {
         if (!minhas.length) {
-            status.textContent = '⚠️ Nenhuma aba da planilha é de uma turma sua (' + minhasTurmas.join(', ') +
-                '). Abas encontradas: ' + lido.turmas.map(function (g) { return g.turma; }).join(', ') + '.';
+            status.textContent = '⚠️ Você pode ter escolhido a planilha errada: ela é da turma ' +
+                lido.turmas.map(function (g) { return g.turma; }).join(', ') + ', e as suas turmas são ' + minhasTurmas.join(', ') +
+                '. Escolha a planilha de uma das suas turmas.';
             return;
         }
 

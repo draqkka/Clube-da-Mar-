@@ -110,6 +110,9 @@
         <div id="agendamento-professor-conteudo"></div>
     </section>
 
+    <!-- Ingressos da turma + chamada (chegada ao Clube / volta à escola). Ver visita-clube.js -->
+    <div id="visita-clube"></div>
+
     <section style="margin-top: 24px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
         <h2>Minhas Solicitações Enviadas</h2>
         <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
@@ -823,6 +826,9 @@ escutarAgendamentos(function (lista) {
 });
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="visita-clube.js"></script>
+<script>iniciarVisitaClube({ destino: 'visita-clube', perfil: 'professor', nome: sessao.nome, turmas: sessao.turmas || [] });</script>
 <script src="menu.js"></script>
 <script src="logout.js"></script>
 </body>

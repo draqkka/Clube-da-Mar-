@@ -485,8 +485,10 @@ function baixarPlanilhaTurma(turma) {
 // ==========================================================================
 // PLANILHA OFICIAL — "REGISTRO E CONTROLE DO RENDIMENTO ESCOLAR"
 //
-// É a planilha que a escola exporta. O site só aceita arquivos que tenham
-// esse título escrito dentro (nas primeiras linhas de cada aba).
+// É a planilha que a escola exporta. O site NÃO confere o título nem o nome do
+// arquivo: a única conferência é a TURMA (linha "Turma: ..." no topo da aba, coluna
+// "Turma" ou nome da aba). Se a turma da planilha não for de uma das turmas do
+// professor, o painel dele avisa que a planilha deve ser a errada (ver dashboard-professor.html).
 //
 //  • Cada ABA é lida separadamente e vira UMA turma — o site descobre a
 //    turma pela coluna "Turma", por uma linha "Turma: 3ºA" no topo da aba
@@ -499,7 +501,6 @@ function baixarPlanilhaTurma(turma) {
 //  • Aprovado = Ativo + frequência >= 85% + nota >= 7 (ajuste abaixo).
 // ==========================================================================
 
-var TITULO_PLANILHA_OFICIAL = 'Registro e controle do rendimento escolar';
 var CRITERIO_PRESENCA_MINIMA = 85;   // em %
 var CRITERIO_NOTA_MINIMA = 7;        // média de 0 a 10 (>= 7 aprova)
 var EXTRA_SITUACAO = 'Situação';     // onde a situação fica guardada (extras)
@@ -531,16 +532,6 @@ function _textoCelula(v) {
 
 function _turmaValida(t) {
     return /^\d+\u00BA[A-Z]+$/.test(String(t));
-}
-
-// O título pode estar numa célula só ou espalhado em células vizinhas.
-function _contemTitulo(linhas) {
-    var alvo = _chaveColuna(TITULO_PLANILHA_OFICIAL);
-    for (var i = 0; i < Math.min(linhas.length, 20); i++) {
-        var junto = linhas[i].map(function (c) { return _chaveColuna(c); }).join('');
-        if (junto.indexOf(alvo) !== -1) return true;
-    }
-    return false;
 }
 
 // A planilha precisa ter o NOME dos alunos. RA sozinho não serve.
@@ -781,12 +772,6 @@ function _mediaDasColunas(linha, colunas) {
 // Lê UMA aba (já convertida em linhas) e acrescenta o resultado em "res".
 // Separada da leitura do arquivo pra poder ser testada sem o SheetJS.
 function _processarAba(nomeAba, linhas, res) {
-    if (!_contemTitulo(linhas)) {
-        res.ignoradas.push({ aba: nomeAba, motivo: 'não tem o título "' + TITULO_PLANILHA_OFICIAL + '"' });
-        return;
-    }
-    res.abasComTitulo++;
-
     var cab = _acharCabecalho(linhas);
     if (!cab) {
         if (_planilhaTemColunaRa(linhas)) throw new Error(MSG_PLANILHA_SO_RA);
@@ -1022,20 +1007,17 @@ function _processarAba(nomeAba, linhas, res) {
 // for a planilha oficial.
 function lerRegistroRendimento(arrayBuffer, nomeArquivo) {
     var pasta = _lerPasta(arrayBuffer);
-    var res = { turmas: [], avisos: [], infos: [], ignoradas: [], abasComTitulo: 0, nomeArquivo: String(nomeArquivo || '') };
+    var res = { turmas: [], avisos: [], infos: [], ignoradas: [], nomeArquivo: String(nomeArquivo || '') };
 
     pasta.SheetNames.forEach(function (nomeAba) {
         var linhas = XLSX.utils.sheet_to_json(pasta.Sheets[nomeAba], { header: 1, defval: '' });
         _processarAba(nomeAba, linhas, res);
     });
 
-    if (!res.abasComTitulo) {
-        throw new Error('Essa não é a planilha oficial: o título "' + TITULO_PLANILHA_OFICIAL +
-            '" não aparece dentro do arquivo. Adicione a planilha "Registro e controle do rendimento escolar" exportada pela escola.');
-    }
     if (!res.turmas.length) {
-        throw new Error('A planilha tem o título certo, mas não consegui ler nenhuma turma. ' +
-            res.ignoradas.map(function (g) { return 'Aba "' + g.aba + '": ' + g.motivo + '.'; }).join(' '));
+        throw new Error('Não consegui ler nenhuma turma desta planilha. ' +
+            res.ignoradas.map(function (g) { return 'Aba "' + g.aba + '": ' + g.motivo + '.'; }).join(' ') +
+            ' Confira se você escolheu a planilha certa: ela precisa ter a coluna "Aluno", a frequência, a média e a turma ("Turma: ..." no topo).');
     }
     return res;
 }

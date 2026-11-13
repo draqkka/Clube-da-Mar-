@@ -188,6 +188,9 @@
         dashboard-aluno.html).
     -->
     <!-- Só aparece depois que o Clube da Maré aprova (confirma) alguma solicitação. -->
+    <!-- Ingressos de todas as turmas + chamada em tempo real (só leitura). Ver visita-clube.js -->
+    <div id="visita-clube"></div>
+
     <section class="area-avaliacao-professores" id="area-formulario-diretoria" style="margin-top: 30px; display:none;">
         <h2>Formulário da Diretoria</h2>
         <p>Preencha o formulário de Diretoria — Ata de Aprovação da Excursão abaixo:</p>
@@ -776,6 +779,9 @@ escutarTodasSolicitacoes(function (solicitacoes) {
 
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="visita-clube.js"></script>
+<script>iniciarVisitaClube({ destino: 'visita-clube', perfil: 'diretoria', nome: sessao.nome, turmas: [] });</script>
 <script src="menu.js"></script>
 <script src="logout.js"></script>
 </body>

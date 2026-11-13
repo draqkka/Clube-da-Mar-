@@ -363,6 +363,7 @@ function criarAgendamento(d) {
         dataFim: agDataFim(d.dataInicio),            // sempre o dia seguinte
         entrada: d.entrada,
         saida: d.saida,
+        saidaConcedida: '',
         responsavel: String(d.responsavel || '').trim(),
         cargo: d.cargo || '',
         telefone: String(d.telefone || '').trim(),
@@ -398,9 +399,11 @@ function _agNegociar(a, de, tipo, texto, data, soSeJaHouverConversa) {
 }
 
 // ---- CLUBE DA MARÉ (Desenvolvedor): responde ------------------------------
-function aprovarAgendamento(id, resposta) {
+// "saidaConcedida": horário de saída que o Clube autoriza (aparece no ingresso). Vazio = o que a Diretoria pediu.
+function aprovarAgendamento(id, resposta, saidaConcedida) {
     return _agAlterar(id, function (a) {
         a.status = 'Aprovado';
+        a.saidaConcedida = (saidaConcedida && saidaConcedida !== a.saida) ? saidaConcedida : '';
         _agNegociar(a, 'Clube', 'aprovacao', resposta, '', true);
         a.resposta = resposta || '';
         a.dataSugerida = '';
@@ -608,8 +611,10 @@ function htmlCartaoAgendamento(a, opcoes) {
     var linhas = [];
     linhas.push('<p class="cartao-agendamento-datas"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> ' +
         '<strong>' + _agEsc(agPeriodoTexto(a)) + '</strong> <span class="cartao-agendamento-dias">(' + AGENDAMENTO_DIAS + ' dias seguidos)</span></p>');
+    var saidaFinal = (a.status === 'Aprovado' && a.saidaConcedida) ? a.saidaConcedida : a.saida;
     linhas.push('<p><i class="fa-solid fa-clock" aria-hidden="true"></i> Entrada <strong>' + _agEsc(a.entrada) +
-        '</strong> · Saída <strong>' + _agEsc(a.saida) + '</strong></p>');
+        '</strong> · Saída <strong>' + _agEsc(saidaFinal) + '</strong>' +
+        (saidaFinal !== a.saida ? ' <span class="cartao-agendamento-dias">(a direção pediu ' + _agEsc(a.saida) + '; o Clube concedeu ' + _agEsc(saidaFinal) + ')</span>' : '') + '</p>');
     if (a.escola) linhas.push('<p><i class="fa-solid fa-school" aria-hidden="true"></i> ' + _agEsc(a.escola) + '</p>');
     if (opcoes.mostrarTurma) linhas.push('<p><i class="fa-solid fa-users" aria-hidden="true"></i> Turma <strong>' + _agEsc(a.turma) + '</strong></p>');
     var grupo = [];

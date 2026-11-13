@@ -30,6 +30,7 @@ main {
 }
 .selo.ok { background: #0f7a4d; animation: pop .45s ease-out; }
 .selo.erro { background: #c0392b; }
+.selo.aviso { background: #d98a00; font-size: 4rem; font-weight: 800; }
 .selo.espera { background: transparent; border: 10px solid #cfdcf2; border-top-color: #0a5cff; animation: gira 1s linear infinite; }
 @keyframes gira { to { transform: rotate(360deg); } }
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
@@ -39,6 +40,12 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
 .barra.ok > span { width: 100%; background: #0f7a4d; }
 .barra.espera > span { width: 40%; background: #0a5cff; animation: vai 1.4s ease-in-out infinite; }
 .barra.erro > span { width: 100%; background: #c0392b; }
+.barra.aviso > span { width: 100%; background: #d98a00; }
+.conf { list-style: none; margin: 0 0 22px; padding: 0; text-align: left; background: #fff; border-radius: 18px; box-shadow: 0 2px 10px rgba(11,42,91,.08); }
+.conf li { display: flex; gap: 10px; align-items: center; padding: 11px 16px; border-bottom: 1px solid #e6ecf6; color: #0b2a5b; font-size: .95rem; }
+.conf li:last-child { border-bottom: none; }
+.conf i { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-style: normal; font-weight: 800; font-size: .8rem; }
+.conf .ok i { background: #0f7a4d; } .conf .pend i { background: #cfdcf2; color: #0a5cff; } .conf .erro i { background: #c0392b; } .conf .aviso i { background: #d98a00; }
 @keyframes vai { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .sub { color: #44536b; margin: 0 0 26px; font-size: 1.05rem; line-height: 1.4; }
 .dados { text-align: left; background: #fff; border-radius: 18px; padding: 6px 0; box-shadow: 0 2px 10px rgba(11,42,91,.08); }
@@ -60,7 +67,8 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
     <div id="selo" class="selo espera"></div>
     <h2 id="titulo">Verificando ingresso...</h2>
     <div id="barra" class="barra espera"><span></span></div>
-    <p id="subtitulo" class="sub">Aguardando a aprovação do Clube da Maré. Não feche esta tela.</p>
+    <p id="subtitulo" class="sub">Conferindo o ingresso com os painéis do Clube da Maré. Não feche esta tela.</p>
+    <ul id="conf" class="conf oculto" aria-label="Itens conferidos"></ul>
 
     <div id="dados" class="dados oculto">
         <div><b>Nome</b><span id="d-nome"></span></div>
@@ -83,6 +91,7 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
     var timer = null;
     var ICONES = {
         check: '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+        aviso: '!',
         x: '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
     };
 
@@ -119,6 +128,22 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
         el('dados').classList.remove('oculto');
     }
 
+    var MARCA = { ok: '✓', pend: '…', erro: '✕', aviso: '!' };
+    function mostrarConferencia(itens) {
+        var ul = el('conf');
+        if (!itens || !itens.length) { ul.classList.add('oculto'); return; }
+        ul.innerHTML = itens.map(function (it) {
+            var t = String(it.rotulo).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+            return '<li class="' + it.estado + '"><i>' + (MARCA[it.estado] || '') + '</i><span>' + t + '</span></li>';
+        }).join('');
+        ul.classList.remove('oculto');
+    }
+
+    // O sistema confere o ingresso com os painéis (aluno confirmado, visita aprovada,
+    // escola/turma e dias) e aprova sozinho. Enquanto falta algo, a tela fica carregando.
+    // A tela de "carregando" aparece por pelo menos 1,5 s, para dar tempo de ver a conferência.
+    var inicio = Date.now();
+    var MIN_CARREGANDO_MS = 1500;
     function atualizar() {
         if (!id) {
             tela('erro', 'Ingresso inválido', 'Leia o QR Code do ingresso novamente.', 'x');
@@ -127,26 +152,36 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
         fetch('/api/ingressos?id=' + encodeURIComponent(id), { cache: 'no-store' })
             .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
             .then(function (res) {
-                if (!res.ok) {
-                    tela('erro', 'Ingresso não encontrado', 'Procure a organização do Clube da Maré.', 'x');
-                    clearInterval(timer);
-                    return;
-                }
-                var i = res.j.ingresso;
-                mostrarDados(i);
-                if (i.status === 'Aprovado') {
-                    tela('ok', 'Verificação concluída', 'Acesso liberado. Aproveite o Clube da Maré!', 'check');
-                    clearInterval(timer);   // aprovado: não precisa mais consultar
-                } else if (i.status === 'Recusado') {
-                    tela('erro', 'Acesso não liberado', 'Procure a organização do Clube da Maré.', 'x');
-                } else {
-                    tela('espera', 'Verificando ingresso...', 'Aguardando a aprovação do Clube da Maré. Não feche esta tela.', '');
-                }
+                var espera = Math.max(0, MIN_CARREGANDO_MS - (Date.now() - inicio));
+                setTimeout(function () { aplicar(res); }, espera);
             })
             .catch(function () {
                 // Sem internet no momento: continua tentando, mantém a tela de carregamento.
                 tela('espera', 'Verificando ingresso...', 'Sem conexão. Tentando novamente...', '');
             });
+    }
+
+    function aplicar(res) {
+        if (!res.ok) {
+            tela('erro', 'Ingresso não encontrado', 'Procure a organização do Clube da Maré.', 'x');
+            el('conf').classList.add('oculto');
+            clearInterval(timer);
+            return;
+        }
+        var i = res.j.ingresso, v = res.j.verificacao || {};
+        mostrarDados(i);
+        mostrarConferencia(v.itens);
+        if (v.estado === 'ok') {
+            tela('ok', 'Verificação concluída', 'Acesso liberado. Aproveite o Clube da Maré!', 'check');
+            clearInterval(timer);   // conferido: não precisa mais consultar
+        } else if (v.estado === 'fora-do-periodo') {
+            tela('aviso', 'Fora do dia da visita', v.motivo, 'aviso');   // continua conferindo: libera sozinho no dia certo
+        } else if (v.estado === 'recusado' || v.estado === 'divergente') {
+            tela('erro', 'Acesso não liberado', v.motivo || 'Procure a organização do Clube da Maré.', 'x');
+            if (v.estado === 'recusado') clearInterval(timer);
+        } else {
+            tela('espera', 'Verificando ingresso...', (v.motivo ? v.motivo + ' ' : '') + 'Não feche esta tela.', '');
+        }
     }
 
     atualizar();

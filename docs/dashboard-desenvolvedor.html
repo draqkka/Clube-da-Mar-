@@ -201,7 +201,7 @@
         <h3 style="margin-top:16px;">Solicitações (banco — cópia desta página)</h3>
         <pre id="json-solicitacoes" class="caixa-dados-brutos"></pre>
 
-        <button type="button" id="btn-apagar-tudo" class="btn-apagar-banco">Apagar todas as solicitações, alunos e agendamentos do banco (teste)</button>
+        <button type="button" id="btn-apagar-tudo" class="btn-apagar-banco">Apagar TODOS os dados do banco (teste): solicitações, agendamentos, ingressos, chamada e alunos</button>
         <p id="msg-apagar-tudo" class="dica-importar" style="margin-top:8px;"></p>
 
     </section>
@@ -918,27 +918,39 @@ atualizarDadosBrutos();
 document.getElementById('btn-apagar-tudo').addEventListener('click', function () {
     var botao = this;
     var msg = document.getElementById('msg-apagar-tudo');
-    if (!confirm('Isso apaga TODAS as solicitações, TODOS os agendamentos e TODOS os alunos salvos no banco (de todas as turmas). Esta ação não pode ser desfeita. Confirma?')) return;
+    if (!confirm('Isso apaga ABSOLUTAMENTE TODOS os dados do banco: solicitações, agendamentos, INGRESSOS, chamada, alunos de todas as turmas e os alunos cadastrados pelos professores. Esta ação não pode ser desfeita. Confirma?')) return;
     botao.disabled = true;
     msg.textContent = 'Apagando...';
 
-    // Usa as turmas que o banco devolveu (pode haver turmas fora de TURMAS_DO_SISTEMA).
-    var turmas = (dadosAlunos && dadosAlunos.porTurma ? dadosAlunos.porTurma : [])
-        .filter(function (t) { return t.notas && t.notas.length; })
-        .map(function (t) { return t.turma; });
-    var removidos = 0;
-
-    limparTodasSolicitacoes()
+    var apagados = {};
+    fetch('/api/apagar-tudo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmar: true })
+    }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+            if (!r.ok) throw new Error(j.erro || ('Erro ' + r.status));
+            apagados = j.apagados || {};
+        });
+    })
+        .then(function () { return limparTodasSolicitacoes(); })    // também esvazia a cópia guardada neste navegador
         .then(function () { return limparTodosAgendamentos(); })
         .then(function () {
-            return Promise.all(turmas.map(function (turma) {
-                return removerTurma(turma).then(function (r) { removidos += r.removidos; });
-            }));
+            // caches deste navegador (alunos ocultos e resumos dos painéis)
+            ['CHAVE_ALUNOS_OCULTOS', 'CHAVE_RESUMO_ALUNO', 'CHAVE_RESUMO_PAINEL'].forEach(function (nome) {
+                try { if (typeof window[nome] === 'string') localStorage.removeItem(window[nome]); } catch (e) {}
+            });
+            try {
+                if (typeof CHAVE_ALUNOS_OCULTOS !== 'undefined') localStorage.removeItem(CHAVE_ALUNOS_OCULTOS);
+                if (typeof CHAVE_RESUMO_ALUNO !== 'undefined') localStorage.removeItem(CHAVE_RESUMO_ALUNO);
+                if (typeof CHAVE_RESUMO_PAINEL !== 'undefined') localStorage.removeItem(CHAVE_RESUMO_PAINEL);
+            } catch (e) {}
         })
         .then(carregarAlunosDev)
         .then(function () {
+            if (typeof vcRecarregarTudo === 'function') vcRecarregarTudo();   // listas de ingressos e chamada
             botao.disabled = false;
-            msg.textContent = 'Pronto: solicitações e agendamentos apagados e ' + removidos + ' aluno(s) removido(s).';
+            msg.textContent = 'Pronto, banco zerado: ' + (apagados.alunos || 0) + ' aluno(s), ' + (apagados.solicitacoes || 0) + ' solicitação(ões), ' +
+                (apagados.agendamentos || 0) + ' agendamento(s), ' + (apagados.ingressos || 0) + ' ingresso(s), ' + (apagados.chamada || 0) +
+                ' registro(s) de chamada e ' + (apagados.usuarios_cadastrados || 0) + ' aluno(s) cadastrado(s) pelos professores apagados.';
         })
         .catch(function (erro) {
             botao.disabled = false;

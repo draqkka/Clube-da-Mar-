@@ -114,7 +114,7 @@ h2 { margin: 0 0 14px; font-size: 1.7rem; color: #0b2a5b; }
 
     function mostrarDados(i) {
         el('d-nome').textContent = i.nome;
-        el('d-tipo').textContent = i.tipo || 'Aluno';
+        el('d-tipo').textContent = i.tipo === 'Monitor' ? 'Monitor / Professor' : (i.tipo || 'Aluno');
         el('d-turma').textContent = i.turma || '';
         el('l-turma').style.display = i.turma ? '' : 'none';
         var v = i.visita;

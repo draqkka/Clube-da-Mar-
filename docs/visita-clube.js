@@ -243,7 +243,7 @@ function iniciarVisitaClube(cfg) {
                 var periodo = typeof agPeriodoTexto === 'function' ? agPeriodoTexto(v) : v.dataInicio + ' e ' + v.dataFim;
                 caixa.className = 'vc-visita ok';
                 caixa.innerHTML = '🟢 <strong>Visita aprovada pelo Clube da Maré</strong><br>🏫 ' + _vcEsc(v.escola || 'Escola não informada') +
-                    '<br>📅 ' + _vcEsc(periodo) + ' (2 dias)<br>🕗 Entrada <strong>' + _vcEsc(v.entrada) + '</strong> · Saída <strong>' + _vcEsc(v.saida) + '</strong>' +
+                    '<br>📅 ' + _vcEsc(periodo) + ' (2 dias)<br>🕗 Entrada (1º dia) <strong>' + _vcEsc(v.entrada) + '</strong> · Saída (2º dia) <strong>' + _vcEsc(v.saida) + '</strong>' +
                     (v.saidaAlterada ? ' <span class="vc-nota">(saída concedida pelo Clube; a direção pediu ' + _vcEsc(v.saidaPedida) + ')</span>' : ' <span class="vc-nota">(saída concedida pelo Clube)</span>');
             } else if (v) {
                 caixa.className = 'vc-visita';
@@ -377,7 +377,7 @@ function iniciarVisitaClube(cfg) {
         if (!lista.length) return;
         var v = visitaDaTurma();
         var cab = '<h1>Clube da Maré — Ingressos da turma ' + _vcEsc(P.turma) + '</h1>' +
-            (v && v.status === 'Aprovado' ? '<p>' + _vcEsc(v.escola) + ' · ' + _vcEsc(typeof agPeriodoTexto === 'function' ? agPeriodoTexto(v) : '') + ' · Entrada ' + _vcEsc(v.entrada) + ' · Saída ' + _vcEsc(v.saida) + '</p>' : '');
+            (v && v.status === 'Aprovado' ? '<p>' + _vcEsc(v.escola) + ' · ' + _vcEsc(typeof agPeriodoTexto === 'function' ? agPeriodoTexto(v) : '') + ' · Entrada (1º dia) ' + _vcEsc(v.entrada) + ' · Saída (2º dia) ' + _vcEsc(v.saida) + '</p>' : '');
         var cartoes = lista.map(function (i) {
             return '<div class="c"><img src="' + vcQrDataUrl(i.id, 240) + '" alt=""><b>' + _vcEsc(i.nome) + '</b><small>' + _vcEsc(i.tipo || 'Aluno') + ' · ' + _vcEsc(i.turma) +
                 '<br>' + _vcEsc(i.escola || '') + '<br>Ingresso #' + _vcEsc(String(i.id).slice(0, 6).toUpperCase()) + '</small></div>';

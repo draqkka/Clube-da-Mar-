@@ -10,6 +10,11 @@
 //   aprova. No painel do Desenvolvedor há também "Gerar ingressos da turma",
 //   cancelar/reativar e apagar.
 //
+// Modo 'status' (Professor e Diretoria): NÃO mostra os ingressos nem os QR Codes — só o
+//   status de cada aluno (recebeu o ingresso? já foi aprovado na catraca?) e o botão do PDF
+//   com os ingressos. Quem vê os ingressos um a um (e pode aprovar manualmente, como reserva
+//   se a verificação automática falhar) é só o Desenvolvedor (modo 'ingressos').
+//
 // Modo 'chamada': checklist em 2 momentos — chegada ao Clube (dia 1) e volta
 //   à escola (dia 2). Só o PROFESSOR/MONITOR marca (um toque no botão P). A
 //   hora é gravada sozinha pelo servidor: ninguém digita nada. Diretoria e
@@ -30,6 +35,7 @@ var VC_MOMENTOS = [
     { chave: 'd2-retorno', dia: 2, tipo: 'retorno', rotulo: 'Dia 2 · Volta à escola', curto: 'Dia 2 · Voltou' }
 ];
 var VC_INTERVALO_MS = 5000;
+var VC_ROTULO_TIPO = function (t) { return t === 'Monitor' ? 'Monitor / Professor' : (t || 'Aluno'); };
 var VC_ROTULO_STATUS = { Aprovado: 'Verificado', Pendente: 'Aguardando verificação', Recusado: 'Cancelado' };
 var _vcInstancias = [];
 var _vcQrCache = {};
@@ -128,6 +134,8 @@ function _vcCss() {
         '.vc-ing img{width:96px;height:96px;border-radius:8px;background:#fff;padding:4px;}' +
         '.vc-ing .vc-qr-vazio{width:96px;height:96px;border-radius:8px;border:2px dashed rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;text-align:center;font-size:.7rem;padding:6px;box-sizing:border-box;}' +
         '.vc-tag{display:inline-block;padding:2px 9px;border-radius:99px;font-weight:700;font-size:.8rem;}' +
+        '.vc-grupo{margin:18px 0 6px;font-size:1.05rem;}' +
+        '.vc-status{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}' +
         '.vc-tag.Aprovado{background:#19d263;color:#06210f;}.vc-tag.Pendente{background:#ffc800;color:#3a2c00;}.vc-tag.Recusado{background:#ff5a5a;color:#fff;}' +
         '.vc-btn{background:#19d263;color:#06210f;border:none;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;}' +
         '.vc-btn.sec{background:transparent;color:inherit;border:1px solid rgba(255,255,255,.4);}' +
@@ -144,14 +152,14 @@ function iniciarVisitaClube(cfg) {
     if (!raiz) return null;
     _vcCss();
 
-    var modo = cfg.modo === 'chamada' ? 'chamada' : 'ingressos';
+    var modo = cfg.modo === 'chamada' ? 'chamada' : (cfg.modo === 'status' ? 'status' : 'ingressos');
     var perfil = cfg.perfil;
     var dev = perfil === 'desenvolvedor';
     var editavel = modo === 'chamada' && perfil === 'professor';
     var externo = !!cfg.filtrosExternos;
 
     var P = {
-        dados: { ingressos: [], visitas: [], turmas: [], escolas: [] },
+        dados: { ingressos: [], semIngresso: [], visitas: [], turmas: [], escolas: [] },
         chamada: {}, escola: '', turma: '', escolaEscolhida: false,
         momento: 'd1-chegada', momentoEscolhido: false, busca: '',
         assinatura: '', carregou: false
@@ -161,12 +169,16 @@ function iniciarVisitaClube(cfg) {
     // ---- casca da tela (montada uma vez) ----
     var titulo = modo === 'chamada'
         ? '<i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Chamada da visita'
-        : '<i class="fa-solid fa-ticket" aria-hidden="true"></i> Ingressos da turma';
+        : (modo === 'status'
+            ? '<i class="fa-solid fa-ticket" aria-hidden="true"></i> Status dos ingressos'
+            : '<i class="fa-solid fa-ticket" aria-hidden="true"></i> Ingressos da turma');
     var dica = modo === 'chamada'
         ? (editavel
             ? 'Escolha a escola e a turma e faça a <strong>chamada</strong>: toque no <strong>P</strong> de cada aluno quando ele <strong>chegar ao Clube da Maré (dia 1)</strong> e quando <strong>voltar para a escola (dia 2)</strong>. A hora é registrada sozinha — você não digita nada.'
             : 'Escolha a escola e a turma para ver o que o professor/monitor já marcou na chamada: quem chegou ao Clube da Maré (dia 1) e quem voltou para a escola (dia 2). A tela se atualiza sozinha.')
-        : 'Escolha a escola e a turma para ver os ingressos de quem vai. O sistema confere cada ingresso sozinho com os painéis (aluno confirmado e visita aprovada pelo Clube) — não precisa aprovar nada.';
+        : (modo === 'status'
+            ? 'Escolha a escola e a turma para acompanhar o <strong>status</strong> de cada aluno: se já <strong>recebeu o ingresso</strong> e se já foi <strong>aprovado na catraca</strong> (a verificação é feita sozinha pelo sistema). Você também pode baixar o <strong>PDF com os ingressos</strong>.'
+            : 'Escolha a escola e a turma para ver os ingressos de quem vai. O sistema confere cada ingresso sozinho com os painéis (aluno confirmado e visita aprovada pelo Clube) — não precisa aprovar nada. Se a verificação automática falhar, você pode aprovar manualmente.');
 
     var html = '<section class="vc-caixa' + (externo ? ' interno' : '') + '">';
     if (!externo) {
@@ -259,7 +271,58 @@ function iniciarVisitaClube(cfg) {
             var hoje = typeof agHoje === 'function' ? agHoje() : '';
             P.momento = (vis && vis.status === 'Aprovado' && hoje && hoje >= vis.dataFim) ? 'd2-retorno' : 'd1-chegada';
         }
-        if (modo === 'chamada') desenharChamada(); else desenharIngressos();
+        if (modo === 'chamada') desenharChamada(); else if (modo === 'status') desenharStatus(); else desenharIngressos();
+    }
+
+    // monitores/professores ficam num grupo separado, antes dos alunos
+    function agrupar(lista) {
+        var mon = lista.filter(function (i) { return i.tipo === 'Monitor'; });
+        var alu = lista.filter(function (i) { return i.tipo !== 'Monitor'; });
+        var g = [];
+        if (mon.length) g.push({ titulo: 'Monitores / Professores', itens: mon });
+        if (alu.length) g.push({ titulo: 'Alunos', itens: alu });
+        return g;
+    }
+    function tituloGrupo(g) { return '<h3 class="vc-grupo">' + _vcEsc(g.titulo) + ' (' + g.itens.length + ')</h3>'; }
+
+    // ---- Professor e Diretoria: só o status (sem ver ingresso nem QR) + PDF ----
+    function desenharStatus() {
+        var area = q('.vc-painel');
+        if (externo && !P.turma) { area.innerHTML = '<p>Selecione uma turma acima.</p>'; return; }
+        var lista = ingressosFiltrados();
+        var t = _vcTurma(P.turma);
+        var sem = (P.dados.semIngresso || []).filter(function (s) {
+            if (t && _vcTurma(s.turma) !== t) return false;
+            if (P.escola && s.escola && !_vcIgual(s.escola, P.escola)) return false;
+            return true;
+        });
+        var aprov = lista.filter(function (i) { return i.status === 'Aprovado'; }).length;
+        var html = '<div class="vc-cards">' +
+            '<div class="vc-card"><b>' + (lista.length + sem.length) + '</b><span>Pessoas da turma</span></div>' +
+            '<div class="vc-card"><b>' + lista.length + '</b><span>Ingressos recebidos</span></div>' +
+            '<div class="vc-card"><b>' + aprov + '</b><span>Aprovados na catraca</span></div>' +
+            '<div class="vc-card"><b>' + sem.length + '</b><span>Sem ingresso ainda</span></div></div>';
+        if (lista.some(function (i) { return i.status !== 'Recusado'; })) {
+            html += '<div class="vc-acoes"><button type="button" class="vc-btn" data-acao="imprimir">📄 Baixar PDF com todos os ingressos</button></div>';
+        }
+        if (!lista.length && !sem.length) {
+            html += '<p>Nenhum aluno confirmado nesta turma' + (P.escola ? ' nesta escola' : '') + ' ainda. Os alunos aparecem aqui quando o Clube da Maré confirma a participação.</p>';
+        }
+        var catraca = { Aprovado: ['Aprovado', 'Aprovado'], Pendente: ['Pendente', 'Aguardando'], Recusado: ['Recusado', 'Cancelado'] };
+        var linhas = lista.map(function (i) { return { nome: i.nome, tipo: i.tipo, turma: i.turma, escola: i.escola, ra: i.ra, tem: true, status: i.status }; })
+            .concat(sem.map(function (s) { return { nome: s.nome, tipo: 'Aluno', turma: s.turma, escola: s.escola, ra: s.ra, tem: false, status: '' }; }));
+        linhas.sort(function (a, b) { return String(a.nome).localeCompare(String(b.nome), 'pt-BR'); });
+        html += agrupar(linhas).map(function (g) {
+            return tituloGrupo(g) + g.itens.map(function (l) {
+                var c = catraca[l.status];
+                return '<div class="vc-linha"><i class="fa-solid fa-circle-user" style="font-size:1.7rem;" aria-hidden="true"></i>' +
+                    '<div class="vc-nome"><strong>' + _vcEsc(l.nome) + '</strong><small>' + _vcEsc(VC_ROTULO_TIPO(l.tipo)) + ' · Turma ' + _vcEsc(l.turma) + (l.escola ? ' · ' + _vcEsc(l.escola) : '') + (l.ra ? ' · RA ' + _vcEsc(l.ra) : '') + '</small></div>' +
+                    '<div class="vc-status">' +
+                    '<span class="vc-tag ' + (l.tem ? 'Aprovado' : 'Pendente') + '">🎟️ Ingresso: ' + (l.tem ? 'recebido' : 'ainda não') + '</span>' +
+                    '<span class="vc-tag ' + (c ? c[0] : 'Pendente') + '">🚪 Catraca: ' + (c ? c[1] : 'aguardando') + '</span></div></div>';
+            }).join('');
+        }).join('');
+        area.innerHTML = html;
     }
 
     function desenharIngressos() {
@@ -283,7 +346,10 @@ function iniciarVisitaClube(cfg) {
                 (dev ? ' (ou use o botão acima).' : '.') + '</p>';
         }
         var precisaQR = false;
-        html += lista.map(function (i) {
+        html += agrupar(lista).map(function (g) { return tituloGrupo(g) + g.itens.map(cartaoIngresso).join(''); }).join('');
+        area.innerHTML = html;
+        if (precisaQR) _vcGarantirQR(desenharIngressos);
+        function cartaoIngresso(i) {
             var img;
             if (i.status === 'Aprovado') {
                 var url = vcQrDataUrl(i.id, 160);
@@ -293,6 +359,9 @@ function iniciarVisitaClube(cfg) {
                 img = '<div class="vc-qr-vazio">' + (i.status === 'Recusado' ? 'Ingresso cancelado' : 'QR libera quando o sistema conferir') + '</div>';
             }
             var botoes = '<a class="vc-btn sec" style="text-decoration:none;" target="_blank" rel="noopener" href="' + _vcEsc(vcLinkIngresso(i.id)) + '">Abrir ingresso</a>';
+            if (dev && i.status === 'Pendente') {
+                botoes += '<button type="button" class="vc-btn" data-manual="' + _vcEsc(i.id) + '" data-nome="' + _vcEsc(i.nome) + '">✅ Aprovar manualmente</button>';
+            }
             if (dev) {
                 botoes += i.status === 'Recusado'
                     ? '<button type="button" class="vc-btn sec" data-reativar="' + _vcEsc(i.id) + '">Reativar</button>'
@@ -300,12 +369,10 @@ function iniciarVisitaClube(cfg) {
                 botoes += '<button type="button" class="vc-btn sec" data-apagar="' + _vcEsc(i.id) + '">Apagar</button>';
             }
             return '<div class="vc-ing">' + img + '<div class="vc-nome"><strong>' + _vcEsc(i.nome) + '</strong>' +
-                '<small>' + _vcEsc(i.tipo || 'Aluno') + ' · Turma ' + _vcEsc(i.turma) + (i.escola ? ' · ' + _vcEsc(i.escola) : '') + (i.ra ? ' · RA ' + _vcEsc(i.ra) : '') + '</small>' +
-                '<span class="vc-tag ' + _vcEsc(i.status) + '">' + _vcEsc(VC_ROTULO_STATUS[i.status] || i.status) + '</span></div>' +
+                '<small>' + _vcEsc(VC_ROTULO_TIPO(i.tipo)) + ' · Turma ' + _vcEsc(i.turma) + (i.escola ? ' · ' + _vcEsc(i.escola) : '') + (i.ra ? ' · RA ' + _vcEsc(i.ra) : '') + '</small>' +
+                '<span class="vc-tag ' + _vcEsc(i.status) + '">' + _vcEsc(VC_ROTULO_STATUS[i.status] || i.status) + (i.aprovacaoManual ? ' (manual)' : '') + '</span></div>' +
                 '<div class="vc-botoes">' + botoes + '</div></div>';
-        }).join('');
-        area.innerHTML = html;
-        if (precisaQR) _vcGarantirQR(desenharIngressos);
+        }
     }
 
     function aprovadosDaTurma() { return ingressosFiltrados().filter(function (i) { return i.status === 'Aprovado'; }); }
@@ -331,7 +398,8 @@ function iniciarVisitaClube(cfg) {
         } else if (editavel) {
             html += '<div class="vc-acoes"><button type="button" class="vc-btn sec" data-acao="marcar-todos">Marcar todos como presentes (' + _vcEsc(atual.curto) + ')</button></div>';
         }
-        html += vis.map(function (a) {
+        html += agrupar(vis).map(function (g) { return tituloGrupo(g) + g.itens.map(linhaChamada).join(''); }).join('');
+        function linhaChamada(a) {
             var marcas = P.chamada[a.id] || {};
             var resumo = VC_MOMENTOS.filter(function (m) { return marcas[m.chave]; }).map(function (m) {
                 return _vcEsc(m.curto) + ' ' + _vcHora(marcas[m.chave].em);
@@ -341,10 +409,10 @@ function iniciarVisitaClube(cfg) {
                 ? '<button type="button" class="vc-p' + (m ? ' sim' : '') + '" data-aluno="' + _vcEsc(a.id) + '" aria-pressed="' + (m ? 'true' : 'false') + '" aria-label="' + _vcEsc(atual.rotulo) + ': ' + _vcEsc(a.nome) + '">P</button>'
                 : '<span class="vc-p' + (m ? ' sim' : '') + '" style="display:inline-flex;align-items:center;justify-content:center;" title="' + (m ? 'Marcado' : 'Ainda não marcado') + '">' + (m ? 'P' : '–') + '</span>';
             return '<div class="vc-linha"><i class="fa-solid fa-circle-user" style="font-size:1.7rem;" aria-hidden="true"></i>' +
-                '<div class="vc-nome"><strong>' + _vcEsc(a.nome) + '</strong><small>' + _vcEsc(a.tipo || 'Aluno') +
+                '<div class="vc-nome"><strong>' + _vcEsc(a.nome) + '</strong><small>' + _vcEsc(VC_ROTULO_TIPO(a.tipo)) +
                 (m ? ' · ' + (atual.tipo === 'chegada' ? 'chegou' : 'voltou') + ' às ' + _vcHora(m.em) + (m.por ? ' (marcado por ' + _vcEsc(m.por) + ')' : '') : ' · ainda não marcado') + '</small>' +
                 (resumo && VC_MOMENTOS.length > 1 && Object.keys(marcas).length > 1 ? '<small>' + resumo + '</small>' : '') + '</div>' + botao + '</div>';
-        }).join('');
+        }
         if (alunos.length && !vis.length) html += '<p>Nenhum aluno com esse nome.</p>';
         q('.vc-lista').innerHTML = html;
 
@@ -373,14 +441,16 @@ function iniciarVisitaClube(cfg) {
     }
 
     function imprimir() {
-        var lista = aprovadosDaTurma();
+        var lista = ingressosFiltrados().filter(function (i) { return i.status !== 'Recusado'; });
         if (!lista.length) return;
         var v = visitaDaTurma();
         var cab = '<h1>Clube da Maré — Ingressos da turma ' + _vcEsc(P.turma) + '</h1>' +
             (v && v.status === 'Aprovado' ? '<p>' + _vcEsc(v.escola) + ' · ' + _vcEsc(typeof agPeriodoTexto === 'function' ? agPeriodoTexto(v) : '') + ' · Entrada (1º dia) ' + _vcEsc(v.entrada) + ' · Saída (2º dia) ' + _vcEsc(v.saida) + '</p>' : '');
-        var cartoes = lista.map(function (i) {
-            return '<div class="c"><img src="' + vcQrDataUrl(i.id, 240) + '" alt=""><b>' + _vcEsc(i.nome) + '</b><small>' + _vcEsc(i.tipo || 'Aluno') + ' · ' + _vcEsc(i.turma) +
-                '<br>' + _vcEsc(i.escola || '') + '<br>Ingresso #' + _vcEsc(String(i.id).slice(0, 6).toUpperCase()) + '</small></div>';
+        var cartoes = agrupar(lista).map(function (g) {
+            return '<h2>' + _vcEsc(g.titulo) + '</h2><div class="g">' + g.itens.map(function (i) {
+                return '<div class="c"><img src="' + vcQrDataUrl(i.id, 240) + '" alt=""><b>' + _vcEsc(i.nome) + '</b><small>' + _vcEsc(VC_ROTULO_TIPO(i.tipo)) + ' · ' + _vcEsc(i.turma) +
+                    '<br>' + _vcEsc(i.escola || '') + '<br>Ingresso #' + _vcEsc(String(i.id).slice(0, 6).toUpperCase()) + '</small></div>';
+            }).join('') + '</div>';
         }).join('');
         var w = window.open('', '_blank');
         if (!w) { aviso('O navegador bloqueou a janela de impressão. Permita pop-ups para este site e tente de novo.'); return; }
@@ -389,7 +459,7 @@ function iniciarVisitaClube(cfg) {
             '.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}' +
             '.c{border:2px solid #0b2a5b;border-radius:12px;padding:10px;text-align:center;break-inside:avoid}' +
             '.c img{width:150px;height:150px}.c b{display:block;margin-top:6px}.c small{color:#44536b}' +
-            '</style></head><body>' + cab + '<div class="g">' + cartoes + '</div><script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script></body></html>');
+            'h2{font-size:1.05rem;margin:16px 0 8px}</style></head><body>' + cab + cartoes + '<script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script></body></html>');
         w.document.close();
     }
 
@@ -411,6 +481,10 @@ function iniciarVisitaClube(cfg) {
             vcGerarLote(P.turma, P.escola).then(function (r) {
                 aviso('✅ ' + r.criados + ' ingresso(s) novo(s). ' + r.aprovados + ' verificado(s) e liberado(s)' + (r.pendentes ? ', ' + r.pendentes + ' aguardando a confirmação do aluno/visita' : '') + '.');
             }).catch(function (err) { aviso('Não foi possível gerar: ' + err.message); b.disabled = false; });
+        } else if (dev && b.dataset.manual) {
+            if (!confirm('Aprovar MANUALMENTE o ingresso de ' + (b.dataset.nome || 'esta pessoa') + '?\n\nUse só se a verificação automática não funcionou. A aprovação fica registrada como manual.')) return;
+            _vcApi('POST', '/api/ingressos', { id: b.dataset.manual, status: 'Aprovado', por: cfg.nome || 'Desenvolvedor' })
+                .then(function () { aviso('✅ Ingresso aprovado manualmente.'); vcRecarregarTudo(); }).catch(function (err) { aviso(err.message); });
         } else if (dev && (b.dataset.cancelar || b.dataset.reativar)) {
             var idc = b.dataset.cancelar || b.dataset.reativar;
             _vcApi('POST', '/api/ingressos', { id: idc, status: b.dataset.cancelar ? 'Recusado' : 'Pendente' })
@@ -433,7 +507,7 @@ function iniciarVisitaClube(cfg) {
             var ass = JSON.stringify(r);
             if (P.carregou && ass === P.assinatura) return;
             P.assinatura = ass; P.carregou = true;
-            P.dados = { ingressos: r[0].ingressos || [], visitas: r[0].visitas || [], turmas: r[0].turmas || [], escolas: r[0].escolas || [] };
+            P.dados = { ingressos: r[0].ingressos || [], semIngresso: r[0].semIngresso || [], visitas: r[0].visitas || [], turmas: r[0].turmas || [], escolas: r[0].escolas || [] };
             if (r[1]) { P.chamada = {}; (r[1].registros || []).forEach(function (x) { P.chamada[x.ingressoId] = x.marcas || {}; }); }
             desenhar(false);
         }).catch(function (e) { aviso('Não foi possível carregar agora (' + e.message + '). Tentando de novo...'); });

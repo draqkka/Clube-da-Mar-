@@ -742,7 +742,7 @@ function renderizarAgendamentosDev() {
                     ' junto com a visita.</p>';
             }
             extra += '<div style="margin-top:10px;">' +
-                '<label style="display:block; font-size:.85rem; font-weight:bold; margin-bottom:8px;">Horário de saída concedido à Diretoria (aparece no ingresso): ' +
+                '<label style="display:block; font-size:.85rem; font-weight:bold; margin-bottom:8px;">Horário de saída do 2º dia concedido à Diretoria (aparece no ingresso): ' +
                 '<input type="time" class="form-login-campo campo-saida-concedida" style="flex:none; width:auto; margin-left:6px;" value="' + escaparHtml(a.saidaConcedida || a.saida) + '"></label>' +
                 '<textarea class="form-login-campo campo-resposta-agenda" rows="2" style="width:100%; box-sizing:border-box; margin-bottom:8px;" placeholder="Resposta à Diretoria (motivo/orientação; obrigatória ao reprovar)...">' + escaparHtml(d.texto) + '</textarea>' +
                 '<label style="font-size:.85rem; font-weight:bold;">Sugerir outra data (opcional, ao reprovar): ' +
@@ -882,7 +882,7 @@ document.getElementById('lista-agendamentos').addEventListener('click', function
         mostrarPopupAviso({
             emoji: '🟢', classe: 'popup-aprovado', titulo: 'Aprovado pelo Clube',
             mensagem: 'A visita da turma ' + a.turma + ' está autorizada para ' + agPeriodoTexto(a) + '.',
-            linhas: ['<strong>Escola:</strong> ' + escaparHtml(a.escola), '<strong>Horário:</strong> ' + escaparHtml(a.entrada) + ' às ' + escaparHtml(saidaOk) + ' (saída concedida)',
+            linhas: ['<strong>Escola:</strong> ' + escaparHtml(a.escola), '<strong>Horário:</strong> entrada ' + escaparHtml(a.entrada) + ' (1º dia) · saída ' + escaparHtml(saidaOk) + ' (2º dia, concedida)',
                 confirmados ? '<strong>Alunos confirmados junto:</strong> ' + confirmados : '',
                 resposta ? '<strong>Sua resposta:</strong> “' + escaparHtml(resposta) + '”' : '',
                 'A Diretoria, o professor e os alunos da turma já veem o novo status.'].filter(Boolean)

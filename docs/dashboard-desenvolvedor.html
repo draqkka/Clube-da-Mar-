@@ -136,10 +136,10 @@
         <p id="sem-agendamentos" style="display:none;">Nenhum agendamento neste filtro.</p>
 
         <h3 style="margin-top:26px;"><i class="fa-solid fa-ticket" aria-hidden="true"></i> Ingressos da turma selecionada</h3>
-        <p class="dica-importar">Os ingressos dos alunos confirmados são gerados aqui e também aparecem na tela do aluno (com botão para baixar), no painel do professor/monitor e no da Diretoria. Para um <strong>monitor</strong> (ou aluno avulso), gere abaixo e envie o link/QR Code por e-mail — o sistema também confere esse ingresso na leitura.</p>
+        <p class="dica-importar">Os ingressos dos alunos confirmados são gerados aqui e também aparecem na tela do aluno (com botão para baixar). O professor/monitor e a Diretoria veem só o <strong>status</strong> (recebeu o ingresso? já foi aprovado na catraca?) e o PDF; <strong>só você</strong> vê os ingressos um a um e pode <strong>aprovar manualmente</strong> se a verificação automática falhar. Para um <strong>monitor/professor</strong> (ou aluno avulso), gere abaixo e envie o link/QR Code por e-mail — o sistema também confere esse ingresso na leitura.</p>
         <form id="form-ingresso" class="form-ingresso">
             <input id="ing-nome" class="form-login-campo" placeholder="Nome completo" required maxlength="150">
-            <select id="ing-tipo" class="form-login-campo"><option>Aluno</option><option>Monitor</option></select>
+            <select id="ing-tipo" class="form-login-campo"><option value="Aluno">Aluno</option><option value="Monitor">Monitor / Professor</option></select>
             <input id="ing-escola" class="form-login-campo" placeholder="Escola" maxlength="200" list="lista-escolas-dev">
             <input id="ing-turma" class="form-login-campo" placeholder="Turma (ex.: 3ºA)" maxlength="20" list="lista-turmas-dev">
             <input id="ing-ra" class="form-login-campo" placeholder="RA (opcional)" maxlength="30">

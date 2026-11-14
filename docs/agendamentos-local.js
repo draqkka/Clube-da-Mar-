@@ -612,8 +612,8 @@ function htmlCartaoAgendamento(a, opcoes) {
     linhas.push('<p class="cartao-agendamento-datas"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> ' +
         '<strong>' + _agEsc(agPeriodoTexto(a)) + '</strong> <span class="cartao-agendamento-dias">(' + AGENDAMENTO_DIAS + ' dias seguidos)</span></p>');
     var saidaFinal = (a.status === 'Aprovado' && a.saidaConcedida) ? a.saidaConcedida : a.saida;
-    linhas.push('<p><i class="fa-solid fa-clock" aria-hidden="true"></i> Entrada <strong>' + _agEsc(a.entrada) +
-        '</strong> · Saída <strong>' + _agEsc(saidaFinal) + '</strong>' +
+    linhas.push('<p><i class="fa-solid fa-clock" aria-hidden="true"></i> Entrada (1º dia) <strong>' + _agEsc(a.entrada) +
+        '</strong> · Saída (2º dia) <strong>' + _agEsc(saidaFinal) + '</strong>' +
         (saidaFinal !== a.saida ? ' <span class="cartao-agendamento-dias">(a direção pediu ' + _agEsc(a.saida) + '; o Clube concedeu ' + _agEsc(saidaFinal) + ')</span>' : '') + '</p>');
     if (a.escola) linhas.push('<p><i class="fa-solid fa-school" aria-hidden="true"></i> ' + _agEsc(a.escola) + '</p>');
     if (opcoes.mostrarTurma) linhas.push('<p><i class="fa-solid fa-users" aria-hidden="true"></i> Turma <strong>' + _agEsc(a.turma) + '</strong></p>');

@@ -21,6 +21,10 @@
 // POST /api/ingressos         -> { acao: 'gerar-lote', turma, escola }
 //      cria os ingressos de TODOS os alunos da turma confirmados pelo Clube da Maré
 //      e já os confere (os que baterem ficam Aprovados, com QR Code liberado).
+// POST /api/ingressos         -> { id, status: 'Aprovado', por }  APROVAÇÃO MANUAL (só o painel do
+//      Desenvolvedor usa): serve de reserva se a verificação automática falhar. O ingresso fica
+//      marcado com aprovacaoManual e a conferência automática NÃO o volta para "Pendente".
+//      Cancelar ou reativar tira a aprovação manual.
 // DELETE /api/ingressos?id=XYZ -> apaga um ingresso
 const crypto = require('crypto');
 const { db, turmaCanonica, raCanonico } = require('./_db');
@@ -175,6 +179,14 @@ function verificar(ing, ctx) {
 async function conferir(sql, ing, ctx) {
     const v = verificar(ing, ctx);
     let mudou = false;
+    if (ing.aprovacaoManual && ing.status === 'Aprovado') {
+        // aprovado à mão pelo desenvolvedor: a conferência automática não desfaz
+        v.estado = 'ok';
+        v.motivo = 'Acesso liberado (aprovado manualmente pela organização).';
+        v.itens.push({ rotulo: 'Aprovado manualmente pela organização', estado: 'ok' });
+        if (!ing.escola && v.visita && v.visita.escola) { ing.escola = v.visita.escola; await gravar(sql, ing); }
+        return v;
+    }
     if (ing.status !== 'Recusado') {
         const novo = (v.estado === 'ok' || v.estado === 'fora-do-periodo') ? 'Aprovado' : 'Pendente';
         if (ing.status !== novo) {
@@ -242,8 +254,26 @@ module.exports = async function handler(req, res) {
                     String(a.nome).localeCompare(String(b.nome), 'pt-BR');
             });
 
+            // alunos confirmados pelo Clube que ainda não têm ingresso (só nome/turma; sem e-mail)
+            const semIngresso = [];
+            const vistosSem = {};
+            ctx.sols.forEach(function (s) {
+                const nome = texto(s.nomeAluno, 150);
+                if (!nome) return;
+                if (brutos.some(function (ing) { return solicitacaoDoIngresso(ing, [s]); })) return;
+                const k = normNome(nome) + '|' + turmaCanonica(s.turma);
+                if (vistosSem[k]) return;
+                vistosSem[k] = true;
+                semIngresso.push({ nome: nome, turma: turmaCanonica(s.turma), escola: texto(s.escola, 200), ra: texto(s.ra, 30) });
+                somar(turmas, turmaCanonica(s.turma));
+            });
+            turmas.sort(function (a, b) { return a.localeCompare(b, 'pt-BR'); });
+
             return res.status(200).json({
                 ingressos: todos,
+                semIngresso: semIngresso.filter(function (s) {
+                    return (!fTurma || s.turma === fTurma) && (!fEscola || !s.escola || igual(s.escola, fEscola));
+                }),
                 visitas: ctx.visitas.map(visitaPublica),
                 turmas: turmas,
                 escolas: escolas
@@ -329,10 +359,20 @@ module.exports = async function handler(req, res) {
                 const i = l[0].dados;
                 if (corpo.status === 'Recusado') {
                     i.status = 'Recusado';
+                    delete i.aprovacaoManual;
                     i.respondidoEm = Date.now();
+                    await gravar(sql, i);
+                } else if (corpo.status === 'Aprovado') {
+                    // aprovação manual (reserva do desenvolvedor, se o verificador automático falhar)
+                    i.status = 'Aprovado';
+                    i.aprovacaoManual = true;
+                    i.aprovadoPor = texto(corpo.por, 100) || 'Desenvolvedor';
+                    i.respondidoEm = Date.now();
+                    i.verificadoEm = Date.now();
                     await gravar(sql, i);
                 } else {
                     i.status = 'Pendente';          // reativar: o sistema confere de novo
+                    delete i.aprovacaoManual;
                     i.respondidoEm = Date.now();
                     await conferir(sql, i, await carregarContexto(sql));
                     await gravar(sql, i);
@@ -366,7 +406,7 @@ module.exports = async function handler(req, res) {
                 turma: turma,
                 escola: escola,
                 ra: texto(novo.ra, 30),
-                tipo: novo.tipo === 'Monitor' ? 'Monitor' : 'Aluno',
+                tipo: /monitor|professor/i.test(String(novo.tipo || '')) ? 'Monitor' : 'Aluno',   // monitor e professor são a mesma coisa
                 status: 'Pendente',
                 criadoEm: Date.now(),
                 respondidoEm: 0

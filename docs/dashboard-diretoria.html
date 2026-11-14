@@ -189,7 +189,7 @@
         dashboard-aluno.html).
     -->
     <!-- Só aparece depois que o Clube da Maré aprova (confirma) alguma solicitação. -->
-    <!-- Ingressos de todas as turmas e, numa seção separada, a chamada em tempo real (só leitura). Ver visita-clube.js -->
+    <!-- Status dos ingressos de todas as turmas (só status + PDF) e, numa seção separada, a chamada em tempo real (só leitura). Ver visita-clube.js -->
     <div id="ingressos-turma"></div>
     <div id="chamada-visita"></div>
 
@@ -784,7 +784,7 @@ escutarTodasSolicitacoes(function (solicitacoes) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="visita-clube.js"></script>
 <script>
-iniciarVisitaClube({ destino: 'ingressos-turma', modo: 'ingressos', perfil: 'diretoria', nome: sessao.nome, turmas: [] });
+iniciarVisitaClube({ destino: 'ingressos-turma', modo: 'status', perfil: 'diretoria', nome: sessao.nome, turmas: [] });
 iniciarVisitaClube({ destino: 'chamada-visita', modo: 'chamada', perfil: 'diretoria', nome: sessao.nome, turmas: [] });
 </script>
 <script src="menu.js"></script>

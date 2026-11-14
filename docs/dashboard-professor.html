@@ -100,25 +100,6 @@
     <p id="aviso-turma-nova" class="dica-importar" style="display:none; color: var(--cor-dourado);"></p>
     <div id="carregando">Carregando suas turmas...</div>
 
-    <!-- RESPOSTA, HISTÓRICO E OPÇÃO DE REFAZER DO PROFESSOR
-         (fica logo abaixo da área de importar a planilha, sempre visível,
-         com ou sem alunos na turma) -->
-    <!-- Status da VISITA da turma ao Clube da Maré (2 dias seguidos), pedida pela Diretoria
-         e autorizada pelo Clube. Só leitura: muda sozinho quando o Clube responde. -->
-    <section class="caixa-agendamento-professor" id="area-agendamento-professor" style="display:none;">
-        <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Visita da turma ao Clube da Maré</h2>
-        <div id="agendamento-professor-conteudo"></div>
-    </section>
-
-    <!-- Ingressos da turma (quem vai) e, numa seção separada, a chamada. Ver visita-clube.js -->
-    <div id="ingressos-turma"></div>
-    <div id="chamada-visita"></div>
-
-    <section style="margin-top: 24px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-        <h2>Minhas Solicitações Enviadas</h2>
-        <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
-    </section>
-
     <!-- ===== RESULTADO DA TURMA SELECIONADA ===== -->
     <section id="area-turma" style="display:none;">
         <h2 id="titulo-turma">Turma</h2>
@@ -164,6 +145,25 @@
             <button type="button" class="btn-planilha-atalho" id="botao-baixar-planilha">Baixar cópia de segurança desta turma (.xlsx)</button>
             <button type="button" class="btn-planilha-atalho" id="botao-remover-turma" style="margin-left:8px; background:#8b2c2c;">Remover todos os alunos desta turma</button>
         </div>
+    </section>
+
+    <!-- RESPOSTA, HISTÓRICO E OPÇÃO DE REFAZER DO PROFESSOR
+         (fica logo abaixo da área de importar a planilha, sempre visível,
+         com ou sem alunos na turma) -->
+    <!-- Status da VISITA da turma ao Clube da Maré (2 dias seguidos), pedida pela Diretoria
+         e autorizada pelo Clube. Só leitura: muda sozinho quando o Clube responde. -->
+    <section class="caixa-agendamento-professor" id="area-agendamento-professor" style="display:none;">
+        <h2><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Visita da turma ao Clube da Maré</h2>
+        <div id="agendamento-professor-conteudo"></div>
+    </section>
+
+    <!-- Ingressos da turma (quem vai) e, numa seção separada, a chamada. Ver visita-clube.js -->
+    <div id="ingressos-turma"></div>
+    <div id="chamada-visita"></div>
+
+    <section style="margin-top: 24px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+        <h2>Minhas Solicitações Enviadas</h2>
+        <div id="lista-respostas-diretoria">Nenhuma solicitação enviada até o momento.</div>
     </section>
 
     <!--

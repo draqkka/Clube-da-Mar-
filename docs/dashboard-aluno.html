@@ -264,7 +264,7 @@ function desenharFaixaDados(ctx) {
     ctx.fillStyle = '#0b2a5b';
     var dias = v ? 'Dias da visita: ' + dataCurtaIngresso(v.dataInicio) + ' e ' + dataCurtaIngresso(v.dataFim, true) : 'Dias da visita: a confirmar';
     textoAjustado(ctx, dias, X, topo + 200, L, 46, '700');
-    var hor = v ? 'Entrada ' + v.entrada + '  •  Saída ' + v.saida : 'Horário de saída: a confirmar';
+    var hor = v ? 'Entrada (1º dia) ' + v.entrada + '  •  Saída (2º dia) ' + v.saida : 'Horário de saída (2º dia): a confirmar';
     textoAjustado(ctx, hor, X, topo + 266, L, 46, '700');
 }
 function desenharIngresso() {

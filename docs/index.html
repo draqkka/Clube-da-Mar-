@@ -1232,7 +1232,7 @@ var LINK_VIDEO_TUTORIAL = '';
 // Vídeo hospedado no Google Drive (link de incorporação /preview).
 // O arquivo precisa estar compartilhado como "Qualquer pessoa com o link".
 // Se preencher este, ele tem prioridade sobre o link do YouTube acima.
-var LINK_VIDEO_DRIVE = 'https://drive.google.com/file/d/1f037pTTTf2VnAN4TElCBA3XGp_GAxgKz/view?usp=sharing';
+var LINK_VIDEO_DRIVE = 'https://drive.google.com/file/d/1f037pTTTf2VnAN4TElCBA3XGp_GAxgKz/preview';
 
 (function () {
     var botao = document.getElementById('botao-youtube');
@@ -1252,7 +1252,9 @@ var LINK_VIDEO_DRIVE = 'https://drive.google.com/file/d/1f037pTTTf2VnAN4TElCBA3X
         corpo.innerHTML = '';
         if (LINK_VIDEO_DRIVE) {
             var frameDrive = document.createElement('iframe');
-            frameDrive.src = LINK_VIDEO_DRIVE;
+            // garante o formato /preview (player embutido, sem pedir login quando o arquivo é público)
+            var idDrive = (LINK_VIDEO_DRIVE.match(/\/d\/([\w-]+)/) || [])[1];
+            frameDrive.src = idDrive ? 'https://drive.google.com/file/d/' + idDrive + '/preview' : LINK_VIDEO_DRIVE;
             frameDrive.title = 'Tutorial: como usar o site do Clube da Maré';
             frameDrive.allow = 'autoplay; fullscreen';
             frameDrive.allowFullscreen = true;
